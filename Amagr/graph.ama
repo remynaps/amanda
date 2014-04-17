@@ -1,0 +1,236 @@
+|| Dick Bruin, 05/04/1999
+|| Graph
+|| examples of expressions:
+|| sin x
+|| sin x, cos x                      -- two expressions
+|| log(cos x * exp (x * x))
+|| diff(sin (1 / x))                 -- derivative
+|| df 2 (cos x)                      -- second derivative
+|| ~x                                -- unary minus
+
+textcolor  = 1
+linecolors = [1..]
+gridcolor  = 8
+
+expr ::= ARG | ERROR | NUM num | FUN [char] expr | OPER [char] expr expr | DERIVE | DF expr | LPAR | RPAR
+
+functions  = ["sin", "cos", "tan", "atan", "log", "exp", "~"]
+operators  = ["+", "-", "*", "/", "^"]
+symbols    = ['~', '(', ')'] ++ [c | [c] <- operators]
+separators = [',', ';']
+
+prio oper = hd[k | k, op <- [1..], operators; op = oper]
+
+
+unparse :: expr -> [char]
+parse   :: [char] -> [expr]
+
+unparse ARG                = "x"
+unparse ERROR              = "ERROR"
+unparse (NUM n)            = ftoa n
+unparse (FUN fun e)        = fun ++ "(" ++ unparse e ++ ")"
+unparse (OPER oper e1 e2)  = "(" ++ unparse e1++ " " ++ oper ++ " " ++ unparse e2 ++ ")"
+
+parse = reverse . map simplify . parser [] [] . map lex . words . addSpaces
+
+
+parser :: [expr] -> [expr] -> [expr] -> [expr]
+
+parser es [] []                                       = es
+parser (e:es) (DERIVE:os) []                          = parser (derive e:es) os []
+parser (e1:e2:es) (DF o:os) []                        = parser (df e2 e1:es) os []
+parser (e:es) (FUN fun o:os) []                       = parser (FUN fun e:es) os []
+parser (e1:e2:es) (OPER oper o1 o2:os) []             = parser (OPER oper e2 e1:es) os []
+parser es os (ARG:ls)                                 = parser (ARG:es) os ls
+parser es os (LPAR:ls)                                = parser es (LPAR:os) ls
+parser es (LPAR:os) (RPAR:ls)                         = parser es os ls
+parser (e:es) (DERIVE:os) (RPAR:ls)                   = parser (derive e:es) os (RPAR:ls)
+parser (e1:e2:es) (DF o:os) (RPAR:ls)                 = parser (df e2 e1:es) os (RPAR:ls)
+parser (e:es) (FUN fun f:os) (RPAR:ls)                = parser (FUN fun e:es) os (RPAR:ls)
+parser (e1:e2:es) (OPER oper o1 o2:os) (RPAR:ls)      = parser (OPER oper e2 e1:es) os (RPAR:ls)
+parser es os (DERIVE:ls)                              = parser es (DERIVE:os) ls
+parser es os (DF o:ls)                                = parser es (DF o:os) ls
+parser es os (FUN fun e:ls)                           = parser es (FUN fun e:os) ls
+parser (e:es) (DERIVE:os) (OPER oper e1 e2:ls)        = parser (derive e:es) os (OPER oper e1 e2:ls)
+parser (e:es) (FUN fun f:os) (OPER oper e1 e2:ls)     = parser (FUN fun e:es) os (OPER oper e1 e2:ls)
+parser (e1:e2:es) (OPER oper1 o11 o12:os) (OPER oper2 o21 o22:ls)
+= parser (OPER oper1 e2 e1:es) os (OPER oper2 o21 o22:ls)         ,if prio oper1 >= prio oper2
+= parser (e1:e2:es) (OPER oper2 o21 o22:OPER oper1 o11 o12:os) ls ,otherwise
+parser es os (OPER oper o1 o2:ls)                     = parser es (OPER oper o1 o2:os) ls
+parser es os (NUM n:ls)                               = parser (NUM n:es) os ls
+parser es os ls                                       = [ERROR]
+
+lex s
+= ARG                ,if s = "x"
+= LPAR               ,if s = "("
+= RPAR               ,if s = ")"
+= DERIVE             ,if s = "diff"
+= DF ERROR           ,if s = "df"
+= FUN s ERROR        ,if member functions s
+= OPER s ERROR ERROR ,if member operators s
+= NUM (atof s)       ,otherwise
+
+addSpaces s
+= "( " ++ (concat.map change)s ++ " )"
+where
+  change c = [' ', c, ' '] ,if member symbols c
+           = " ) ( "       ,if member separators c
+           = [c]           ,otherwise
+
+
+derive :: expr -> expr
+
+derive ARG              = NUM 1
+derive (NUM n)          = NUM 0
+derive (FUN fun e)      = OPER "*" (deriveFun fun e) (derive e)
+derive (OPER "+" e1 e2) = OPER "+" (derive e1) (derive e2)
+derive (OPER "-" e1 e2) = OPER "-" (derive e1) (derive e2)
+derive (OPER "*" e1 e2) = OPER "+" (OPER "*" (derive e1) e2) (OPER "*" e1 (derive e2))
+derive (OPER "/" e1 e2) = OPER "-" (OPER "/" (derive e1) e2) (OPER "/" (OPER "*" (derive e2) e1) (OPER "^" e2 (NUM 2)))
+derive (OPER "^" e1 e2) = OPER "+" 
+                            (OPER "*" (derive e1) (OPER "*" e2 (OPER "^" e1 (OPER "-" e2 (NUM 1))))) 
+                            (OPER "*" (OPER "*" (derive e2) (FUN "log" e1)) (OPER "^" e1 e2))
+derive e                = ERROR
+
+deriveFun "sin" e  = FUN "cos" e
+deriveFun "cos" e  = FUN "~" (FUN "sin" e)
+deriveFun "tan" e  = OPER "/" (NUM 1) (OPER "^" (FUN "cos" e) (NUM 2))
+deriveFun "atan" e = OPER "/" (NUM 1) (OPER "+" (NUM 1) (OPER "^" e (NUM 2)))
+deriveFun "log" e  = OPER "/" (NUM 1)  e
+deriveFun "exp" e  = FUN "exp" e
+deriveFun "~" e    = NUM (-1)
+deriveFun fun e    = ERROR
+
+df (NUM 0) e = e
+df (NUM n) e = df (NUM (n-1)) (derive e)
+
+
+simplify :: expr -> expr
+
+simplify (FUN fun e)     = simplifyFun fun (simplify e)
+simplify (OPER op e1 e2) = simplifyOper op (simplify e1) (simplify e2)
+simplify e               = e
+
+simplifyFun fun (NUM n) = evalFun fun (NUM n)
+simplifyFun fun ERROR   = ERROR
+simplifyFun fun e       = FUN fun e
+
+simplifyOper op ERROR e2          = ERROR
+simplifyOper op e1 ERROR          = ERROR
+simplifyOper op (NUM n1) (NUM n2) = evalOper op (NUM n1) (NUM n2)
+simplifyOper "+" e1 (NUM 0)       = e1
+simplifyOper "+" (NUM 0) e2       = e2
+simplifyOper "-" e1 (NUM 0)       = e1
+simplifyOper "-" (NUM 0) e1       = FUN "~" e1
+simplifyOper "*" e1 (NUM 0)       = NUM 0
+simplifyOper "*" (NUM 0) e2       = NUM 0
+simplifyOper "*" e1 (NUM 1)       = e1
+simplifyOper "*" (NUM 1) e2       = e2
+simplifyOper "/" (NUM 0) e1       = NUM 0
+simplifyOper "/" e1 (NUM 0)       = ERROR
+simplifyOper "/" e1 (NUM 1)       = e1
+simplifyOper "^" e1 (NUM 0)       = NUM 1
+simplifyOper "^" e1 (NUM 1)       = e1
+simplifyOper op e1 e2             = OPER op e1 e2
+
+
+eval :: expr -> num -> expr
+
+eval ARG             n = NUM n
+eval ERROR           n = ERROR
+eval (NUM m)         n = NUM m
+eval (FUN fun e)     n = evalFun fun (eval e n)
+eval (OPER op e1 e2) n = evalOper op (eval e1 n) (eval e2 n)
+
+evalFun "sin"  (NUM n) = NUM (sin n)
+evalFun "cos"  (NUM n) = NUM (cos n)
+evalFun "tan"  (NUM n) = NUM (sin n//cos n) ,if cos n ~= 0
+                       = ERROR
+evalFun "atan" (NUM n) = NUM (atan n)
+evalFun "log"  (NUM n) = NUM (log n) ,if n > 0
+                       = ERROR
+evalFun "exp"  (NUM n) = NUM (exp n) ,if n < 30
+                       = ERROR
+evalFun "~"    (NUM n) = NUM (-n)
+evalFun fun    e       = ERROR
+
+evalOper "+" (NUM n1) (NUM n2) = NUM (n1+n2)
+evalOper "-" (NUM n1) (NUM n2) = NUM (n1-n2)
+evalOper "*" (NUM n1) (NUM n2) = NUM (n1*n2)
+evalOper "/" (NUM n1) (NUM n2) = NUM (n1//n2) ,if n2 ~= 0
+                               = ERROR
+evalOper "^" (NUM n1) (NUM n2) = NUM 0     ,if n1 = 0
+                               = NUM (n1^n2) ,if n1 > 0 \/ n2 = round n2
+                               = ERROR
+evalOper oper e1 e2            = ERROR
+
+
+draw :: [char] -> (num, num) -> num -> [graphics]
+
+draw expr (xmin, xmax) res
+= [GraphRectangle 15 (-1, -1) (1, 1)] ++
+  [GraphText color (-0.95, 0.95-k*0.1) ("x -> " ++ unparse fun) | fun, color, k <- funs, linecolors, [0..]] ++
+  horizontalGrid (-width) (-width) width xmin xmax 10 ++
+  verticalGrid width (-width) width ymin ymax 10 ++
+  concat[display color ps | ps, color <- points, linecolors]
+where
+  funs    = parse expr
+  width   = 0.8
+  grid    = 0.03
+  eps     = 0.00001
+  inf     = 10^6
+  xfactor = (xmax-xmin) // res
+  yfactor = 2 * width // (ymax-ymin+eps)
+  yoffset = -width - ymin * yfactor
+  points  = [[(-width+2*width*k//res, eval fun (xmin + k * xfactor)) | k <- [0..res]] | fun <- funs]
+  ymin    = min(inf:[y | ps <- points; (x, NUM y) <- ps])
+  ymax    = max(-inf:[y | ps <- points; (x, NUM y) <- ps])
+
+  display color [] = []
+  display color points
+  = GraphPolyLine color [(x, yoffset + y * yfactor) | (x, NUM y) <- ps1] : display color ps2
+  where
+    (ps1, ps2) = (splitwhile isNum.dropwhile (~.isNum)) points
+
+  isNum (x, NUM y) = True
+  isNum p          = False
+
+  horizontalGrid dispy dispx1 dispx2 x1 x2 n
+  = horizontalLine dispy dispx1 dispx2 ++
+    concat[verticalLine dispx (dispy-grid) (dispy+grid) ++ [GraphText gridcolor (dispx, dispy-2*grid) (ftoa x)]  | k <- [0..n]; dispx := dispx1+k*(dispx2-dispx1)//n; x := x1+k*(x2-x1)//n]
+
+  verticalGrid dispx dispy1 dispy2 y1 y2 n
+  = verticalLine dispx dispy1 dispy2 ++
+    concat[horizontalLine dispy (dispx-grid) (dispx+grid) ++ [GraphText gridcolor (dispx+2*grid, dispy) (ftoa y)]  | k <- [0..n]; dispy := dispy1+k*(dispy2-dispy1)//n; y := y1+k*(y2-y1)//n]
+
+  horizontalLine y x1 x2
+  = [GraphPolyLine gridcolor [(x1, y), (x2, y)]]
+
+  verticalLine x y1 y2
+  = [GraphPolyLine gridcolor [(x, y1), (x, y2)]]
+
+
+graph expr xmin xmax = draw expr (xmin, xmax) 100
+drawGraph expr xmin xmax = graphAnimate 400 400 (graph expr xmin xmax)
+
+
+drawState ::= NoDraw | Graph [char] num num
+
+object "AmaGraphics" = (NoDraw, call)
+where
+  call "DefSystem" _ state = (state, ["showParameters", "True"])
+  call "DefParameters" _ state = (state, ["expr", "", "min", "", "max", ""])
+
+  call "Parameters" [expr, xmin, xmax] _ = repaint (Graph expr (atof xmin) (atof xmax))
+  call _ _ NoDraw = (NoDraw, [])
+  call "Repaint" [] state = repaint state
+  call "MouseDrag" ps state = (state, (mouseDrag . map atof) ps)
+  call _ _ state = (state, [])
+
+  repaint (Graph expr xmin xmax) = (Graph expr xmin xmax, graphicsout(graph expr xmin xmax))
+  
+  mouseDrag [x1, y1, x2, y2]
+  = graphicsout
+    [ GraphPolyLine gridcolor [(x2, 1), (x2, -1)]
+    , GraphPolyLine gridcolor [(-1, y2), (1, y2)]
+    ]

@@ -1,0 +1,400 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> types</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>types</H2>
+<TT>
+<BR>
+<A HREF="#page_311">basic types</A>
+<BR>
+<A HREF="#page_312">list types</A>
+<BR>
+<A HREF="#page_313">tuple types</A>
+<BR>
+<A HREF="#page_314">algebraic types</A>
+<BR>
+<A HREF="#page_315">record types</A>
+<BR>
+<A HREF="#page_316">type synonyms</A>
+<BR>
+<A HREF="#page_317">abstract types</A>
+<BR>
+<A HREF="#page_318">generic functions</A>
+<BR>
+<A HREF="#page_319">type checking</A>
+<BR>
+<BR>
+<A HREF="index_3.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_311"></A><HR><H2>basic types</H2>
+<BR>
+The basic types are:
+<PRE>
+num     || both integer and real
+bool    || with only values True, False
+char    || ascii set
+</PRE>
+<BR>
+
+<A NAME="page_312"></A><HR><H2>list types</H2>
+<BR>
+List types are denoted by:
+<BR>
+[ &lttypeName&gt ]
+<BR>
+
+<A NAME="page_313"></A><HR><H2>tuple types</H2>
+<BR>
+Tuple types are denoted by:
+<BR>
+()
+<BR>
+( &lttypeName&gt, &lttypeName&gt, ... &lttypeName&gt )
+<BR>
+<BR>
+The first form defines an empty tuple type. The only possible value of
+this type is () the empty tuple.
+<BR>
+Of course (for syntactical reasons) unary tuples are not available.
+<BR>
+
+<A NAME="page_314"></A><HR><H2>algebraic types</H2>
+<BR>
+Concrete algebraic types can be defined like:
+<BR>
+<BR>
+Example:
+<BR>
+numTree ::= Leaf num | Branch numTree numTree
+<BR>
+<BR>
+Example:
+<BR>
+tree (*) ::= Leaf (*) | Branch (tree (*)) (tree (*))
+<BR>
+<BR>
+With (*) a polymorphic typevariable is denoted.
+<BR>
+The parentheses around (*) are not strictly necessary,
+so one may write:
+<BR>
+tree * ::= Leaf * | Branch (tree *) (tree *)
+<BR>
+<BR>
+NB: the ordering of the elements of a concrete type is undefined, though
+equality tests are perfectly valid.
+<BR>
+
+<A NAME="page_315"></A><HR><H2>record types</H2>
+<BR>
+Record types are defined as in the following example:
+<BR>
+<BR>
+vector * ::= { x :: *, y :: *, z :: * }
+<BR>
+<BR>
+For every field a selector function is defined like:
+<BR>
+x { x=xr, y=yr, z=zr } = xr
+<BR>
+<BR>
+The drawback of this construction is that all field names of all record types
+must be different.
+<BR>
+<BR>
+A constant record can be denoted like:
+<BR>
+{ x = 1, y = 2, z = 3 }
+<BR>
+{ y = 100, z = 20 }
+<BR>
+<BR>
+From the last example it is obvious that partial records can be defined. Of course
+the omitted fields should never be accessed.
+<BR>
+Empty records are not available (what could be their use ?)
+<BR>
+Partial records are useful for pattern matching and for updates.
+<BR>
+<BR>
+Functions on records can be defined using the field access functions:
+<BR>
+innerproduct r1 r2 = x r1 * x r2 + y r1 * y r2 + z r1 * z r2
+<BR>
+<BR>
+or using patterns:
+<BR>
+innerproduct { x=x1, y=y1, z=z1 } { x=x2, y=y2, z=z2 } = x1*x2 + y1*y2 + z1*z2
+<BR>
+<BR>
+The operator & is used to update a record with information from another record:
+<PRE>
+clearx r = r & { x = 0 }
+doublex (r = { x = xr }) = r & { x = 2 * xr }
+</PRE>
+In the function double the argument is called r and its field x is called xr and
+the result is r with its field x changed to twice its original value. The result
+of course is a copy of the record r with a new value for field x.
+<BR>
+
+<A NAME="page_316"></A><HR><H2>type synonyms</H2>
+<BR>
+Typesynonyms are denoted like:
+<BR>
+<BR>
+string == [char]
+<BR>
+<BR>
+complex == (num, num)
+<BR>
+<BR>
+point * == (*, *)
+<BR>
+
+<A NAME="page_317"></A><HR><H2>abstract types</H2>
+<BR>
+Abstract types are denoted like:
+<PRE>
+abstype stack *
+with
+  push    :: * -&gt stack * -&gt stack *
+  pop     :: stack * -&gt stack *
+  top     :: stack * -&gt *
+  isEmpty :: stack * -&gt bool
+  create  :: stack *
+
+stack * == [*]
+
+push x s  = x:s
+pop (x:s) = s
+top (x:s) = x
+isEmpty s = s = []
+create    = []
+</PRE>
+An abstract type hides the implementation. This means that only the functions
+belonging to the abstract type may use the implementation details.
+<BR>
+In the example push uses the list constructor, which is correct because stack *
+is defined as a list and push belongs to the abstract type.
+<BR>
+But functions outside the abstract type may only use push to add something on a stack.
+<BR>
+<BR>
+NB: an abstract type must be a synonym of another type.
+<BR>
+
+<A NAME="page_318"></A><HR><H2>generic functions</H2>
+<BR>
+Like abstract types generic functions are a feature of the typechecker.
+<BR>
+<BR>
+Usually polymorphism means structural polymorphism like in:
+<PRE>
+hd :: [*] -&gt *
+hd (x:_) = x
+</PRE>
+The polymorphism of the function ?= (equality test) is of a different kind
+because it is defined differently for different types. Although in all cases
+the type conforms with its generic type.
+<BR>
+<BR>
+We could define ?= for some cases like:
+<PRE>
+generic ?= :: * -&gt * -&gt bool
+
+([]      ?= []     ) = True
+(x:xs    ?= y:ys   ) = x ?= y /\ xs ?= ys
+(True    ?= True   ) = True
+(False   ?= False  ) = True
+((x1,y1) ?= (x2,y2)) = x1 ?= x2 /\ y1 ?= y2
+...
+(_ ?= _) = False   || default unequal
+</PRE>
+The keyword generic indicates that the function could be defined for
+different cases all conforming to the specified generic type scheme.
+<BR>
+<BR>
+Example:
+<PRE>
+generic print :: * -&gt [char]
+
+print (x = num)  = ftoa x
+print True       = "True"
+print False      = "False"
+print (c = char) = [c]
+print []         = "[]"
+print (x:xs)     = "[" ++ print x ++ concat[", " ++ print y | y &lt- xs] ++ "]"
+print (x, y)     = "(" ++ print x ++ ", " ++ print y ++ ")"
+...
+</PRE>
+The pattern (x = num) means that x is an alias for an element of type num.
+Only the basic types num, bool and char may be used as patterns.
+<BR>
+<BR>
+NB: because the type checking regime for generic functions is weaker than for
+normal functions, generic functions should be used with care.
+<BR>
+<BR>
+See
+<A HREF="#page_319">type checking</A>
+for a more elaborate explication of the type inference process
+<BR>
+
+<A NAME="page_319"></A><HR><H2>type checking</H2>
+<BR>
+The task of the type checker is to ensure that on run time "things can't go wrong".
+Of course infinite loops, division by zero or failing patterns are in general not
+detectable on compile time. But checking that a function is called with the
+correct number and type of arguments is feasible.
+<BR>
+<BR>
+The type checker generally does the following things:
+<BR>
+- it substitutes all occurrences of type synonyms
+<BR>
+- it ensures that the definitions of abstract types are only visible for
+the functions belonging to it
+<BR>
+- it finds and checks all the types of normal functions
+<BR>
+- it checks the types of generic functions
+<BR>
+<BR>
+Example:
+<PRE>
+f [] = 0
+f (x:xs) = add x (f xs)
+
+add x y = x + y
+</PRE>
+The type inference goes like this.
+<BR>
+<BR>
+Firstly the most general assumptions on the types are made:
+<BR>
+f   :: *
+<BR>
+add :: *
+<BR>
+<BR>
+From the first clause of f is deduced:
+<BR>
+f :: [*] -&gt num
+<BR>
+From the second clause of f is deduced (using the known types of f and add):
+<BR>
+f :: [*] -&gt **
+<BR>
+The function should comply to both types so the types are "unified" giving:
+<BR>
+f :: [*] -&gt num
+<BR>
+<BR>
+The same thing is done for the function add giving:
+<BR>
+add :: num -&gt num -&gt num
+<BR>
+<BR>
+Because the type of add has changed the second clause of the function f should be
+considered again giving:
+<BR>
+f :: [num] -&gt num
+<BR>
+<BR>
+This process is repeated until all types are stable.
+<BR>
+If the programmer has provided types for functions these are taken as a starting point.
+In that way the programmer can restrict the type of a function.
+<BR>
+<BR>
+The repeated approximation of the types makes polymorphism possible.
+So a strange function like the following is correctly typed:
+<PRE>
+f x 0 = x
+f x n = x ,if f 1 0 = 1 \/ f [1] 1 = [1]
+</PRE>
+For local definitions in a where clause a more rigid scheme is used. All
+occurrences of such a definition share the same type. This excludes polymorphism,
+but speeds up the type inference process and rarely gives problems because
+polymorphic functions are usually shared by many functions and are thus global.
+<BR>
+<BR>
+The types of generic functions are provided by the programmer so at first
+sight the type checker only needs to check if all the clauses conform to
+this given type.
+<BR>
+<BR>
+But examples like the following show that this is not desirable:
+<PRE>
+generic f :: num -&gt *
+
+f 0 = 'a'
+f 1 = 1
+
+generic g :: [*] -&gt (*, **)
+
+g [1] = (0, 0)
+g []  = ('a', 'a')
+</PRE>
+Expressions like [f 0, f 1] and [g [], g [1]] are now going wrong.
+<BR>
+<BR>
+The problem is caused by the occurrence of a new type variable in the result.
+So this is not allowed.
+<BR>
+A similar thing may happen at run time if the patterns of function clauses
+are not tight enough.
+<BR>
+<BR>
+Example:
+<PRE>
+generic print :: * -&gt [char]
+
+print [] = "[]"
+print (x:xs) = "[" ++ print x ++ concat[", " ++ print x | x &lt- xs] ++ "]"
+print n = ftoa n
+print c = [c]
+</PRE>
+The clauses have the following types:
+<PRE>
+[*] -&gt [char]
+[*] -&gt [char]
+num -&gt [char]
+*   -&gt [*]          (becomes char -&gt [char] after unification)
+</PRE>
+They can all be unified with the generic type scheme.
+<BR>
+But the call (print 'a') goes wrong because the third clause will be used.
+<BR>
+<BR>
+The problem is caused by the fact that at run time the input determines which
+clause is activated but the type is also determined by the output.
+The pattern of the third clause is too weak to ensure that only numbers are plugged in.
+Likewise the pattern of the fourth clause is too weak.
+<BR>
+<BR>
+For a clause of a generic function the type checker at first deduces a type
+based on the given input patterns and unifies this with the generic type scheme
+giving the actual type. Then the type of the result is found and unified with it.
+If new constraints are found the clause is rejected.
+<BR>
+<BR>
+For the third clause (print n = ftoa n) the actual type based on the input is:
+<BR>
+* -&gt [char]
+<BR>
+but the result leads to the type
+<BR>
+num -&gt [char]
+<BR>
+So the result imposes extra constraints and the clause is rejected.
+<BR>
+<BR>
+The programmer should change the clause to:
+<BR>
+print (n = num) = ftoa n
+<BR>
+
+</BODY>
+</HTML>

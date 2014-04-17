@@ -1,0 +1,484 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> builtin functions</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>builtin functions</H2>
+<TT>
+<BR>
+<A HREF="#page_471">and</A>
+<BR>
+<A HREF="#page_472">abs</A>
+<BR>
+<A HREF="#page_473">concat</A>
+<BR>
+<A HREF="#page_474">drop</A>
+<BR>
+<A HREF="#page_475">dropwhile</A>
+<BR>
+<A HREF="#page_476">empty</A>
+<BR>
+<A HREF="#page_477">filter</A>
+<BR>
+<A HREF="#page_478">foldl</A>
+<BR>
+<A HREF="#page_479">foldl1</A>
+<BR>
+<A HREF="#page_480">foldr</A>
+<BR>
+<A HREF="#page_481">foldr1</A>
+<BR>
+<A HREF="#page_482">fst</A>
+<BR>
+<A HREF="#page_483">if</A>
+<BR>
+<A HREF="#page_484">iterate</A>
+<BR>
+<A HREF="#page_485">hd</A>
+<BR>
+<A HREF="#page_486">map</A>
+<BR>
+<A HREF="#page_487">max</A>
+<BR>
+<A HREF="#page_488">max2</A>
+<BR>
+<A HREF="#page_489">member</A>
+<BR>
+<A HREF="#page_490">min</A>
+<BR>
+<A HREF="#page_491">min2</A>
+<BR>
+<A HREF="#page_492">nat</A>
+<BR>
+<A HREF="#page_493">nats</A>
+<BR>
+<A HREF="#page_494">neg</A>
+<BR>
+<A HREF="#page_495">or</A>
+<BR>
+<A HREF="#page_496">prod</A>
+<BR>
+<A HREF="#page_497">reverse</A>
+<BR>
+<A HREF="#page_498">scan</A>
+<BR>
+<A HREF="#page_499">seq</A>
+<BR>
+<A HREF="#page_500">snd</A>
+<BR>
+<A HREF="#page_501">split</A>
+<BR>
+<A HREF="#page_502">splitwhile</A>
+<BR>
+<A HREF="#page_503">sum</A>
+<BR>
+<A HREF="#page_504">strict</A>
+<BR>
+<A HREF="#page_505">take</A>
+<BR>
+<A HREF="#page_506">takewhile</A>
+<BR>
+<A HREF="#page_507">timedate</A>
+<BR>
+<A HREF="#page_508">tl</A>
+<BR>
+<A HREF="#page_509">until</A>
+<BR>
+<A HREF="#page_510">zip</A>
+<BR>
+<A HREF="#page_511">zip2</A>
+<BR>
+<A HREF="#page_512">zip3</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_471"></A><HR><H2>and</H2>
+<BR>
+and :: [bool] -&gt bool
+<BR>
+<BR>
+and = foldr (/\) True
+<BR>
+
+<A NAME="page_472"></A><HR><H2>abs</H2>
+<BR>
+abs :: num -&gt num
+<PRE>
+abs x = x  ,if x &gt= 0
+      = -x ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_473"></A><HR><H2>concat</H2>
+<BR>
+concat :: [[*]] -&gt [*]
+<BR>
+<BR>
+concat [x1, x2 ... xN] = x1 ++ x2 ++ ... xN
+<BR>
+
+<A NAME="page_474"></A><HR><H2>drop</H2>
+<BR>
+drop :: num -&gt [*] -&gt [*]
+<BR>
+<BR>
+drop n xs = xs with the first n elements left out
+<BR>
+
+<A NAME="page_475"></A><HR><H2>dropwhile</H2>
+<BR>
+dropwhile :: (* -&gt bool) -&gt [*] -&gt [*]
+<PRE>
+dropwhile f [] = []
+dropwhile f (x:xs) = dropwhile f xs ,if f x
+                   = x:xs           ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_476"></A><HR><H2>empty</H2>
+<BR>
+empty :: [*] -&gt bool
+<PRE>
+empty [] = True
+empty (x:xs) = False
+</PRE>
+<BR>
+
+<A NAME="page_477"></A><HR><H2>filter</H2>
+<BR>
+filter :: (* -&gt bool) -&gt [*] -&gt [*]
+<BR>
+<BR>
+filter f xs = [x | x &lt- xs; f x]
+<BR>
+
+<A NAME="page_478"></A><HR><H2>foldl</H2>
+<BR>
+foldl :: (* -&gt ** -&gt *) -&gt * -&gt [**] -&gt *
+<PRE>
+foldl (+) z [] = z
+foldl (+) z [x1, x2 ... xN] = ((z + x1) + x2) ... + xN
+</PRE>
+In pseudo notation:
+<PRE>
+foldl (+) z xs
+begin
+  for x &lt- xs do z := z + x;
+  return z;
+end
+</PRE>
+<BR>
+
+<A NAME="page_479"></A><HR><H2>foldl1</H2>
+<BR>
+foldl1 :: (* -&gt * -&gt *) -&gt [*] -&gt *
+<BR>
+<BR>
+foldl1 (+) [x1, x2 ... xN] = (x1 + x2) ... + xN
+<BR>
+<BR>
+In pseudo notation:
+<PRE>
+foldl1 (+) (x:xs)
+begin
+  z := x;
+  for x &lt- xs do z := z + x;
+  return z;
+end
+</PRE>
+<BR>
+
+<A NAME="page_480"></A><HR><H2>foldr</H2>
+<BR>
+foldr :: (** -&gt * -&gt *) -&gt [**] -&gt *
+<PRE>
+foldr (+) z [] = z
+foldr (+) z [x1, x2 ... xN] = x1 + (x2 ... + (xN + z))
+
+foldr (+) z = f
+where
+  f [] = z
+  f (x:xs) = x + f xs
+</PRE>
+<BR>
+
+<A NAME="page_481"></A><HR><H2>foldr1</H2>
+<BR>
+foldr1 :: (* -&gt * -&gt *) -&gt [*] -&gt *
+<BR>
+<BR>
+foldr1 (+) [x1, x2 ... xN] = x1 + (x2 ... + xN)
+<BR>
+
+<A NAME="page_482"></A><HR><H2>fst</H2>
+<BR>
+fst :: (*, **) -&gt *
+<BR>
+<BR>
+fst(x, _) = x
+<BR>
+
+<A NAME="page_483"></A><HR><H2>if</H2>
+<BR>
+if :: bool -&gt * -&gt * -&gt *
+<PRE>
+if test x y = x ,if test
+            = y ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_484"></A><HR><H2>iterate</H2>
+<BR>
+iterate :: (* -&gt *) -&gt * -&gt [*]
+<BR>
+<BR>
+iterate f x = [x, f x, f(f x), f(f(f x)) ...]
+<BR>
+
+<A NAME="page_485"></A><HR><H2>hd</H2>
+<BR>
+hd :: [*] -&gt *
+<BR>
+<BR>
+hd (x:_) = x
+<BR>
+
+<A NAME="page_486"></A><HR><H2>map</H2>
+<BR>
+map :: (* -&gt **) -&gt [*] -&gt [**]
+<BR>
+<BR>
+map f [x1, x2 ... xN] = [f x1, f x2 ... f xN]
+<BR>
+
+<A NAME="page_487"></A><HR><H2>max</H2>
+<BR>
+max :: [*] -&gt *
+<BR>
+<BR>
+max xs = the largest element of xs
+<BR>
+
+<A NAME="page_488"></A><HR><H2>max2</H2>
+<BR>
+max2 :: * -&gt * -&gt *
+<PRE>
+max2 x y = x ,if x &gt y
+         = y ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_489"></A><HR><H2>member</H2>
+<BR>
+member :: [*] -&gt * -&gt bool
+<PRE>
+member xs x = True  ,if xs contains x
+            = False ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_490"></A><HR><H2>min</H2>
+<BR>
+min :: [*] -&gt *
+<BR>
+<BR>
+min xs = the smallest element of xs
+<BR>
+
+<A NAME="page_491"></A><HR><H2>min2</H2>
+<BR>
+min2 :: * -&gt * -&gt *
+<PRE>
+min2 x y = x ,if x &lt y
+         = y ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_492"></A><HR><H2>nat</H2>
+<BR>
+nat :: num -&gt num -&gt [num]
+<BR>
+<BR>
+nat k l = [k..l]
+<BR>
+
+<A NAME="page_493"></A><HR><H2>nats</H2>
+<BR>
+nats :: num -&gt [num]
+<BR>
+<BR>
+nats k = [k..]
+<BR>
+
+<A NAME="page_494"></A><HR><H2>neg</H2>
+<BR>
+neg :: num -&gt num
+<BR>
+<BR>
+neg x = -x
+<BR>
+
+<A NAME="page_495"></A><HR><H2>or</H2>
+<BR>
+or :: [bool] -&gt bool
+<BR>
+<BR>
+or = foldr (\/) False
+<BR>
+
+<A NAME="page_496"></A><HR><H2>prod</H2>
+<BR>
+prod :: [num] -&gt num
+<BR>
+<BR>
+prod = foldl (*) 1
+<BR>
+
+<A NAME="page_497"></A><HR><H2>reverse</H2>
+<BR>
+reverse :: [*] -&gt [*]
+<BR>
+<BR>
+reverse [x1, x2 ... xN] = [xN ... x2, x1]
+<BR>
+
+<A NAME="page_498"></A><HR><H2>scan</H2>
+<BR>
+scan :: (* -&gt ** -&gt *) -&gt * -&gt [**] -&gt [*]
+<BR>
+<BR>
+scan (+) z [] = [z]
+<BR>
+scan (+) z [x1, x2 ... xN] = [z, z+x1, (z+x1)+x2 ... ((z+x1)+x2) ... +xN]
+<BR>
+
+<A NAME="page_499"></A><HR><H2>seq</H2>
+<BR>
+seq :: * -&gt ** -&gt **
+<BR>
+<BR>
+seq x y = y
+<BR>
+As a side effect x is evaluated
+<BR>
+
+<A NAME="page_500"></A><HR><H2>snd</H2>
+<BR>
+snd :: (*, **) -&gt **
+<BR>
+<BR>
+snd(_, x) = x
+<BR>
+
+<A NAME="page_501"></A><HR><H2>split</H2>
+<BR>
+split :: num -&gt [*] -&gt ([*], [*])
+<BR>
+<BR>
+split n xs = (take n xs, drop n xs)
+<BR>
+
+<A NAME="page_502"></A><HR><H2>splitwhile</H2>
+<BR>
+splitwhile :: (* -&gt bool) -&gt [*] -&gt ([*], [*])
+<BR>
+<BR>
+splitwhile f xs = (takewhile f xs, dropwhile f xs)
+<BR>
+
+<A NAME="page_503"></A><HR><H2>sum</H2>
+<BR>
+sum :: [num] -&gt num
+<BR>
+<BR>
+sum = foldl (+) 0
+<BR>
+
+<A NAME="page_504"></A><HR><H2>strict</H2>
+<BR>
+strict :: (* -&gt **) -&gt * -&gt **
+<BR>
+<BR>
+strict f x = f x
+<BR>
+As a side effect x is evaluated first
+<BR>
+
+<A NAME="page_505"></A><HR><H2>take</H2>
+<BR>
+take :: num -&gt [*] -&gt [*]
+<BR>
+<BR>
+take n xs = the list of the first n elements of xs
+<BR>
+
+<A NAME="page_506"></A><HR><H2>takewhile</H2>
+<BR>
+takewhile :: (* -&gt bool) -&gt [*] -&gt [*]
+<BR>
+<BR>
+takewhile f [] = []
+<PRE>
+takewhile f (x:xs) = x : takewhile f xs ,if f x
+                   = []
+</PRE>
+<BR>
+
+<A NAME="page_507"></A><HR><H2>timedate</H2>
+<BR>
+timedate :: (num, num, num, num, num, num)
+<BR>
+<BR>
+timedate = (second, minute, hour, day /* [1..31] */, month /* [0..11] */, year)
+<BR>
+<BR>
+timedate delivers the current time and date,  it is not referentially transparent
+<BR>
+
+<A NAME="page_508"></A><HR><H2>tl</H2>
+<BR>
+tl :: [*] -&gt [*]
+<BR>
+<BR>
+tl (_:xs) = xs
+<BR>
+
+<A NAME="page_509"></A><HR><H2>until</H2>
+<BR>
+until :: (* -&gt bool) -&gt (* -&gt *) -&gt * -&gt *
+<PRE>
+until test f x = x                  ,if test x
+               = until test f (f x) ,otherwise
+</PRE>
+Alternatively:
+<BR>
+until test f = hd . dropwhile (~ . test) . iterate f
+<BR>
+
+<A NAME="page_510"></A><HR><H2>zip</H2>
+<BR>
+zip :: ([*], [**]) -&gt [(*, **)]
+<BR>
+<BR>
+zip(xs, ys) = [(x, y) | x, y &lt- xs, ys]
+<BR>
+
+<A NAME="page_511"></A><HR><H2>zip2</H2>
+<BR>
+zip2 :: [*] -&gt [**] -&gt [(*, **)]
+<BR>
+<BR>
+zip2 xs ys = [(x, y) | x, y &lt- xs, ys]
+<BR>
+
+<A NAME="page_512"></A><HR><H2>zip3</H2>
+<BR>
+zip3 :: [*] -&gt [**] -&gt [***] -&gt [(*, **, ***)]
+<BR>
+<BR>
+zip3 xs ys zs = [(x, y, z) | x, y, z &lt- xs, ys, zs]
+<BR>
+
+</BODY>
+</HTML>

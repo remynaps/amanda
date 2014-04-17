@@ -1,0 +1,58 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> file functions</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>file functions</H2>
+<TT>
+<BR>
+<A HREF="#page_541">fread</A>
+<BR>
+<A HREF="#page_542">fwrite</A>
+<BR>
+<A HREF="#page_543">fappend</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_541"></A><HR><H2>fread</H2>
+<BR>
+fread :: [char] -&gt [char]
+<BR>
+<BR>
+fread fileName = list of the characters in the file
+<BR>
+<BR>
+fread should be used with care, because it is not referentially transparent.
+<BR>
+<BR>
+Example:
+<BR>
+lineCount = # . lines . fread
+<BR>
+<BR>
+fread reads the contents of the file as a list of characters, lines breaks
+this list in a list of lines and # counts the number of lines.
+<BR>
+
+<A NAME="page_542"></A><HR><H2>fwrite</H2>
+<BR>
+fwrite :: [char] -&gt [char] -&gt  bool
+<PRE>
+fwrite fileName string = True  ,if the string is written to the file
+                       = False ,otherwise
+</PRE>
+fwrite should be used with care, because it is not referentially transparent.
+<BR>
+
+<A NAME="page_543"></A><HR><H2>fappend</H2>
+<BR>
+fappend :: [char] -&gt [char] -&gt  bool
+<PRE>
+fappend fileName string = True  ,if the string is appended to the file
+                        = False ,otherwise
+</PRE>
+fappend should be used with care, because it is not referentially transparent.
+
+</BODY>
+</HTML>

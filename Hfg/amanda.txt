@@ -1,0 +1,2282 @@
+          Amanda V2.05
+          ============
+
+        1 introduction
+
+
+      1.1 amanda
+
+          
+          Amanda is a functional programming language developed by Dick Bruin for recreational 
+          purposes (solving mathematical puzzles).
+          Anyone can freely use the Amanda interpreter to develop his/her own functional programs. 
+          Amanda has been tested on a large set of programs and seems to function unproblematic. But 
+          please note that the author cannot be blamed for any unexpected behaviour.
+          
+          Amanda is based on the notation used in the book "Introduction to Functional Programming" 
+          written by Richard Bird and Philip Wadler and published by Prentice Hall.
+          
+          Amanda is implemented using the ideas described in the book "The implementation of 
+          functional programming languages" written by Simon Peyton Jones and published by Prentice 
+          Hall.
+          
+
+      1.2 initialisation
+
+          
+          On startup Amanda loads the file amanda.ini which is an Amanda script file containing 
+          definitions of a few library functions and the startup settings.
+          NB: make sure Amanda can locate amanda.ini (in the same directory as the executable image 
+          of the interpreter)
+          
+          The following settings can be defined:
+          MemorySize        (the number of available cells)
+          WinFontName       (the name of the font used by a graphical environment)
+          WinFontSize       (the size of this font)
+          
+          Default version of amanda.ini:
+          || amanda.ini, Dick Bruin
+          
+          || MemorySize  = 100000
+          || WinFontName = "Courier New"
+          || WinFontSize = 10
+          || ConPrompt   = "> "
+          
+          rep:: * -> num -> [*]
+          
+          rep x n = [x | k <- [1..n]]
+          
+          
+          cjustify:: num -> [char] -> [char]
+          
+          cjustify n str = rep ' ' (s / 2) ++ str ++ rep ' ' (s - s / 2)
+          where
+            s = n - # str
+          
+          
+          ljustify:: num -> [char] -> [char]
+          
+          ljustify n str = str ++ rep ' ' (n - # str)
+          
+          
+          rjustify:: num -> [char] -> [char]
+          
+          rjustify n str = rep ' ' (n - # str) ++ str
+          
+          
+          lines:: [char] -> [[char]]
+          
+          lines [] = []
+          lines string = first : lines (drop 1 rest)
+          where
+            (first, rest) = splitwhile ('\n' ~=) string
+          
+          
+          unlines:: [[char]] -> [char]
+          
+          unlines lines = [ch | line <- lines; ch <- line ++ "\n"]
+          
+          
+          words:: [char] -> [[char]]
+          
+          words [] = []
+          words string = first : words (dropwhile isspace rest)
+          where
+            (first, rest) = (splitwhile (~ . isspace) . dropwhile isspace) string
+          
+          
+          isspace:: char -> bool
+          
+          isspace ch = ch = ' ' \/ ch = '\n' \/ ch = '\t'
+          
+          
+          isupper:: char -> bool
+          
+          isupper ch = ch >= 'A' /\ ch <= 'Z'
+          
+          
+          islower:: char -> bool
+          
+          islower ch = ch >= 'a' /\ ch <= 'z'
+          
+          
+          toupper:: char -> char
+          
+          toupper ch = decode (code ch + code 'A' - code 'a') ,if islower ch
+                     = ch                                     ,otherwise
+          
+          
+          tolower:: char -> char
+          
+          tolower ch = decode (code ch + code 'a' - code 'A') ,if isupper ch
+                     = ch                                     ,otherwise
+          
+          
+          nodup:: [*] -> [*]
+          
+          nodup (h:t) = h : nodup (filter (h ~=) t)
+          nodup l     = l
+          
+          
+          sort:: [*] -> [*]
+          
+          sort (h:t) = sort [u | u <- t; u < h] ++ [h] ++ sort [u | u <- t; u >= h]
+          sort l     = []
+          
+          
+          transpose:: [[*]] -> [[*]]
+          
+          transpose x = []                              ,if empty x \/ or(map empty x)
+                      = map hd x : transpose (map tl x) ,otherwise
+          
+          
+          mergeSort:: [*] -> [*]
+          
+          mergeSort list
+          = list ,if half < 1
+          = merge (mergeSort(take half list)) (mergeSort(drop half list))
+          where
+            half = (# list) / 2
+          
+          
+          merge:: [*] -> [*] -> [*]
+          
+          merge (l1=h1:t1) (l2=h2:t2) = h1 : merge t1 l2 ,if h1 < h2
+                                      = h2 : merge l1 t2 ,otherwise
+          merge [] l2                 = l2
+          merge l1 []                 = l1
+          
+          
+          zipwith :: (* -> ** -> ***) -> [*] -> [**] -> [***]
+          
+          zipwith (+) xs ys = [x + y | x, y <- xs, ys]
+          
+          
+          #synonym div /
+          #synonym mod %
+          
+          || graphics protocol
+          
+          graphics ::= GraphText num (num, num) [char] 
+                     | GraphPolyLine num [(num, num)] 
+                     | GraphPolygon num [(num, num)] 
+                     | GraphRectangle num (num, num) (num, num)
+                     | GraphEllipse num (num, num) (num, num)
+                     | GraphDisc num (num, num) (num, num)
+          
+          graphicsout:: [graphics] -> [[char]]
+          
+          graphicsout = concat.map graphicsToString
+          
+          graphicsToString (GraphText color (x, y) text) = ["GraphText", itoa color] ++ coordsToString (x, y) ++ [text]
+          graphicsToString (GraphPolyLine color ps) = ["GraphPolyLine", itoa color] ++ concat[coordsToString (x, y) | (x, y) <- ps] ++ ["End"]
+          graphicsToString (GraphPolygon color ps) = ["GraphPolygon", itoa color] ++ concat[coordsToString (x, y) | (x, y) <- ps] ++ ["End"]
+          graphicsToString (GraphRectangle color (x1, y1) (x2, y2)) = ["GraphRectangle", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+          graphicsToString (GraphEllipse color (x1, y1) (x2, y2)) = ["GraphEllipse", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+          graphicsToString (GraphDisc color (x1, y1) (x2, y2)) = ["GraphDisc", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+          
+          coordsToString (x, y) = map ftoa [x, y]
+          
+          
+          
+
+      1.3 restrictions
+
+          
+          Amanda has been designed with a PC-DOS environment in mind. The awkward memory structure 
+          of PC-DOS still leaves traces in Amanda.
+          
+          Some memory related restrictions:
+          - a global function definition should not be larger than 4000 cells
+          - the internal stack is rather small
+          - patterns can only be 32 levels deep
+          
+          The implementation of pattern matching and selection might lead to memory leaks as the 
+          following example shows:
+          primes = sieve [2..]
+          sieve (x:xs) = x : sieve[y | y <- xs; y % x ~= 0]
+          
+          This example will very quickly go out of memory, because in order to access x the list 
+          comprehension keeps a reference to the whole list (x:xs).
+          To avoid this it should be changed to:
+          primes = sieve [2..]
+          sieve l = x : sieve[y | y <- xs; y % x ~= 0]
+          where
+            x = hd l
+            xs = tl l
+          
+          Or to:
+          primes = sieve [2..]
+          sieve (x:xs) = s x xs
+          s x xs = x : sieve[y | y <- xs; y % x ~= 0]
+          
+          Another cause of excessive memory usage might be lazy evaluation itself. As an example 
+          consider a function that calculates the frequencies of characters in a string:
+          freq string = foldl insert [0 | k <- [0..255]] string
+          where
+            insert table c = table1 ++ (f+1):table2
+            where
+              (table1, f:table2) = split (code c - 1) table
+          
+          This will usually go out of memory very quickly, because insert operations are done lazily 
+          and large closures of work to be done are kept.
+          To avoid this the whole table should be evaluated every time.
+          freq string = foldl insert [0 | k <- [0..255]] string
+          where
+            insert table c = seq (sum result) result
+            where
+              (table1, f:table2) = split (code c - 1) table
+              result = table1 ++ (f+1):table2
+          
+          The function seq always evaluates its first argument and sum will traverse the whole list.
+          
+
+      1.4 default implementation
+
+          
+          Amanda is written in ANSI-C and can be ported easily to many platforms.
+          
+          The default implementation acts like an advanced calculator. It displays a commandline on 
+          which an expression can be entered. The result of the evaluation (reduction) of the 
+          expression is displayed. By appending :: after an expression not its value but its type 
+          will be displayed.
+          
+          Examples:
+          Amanda> 1 + 2
+          3
+          Amanda> 1 + 2 ::
+          num
+          Amanda> fac 3 where fac 0 = 1; fac n = n * fac (n-1)
+          6
+          Amanda> load "a:\test.ama"
+          Amanda> info
+          ....
+          Amanda> exit
+          
+          
+          
+
+      1.5 Windows implementation
+
+
+    1.5.1 files
+
+          
+          The Windows implementation contains all the basic functionality.
+          
+          The Windows implementation consists of the files:
+          - ama.exe               console application
+          - amanda.exe            windows application
+          - amadll.dll            dll with amanda kernel
+          - amanda.ini            initialisation file
+          - amanda.hlp            help file
+          - amanda.cnt            help contents file
+          
+          
+          See also: {1.2 initialisation}
+          
+
+    1.5.2 remote objects
+
+          
+          The dynamic link library amadll.dll can be used from other Windows programs to create and 
+          use remote objects.
+          
+          Remote objects are defined in Amanda by specifying the function object like this:
+          primes = sieve [2..] 
+          
+          sieve l = x : sieve [y | y <- xs; y % x ~= 0]
+          where
+            x = hd l
+            xs = tl l
+          
+          object "primes" = ([], call)
+          where
+            call "Start" _ _ = (primes, [])
+            call "Next" _ (p:ps) = (ps, [itoa p])
+            call "Between" [low, high] ps = (ps, (map itoa . takewhile (< hi) . dropwhile (<= lo)) ps)
+            where
+              lo = atoi low
+              hi = atoi high
+          
+          
+          This declares an object called "primes" with methods "Start", "Next" and "Between".
+          The object has a state which is initially [] and which is manipulated by the function 
+          called "call". This function defines the response of the object to the methods "Start", 
+          "Next" and "Between".
+          The method "Start" initialises the state and returns no answers.
+          The method "Next" ignores possible parameters and changes the state from p:ps to ps and 
+          returns one answer: itoa p.
+          The method "Between" has two parameters, does not change the state and returns all the 
+          prime numbers which are in the state and are between the lo and hi values.
+          
+          The corresponding Delphi object might be:
+          uses AmaDllUnit;
+          
+          type
+            TPrimes = class(TAmaObject)
+            public
+              constructor Create;
+              procedure Start;
+              function Next: Integer;
+              function CountBetween(low, high: Integer): Integer;
+              // CountBetween is easier than Between itself
+            end;
+          
+          constructor TPrimes.Create;
+          begin
+            inherited Create('primes');
+          end;
+          
+          procedure TPrimes.Start;
+          begin
+            Call('Start');
+          end;
+          
+          function TPrimes.Next: Integer;
+          var
+            s: String;
+          begin
+            Call('Next');
+            if not Get(s) then raise Exception.Create('First press Start');
+            result := StrToInt(s)
+          end;
+          
+          function CountBetween(low, high: Integer): Integer;
+          var
+            s: String;
+          begin
+            Put(IntToStr(low));
+            Put(IntToStr(high));
+            Call('Between');
+            result := 0;
+            while Get(s) do result := result + 1;
+          end;
+          
+          
+          Here TAmaObject is defined in the unit AmaDllUnit and has Create, Put, Call and Get 
+          methods.
+          Create   makes a connection to an Amanda remote object
+          Put      defines a parameter to a method call
+          Call     calls a method
+          Get      retrieves a return value
+          
+          
+          Names of objects, names of methods, parameters and return values are all strings, which 
+          makes things both flexible and error prone (no explicit type checking in Delphi and in 
+          Amanda).
+          
+          The function object has the following type:
+          object :: [char] -> (*, [char] -> [[char]] -> * -> (*, [[char]]))
+          
+          with intended meaning:
+          object objectname = (state, callfunction)
+          callfunction methodname listOfParameters state = (state, listOfReturnValues)
+          
+          
+          For more information consult the file AmaDllUnit.pas:
+          unit AmaDllUnit;
+          (*
+            Dick Bruin, 25/10/1998
+          
+            interface to Amadll.dll
+            assumptions: Amanda.ini and Amadll.dll are in the same directory as the executable
+          
+            Example:
+          
+            Amanda part:
+            object "main" = ([], call)
+            where
+              call "start" _    _  = (primes, ["YES"])
+              call "next"  [sn] ps = (drop n ps, (map itoa . take n) ps) where n = atoi sn
+          
+            primes = sieve [2..]
+            sieve l = x : sieve [y | y <- xs; y % x ~= 0]
+            where
+              x = hd l
+              xs = tl l
+          
+            the object "main" has a state consisting of prime numbers (initially [])
+            and can respond to calls to "start" and "next"
+            the remote call "start" changes the state and returns the answer "YES"
+            the remote call "next" changes the state and returns some prime numbers
+          
+            Delphi part:
+            AmaInit('...');
+            main = TAmaObject.Create('main');
+            if main.Ok then
+            begin
+              main.Call('start');
+          
+              main.Put(IntToStr(10));
+              main.Call('next');
+              Edit1.Text := '';
+              while main.Get(s) do Edit1.Text := Edit1.Text + s + ' ';
+            end;
+            main.Free;
+          *)
+          
+          interface
+          
+          function AmaInit(const filename: String): Boolean;
+          
+          type
+            TAmaObject = class(TObject)
+            public
+              constructor Create(const name: String);
+              destructor Destroy; override;
+              function Ok: Boolean;
+              procedure Put(const param: String);
+              function Call(const fun: String): Boolean;
+              function Get(var res: String): Boolean;
+            private
+              handle: Integer;
+            end;
+          
+          (*
+            Explanation:
+            
+            AmaInit               initialises Amadll and loads the given Amanda file
+            TAmaObject.Create     tries to connect to a remote object with the given name
+            TAmaObject.Destroy    releases a remote object
+            TAmaObject.Ok         indicates if a connection to a remote object is made
+            TAmaObject.Put        sets a parameter for a remote procedure call
+            TAmaObject.Call       performs a remote procedure call
+            TAmaObject.Get        retrieves a result string from a remote procedure call
+          *)
+          
+          function AmaInitialise(const filename: String; ws: Pointer): Boolean;
+          
+          implementation
+          uses SysUtils;
+          
+          function  AmaInitRemote(path, filename: PChar; ws, cio: Pointer): Integer; stdcall; external 'amadll.dll';
+          function  AmaCreateRemote(s: PChar): Integer;                              stdcall; external 'amadll.dll';
+          procedure AmaDropRemote(handle: Integer);                                  stdcall; external 'amadll.dll';
+          procedure AmaPutRemote(handle: Integer; s: PChar);                         stdcall; external 'amadll.dll';
+          function  AmaCallRemote(handle: Integer; s: PChar): Integer;               stdcall; external 'amadll.dll';
+          function  AmaGetRemote(handle: Integer; s: PChar; size: Integer): Integer; stdcall; external 'amadll.dll';
+          
+          var
+            buffer: array[0..2047] of Char;
+          
+          function AmaInit(const filename: String): Boolean;
+          begin
+            result := AmaInitRemote(PChar(ParamStr(0)), PChar(filename), Nil, Nil) <> 0;
+          end;
+          
+          constructor TAmaObject.Create(const name: String);
+          begin
+            inherited Create;
+            handle := AmaCreateRemote(PChar(name));
+          end;
+          
+          destructor TAmaObject.Destroy;
+          begin
+            AmaDropRemote(handle);
+            inherited Destroy;
+          end;
+          
+          function TAmaObject.Ok: Boolean;
+          begin
+            result := handle >= 0;
+          end;
+          
+          procedure TAmaObject.Put(const param: String);
+          begin
+            AmaPutRemote(handle, PChar(param));
+          end;
+          
+          function TAmaObject.Call(const fun: String): Boolean;
+          begin
+            result := AmaCallRemote(handle, PChar(fun)) <> 0;
+          end;
+          
+          function TAmaObject.Get(var res: String): Boolean;
+          begin
+            result := AmaGetRemote(handle, buffer, sizeof(buffer)) <> 0;
+            if result then res := buffer;
+          end;
+          
+          function AmaInitialise(const filename: String; ws: Pointer): Boolean;
+          begin
+            result := AmaInitRemote(PChar(ParamStr(0)), PChar(filename), ws, Nil) <> 0;
+          end;
+          
+          end.
+          
+          
+          
+          
+
+    1.5.3 amanda graphics
+
+          
+          AmaGr is an application to do graphical interaction with Amanda
+          usage: AmaGr <Amanda file>
+          
+          from Amanda issue the command: amaGraphics
+          
+          it loads an Amanda file which should contain an interaction object
+          user events are forwarded to this object, which result in a change of the state of the 
+          object and a list of graphical commands which is displayed in a paintbox
+          
+          example of the AmaObject:
+          object "AmaGraphics" = (beginSpel 5, call)
+          where
+            call "DefSystem" _ state     = (state, ["timer", "0", "showParameters", "False"])
+            call "DefParameters" _ state = (state, ["Grootte", "4|5|6|7"])
+            call "DefActions" _ state    = (state, ["Mens", "Computer", "Vrij", "Terug"])
+          
+            call "Action" ["Mens"] spel     = repaint (nieuwSpel Groen spel)
+            call "Action" ["Computer"] spel = repaint (nieuwSpel Rood spel)
+            call "Action" ["Vrij"] spel     = repaint (nieuwSpel Geen spel)
+            call "Action" ["Terug"] spel    = repaint (terugSpel spel)
+          
+            call "Parameters" [g] spel = repaint (beginSpel (atoi g))
+          
+            call "MouseDown" [x1, y1, x2, y2] spel = zetSpel (atof x1, atof y1) spel
+          
+            call "Repaint" [] spel = repaint spel
+            call _ _ spel = (spel, [])
+          
+            repaint spel = (spel, graphicsout(tekenSpel spel))
+          
+          
+          
+          The interaction object must be called AmaGraphics.
+          The call DefSystem should respond with values for timer and showParameters. If the timer 
+          value is bigger than zero a timer generates calls like: call "Timer" [] The value of 
+          showParameters should be False or True.
+          
+          The call DefParameters initialises the parameters window and consists of item, value 
+          pairs. Multiple value possibilities should be separated by bars. The "set" button of the 
+          parameters window generates a call like: call "Parameters" ["4"] (the order of the 
+          parameters is obeyed)
+          
+          The call DefActions initialises the menu items. A menu item generates a call like: call 
+          "Action" ["Mens"]
+          
+          Dragging generates a call like: call "MouseDown" [x1, y1, x2, y2] where (x1, y1) is the 
+          position of the mouseDown and (x2, y2) the position of the mouseUp
+          During the dragging calls are generated like: call "MouseDrag" [x1, y1, x2, y2] They are 
+          similar to the MouseDown calls except drawing is in XOR-mode
+          
+          Painting of the paintbox generates a call of the AmaObject like: call "Repaint" []
+          
+
+    1.5.4 graphAnimate
+
+          
+          graphAnimate :: num -> num -> [graphics] -> bool
+          
+          graphAnimate width height graphicsCommands opens a graphical window in which the graphical 
+          commands are displayed.
+          GraphWait msecs causes a pause of the given amount of millisecs, which makes animation 
+          possible.
+
+        2 language
+
+
+      2.1 constructs
+
+
+    2.1.1 expressions
+
+          
+          Amanda is about reducing expressions. So expressions form the heart of Amanda.
+          
+          Expressions can be numbers, characters, strings, booleans, constructors, tuples, lists, 
+          records, function applications, operator applications, operator sections and list 
+          comprehensions.
+          
+          Examples:
+          12
+          'a'
+          "Hello world"
+          True
+          False
+          GraphPolyLine 1 [(-1, -1), (-1, 1), (0, 0)]
+          ()
+          (-13, "Bye world", 'a')
+          []
+          [1, 2, 3, 5]
+          [1..10]
+          { x = 0, y = 0, z = 0 }
+          fac 3
+          12 + 3 * 8
+          (2 *)
+          [x | x <- [1..100]; x % 2 = 0]
+          
+          Special characters are denoted as in the C-language like \n, \b, \t, \r, \a.
+          \e denotes the escape character.
+          \xFF denotes a character using hexadecimal ascii notation.
+          
+
+    2.1.2 functions
+
+          
+          Functions are defined using equations in the style of Bird and Wadler.
+          
+          Example:
+          fac 0 = 1
+          fac n = n * fac (n-1)
+          
+          Example:
+          fac n = 1             ,if n = 0
+                = n * fac (n-1) ,otherwise
+          
+          Note: in situations of multiple definitions for one left hand side the defining symbols 
+          '=' should be written exactly under each other.
+          
+          The left hand side may contain patterns.
+          But important restrictions on the use of patterns are:
+          - in a single definition all pattern variables must have different names
+          - patterns of the form (n+1) are not allowed
+          - multiple definitions of the same function must have different patterns
+          
+          Wrong definitions are:
+          
+          Counterexample:
+          equal x x = True
+          equal x y = False
+          
+          This is wrong because the first definition has two pattern variables with the same name.
+          
+          Counterexample:
+          equal x y = True  ,if x = y
+          equal x y = False ,if x ~= y
+          
+          This is wrong because the patterns of the definitions coincide.
+          It is accepted by the interpreter but will never use the second definition.
+          The correct way to define this function is:
+          equal x y = True  ,if x = y
+                    = False ,if x ~= y
+          
+          A function can have private definitions in a where clause.
+          
+          Example:
+          mergeSort list
+          = list ,if half < 1
+          = merge (mergeSort(take half list)) (mergeSort(drop half list))
+          where
+            half = (# list) / 2
+          
+          
+          See also: {2.1.3 patterns} {2.1.4 where clauses}
+          
+
+    2.1.3 patterns
+
+          
+          Patterns occur in the left hand side of a function definition, in the generators of 
+          listcomprehensions and in the left hand side of local definitions.
+          Patterns play two distinct roles: they define selectors for parts of an expression and 
+          they constrain the type of an expression (see {2.2.8 generic functions} )
+          
+          Patterns may contain:
+            constants
+            basic types (num, bool, char)
+            lists
+            tuples
+            constructors of an algebraic type
+            records
+            aliases
+            wildcards (the underscore _)
+          
+          An alias is a name of a part of a pattern as the next example shows:
+          merge (l1 = h1:t1) (l2 = h2:t2) = h1 : merge t1 l2 ,if h1 < h2
+                                          = h2 : merge l1 t2 ,otherwise
+          
+          Here l1 is an alias for h1:t1 and can be used on the right hand side.
+          
+          The wildcard _ may be used to indicate a don't care pattern. Wildcards may occur more than 
+          once in the same pattern expression.
+          
+
+    2.1.4 where clauses
+
+          
+          A where clause contains private local definitions of a function.
+          The layout rule for where clauses is:
+          
+          Layout rule 1:
+          The keyword 'where' can be put right under or to the right of the symbol '=' of the 
+          function definition and the definitions in the where clause are put to the right of the 
+          symbol '='.
+          
+          Example:
+            fac n
+          = p [1..n]
+             where
+            p = prod
+          
+          Layout rule 2:
+          The keyword 'where' can be placed right under or to the right of the function name and the 
+          definitions in the where clause are put to the right (so not under) the keyword 'where'.
+          
+          Example:
+          fac n = p [1..n]
+          where
+            p = prod
+          
+          
+          
+
+    2.1.5 lambda abstractions
+
+          
+          Lambda abstraction is an alternative way to define a function.
+          
+          Its basic form is:
+          <pattern> -> <expression based on the pattern>
+          
+          In order to define a function with more than 1 argument this construction should be used 
+          repeatedly:
+          <pattern1> -> <pattern2> -> ... -> <patternN> -> <expression>
+          
+          Alternatives are separated by |
+          
+          Examples:
+          map (n -> n+1) [1..]
+          foldl (n -> m -> n // m) 1 [1..10]
+          
+          minmax = foldl ((min, max) -> x -> (min2 min x, max2 max x)) (infinite, -infinite)
+          where
+            infinite = 100000
+          
+          fac = 0 -> 1 | n -> n * fac (n-1)
+          
+          divide = x -> (0 -> error "division by zero" | y -> x / y)
+          
+          Of course this is a clumsy way to define the divide function.
+          Better is:
+          divide = x -> 0 -> error "division by zero" | x -> y -> x / y
+          
+          Much better is:
+          divide x 0 = error "division by zero"
+          divide x y = x / y
+          
+          weird = x -> x -> x
+          
+          From the last definition it is obvious that patterns in a lambda abstraction may be the 
+          same.
+          It is renamed like:
+          weird = var1 -> var2 -> var2
+          
+          
+          
+
+    2.1.6 listcomprehensions
+
+          
+          Listcomprehensions extend Bird and Wadler syntax.
+          
+          Besides generators and conditions a listcomprehension may introduce an abbreviation using 
+          the assignment operator (:=).
+          Another feature is the implicit zip notation.
+          
+          A generator like:
+          x, y <- [1..100], [1..]
+          is the equivalent of
+          (x, y) <- zip2 [1..100] [1..]
+          
+          Likewise
+          a, b, c := 1, 2, 3
+          denotes
+          (a, b, c) <- zip3 [1] [2] [3]
+          
+          Example:
+          pythagoras = [ (x, y, z) |
+                           z <- [1..];
+                           y <- [1..z];
+                           x <- [1..y];
+                           x^2 + y^2 = z^2
+                       ]
+          
+          evenQuadrats = [ x * x | x <- [0..]; x % 2 = 0 ]
+          
+          evenQuadrats = [ x * x | x <- [0,2..] ]
+          
+          evenQuadrats = [ y | x <- [0..]; y := x * x; y % 2 = 0 ]
+          
+          evenQuadrats = [ y | x <- [0,2..]; y := x * x]
+          
+          queens 0 = [[]]
+          queens m = [ p ++ [n] |
+                        positions := [1..8];
+                        p <- queens (m-1);
+                        n <- positions;
+                        [True | i, j <- positions, p; j=n \/ i+j=m+n \/ i-j=m-n] = []
+                     ]
+          
+          
+          Also multiple results may be generated like in:
+          [x, x+y, x+2*y | x <- [1..10]; y <- [1..x]]
+          which is the equivalent of:
+          [z | x <- [1..10]; y <- [1..x]; z <- [x, x+y, x+2*y]]
+          
+
+    2.1.7 operators
+
+          
+          Infix operators can be defined as in the following examples:
+          
+          Example:
+          || a complex number is represented by a pair
+          complex == (num, num)
+          
+          +++ :: complex->complex->complex
+          ( (x1,y1) +++ (x2, y2) ) = (x1+x2, y1+y2)
+          
+          The name of an operator consists of punctuation characters like +, -, *, /, #, etc...
+          The left-hand side of the definition must be enclosed in parentheses.
+          
+          Infix operators may be used as functions using prefix notation.
+          
+          Example:
+          addComplex :: complex->complex->complex
+          addComplex c1 c2 = +++ c1 c2    || equivalent to  c1 +++ c2
+          
+          Functions with at least two arguments may be used as operators using a $ as prefix.
+          
+          Example:
+          c1 $addComplex c2
+          
+          Sections can be defined just like in Bird and Wadler (be careful to surround them with 
+          parentheses).
+          
+          Examples:
+          positiveNumbers :: [num] -> [num]
+          negativeNumbers :: [num] -> [num]
+          positiveNumbers = filter (0 <)
+          negativeNumbers = filter (< 0)
+          
+          See also: {2.3.4 #operator}
+          
+
+      2.2 types
+
+
+    2.2.1 basic types
+
+          
+          The basic types are:
+          num     || both integer and real
+          bool    || with only values True, False
+          char    || ascii set
+          
+          
+          
+
+    2.2.2 list types
+
+          
+          List types are denoted by:
+          [ <typeName> ]
+          
+
+    2.2.3 tuple types
+
+          
+          Tuple types are denoted by:
+          ()
+          ( <typeName>, <typeName>, ... <typeName> )
+          
+          The first form defines an empty tuple type. The only possible value of this type is () the 
+          empty tuple.
+          Of course (for syntactical reasons) unary tuples are not available.
+          
+
+    2.2.4 algebraic types
+
+          
+          Concrete algebraic types can be defined like:
+          
+          Example:
+          numTree ::= Leaf num | Branch numTree numTree
+          
+          Example:
+          tree (*) ::= Leaf (*) | Branch (tree (*)) (tree (*))
+          
+          With (*) a polymorphic typevariable is denoted.
+          The parentheses around (*) are not strictly necessary, so one may write:
+          tree * ::= Leaf * | Branch (tree *) (tree *)
+          
+          NB: the ordering of the elements of a concrete type is undefined, though equality tests 
+          are perfectly valid.
+          
+
+    2.2.5 record types
+
+          
+          Record types are defined as in the following example:
+          
+          vector * ::= { x :: *, y :: *, z :: * }
+          
+          For every field a selector function is defined like:
+          x { x=xr, y=yr, z=zr } = xr
+          
+          The drawback of this construction is that all field names of all record types must be 
+          different.
+          
+          A constant record can be denoted like:
+          { x = 1, y = 2, z = 3 }
+          { y = 100, z = 20 }
+          
+          From the last example it is obvious that partial records can be defined. Of course the 
+          omitted fields should never be accessed.
+          Empty records are not available (what could be their use ?)
+          Partial records are useful for pattern matching and for updates.
+          
+          Functions on records can be defined using the field access functions:
+          innerproduct r1 r2 = x r1 * x r2 + y r1 * y r2 + z r1 * z r2
+          
+          or using patterns:
+          innerproduct { x=x1, y=y1, z=z1 } { x=x2, y=y2, z=z2 } = x1*x2 + y1*y2 + z1*z2
+          
+          The operator & is used to update a record with information from another record:
+          clearx r = r & { x = 0 }
+          doublex (r = { x = xr }) = r & { x = 2 * xr }
+          
+          In the function double the argument is called r and its field x is called xr and the 
+          result is r with its field x changed to twice its original value. The result of course is 
+          a copy of the record r with a new value for field x.
+          
+
+    2.2.6 type synonyms
+
+          
+          Typesynonyms are denoted like:
+          
+          string == [char]
+          
+          complex == (num, num)
+          
+          point * == (*, *)
+          
+
+    2.2.7 abstract types
+
+          
+          Abstract types are denoted like:
+          abstype stack *
+          with
+            push    :: * -> stack * -> stack *
+            pop     :: stack * -> stack *
+            top     :: stack * -> *
+            isEmpty :: stack * -> bool
+            create  :: stack *
+          
+          stack * == [*]
+          
+          push x s  = x:s
+          pop (x:s) = s
+          top (x:s) = x
+          isEmpty s = s = []
+          create    = []
+          
+          An abstract type hides the implementation. This means that only the functions belonging to 
+          the abstract type may use the implementation details.
+          In the example push uses the list constructor, which is correct because stack * is defined 
+          as a list and push belongs to the abstract type.
+          But functions outside the abstract type may only use push to add something on a stack.
+          
+          NB: an abstract type must be a synonym of another type.
+          
+
+    2.2.8 generic functions
+
+          
+          Like abstract types generic functions are a feature of the typechecker.
+          
+          Usually polymorphism means structural polymorphism like in:
+          hd :: [*] -> *
+          hd (x:_) = x
+          
+          The polymorphism of the function ?= (equality test) is of a different kind because it is 
+          defined differently for different types. Although in all cases the type conforms with its 
+          generic type.
+          
+          We could define ?= for some cases like:
+          generic ?= :: * -> * -> bool
+          
+          ([]      ?= []     ) = True
+          (x:xs    ?= y:ys   ) = x ?= y /\ xs ?= ys
+          (True    ?= True   ) = True
+          (False   ?= False  ) = True
+          ((x1,y1) ?= (x2,y2)) = x1 ?= x2 /\ y1 ?= y2
+          ...
+          (_ ?= _) = False   || default unequal
+          
+          The keyword generic indicates that the function could be defined for different cases all 
+          conforming to the specified generic type scheme.
+          
+          Example:
+          generic print :: * -> [char]
+          
+          print (x = num)  = ftoa x
+          print True       = "True"
+          print False      = "False"
+          print (c = char) = [c]
+          print []         = "[]"
+          print (x:xs)     = "[" ++ print x ++ concat[", " ++ print y | y <- xs] ++ "]"
+          print (x, y)     = "(" ++ print x ++ ", " ++ print y ++ ")"
+          ...
+          
+          The pattern (x = num) means that x is an alias for an element of type num. Only the basic 
+          types num, bool and char may be used as patterns.
+          
+          NB: because the type checking regime for generic functions is weaker than for normal 
+          functions, generic functions should be used with care.
+          
+          See {2.2.9 type checking} for a more elaborate explication of the type inference process
+          
+
+    2.2.9 type checking
+
+          
+          The task of the type checker is to ensure that on run time "things can't go wrong". Of 
+          course infinite loops, division by zero or failing patterns are in general not detectable 
+          on compile time. But checking that a function is called with the correct number and type 
+          of arguments is feasible.
+          
+          The type checker generally does the following things:
+          - it substitutes all occurrences of type synonyms
+          - it ensures that the definitions of abstract types are only visible for the functions 
+          belonging to it
+          - it finds and checks all the types of normal functions
+          - it checks the types of generic functions
+          
+          Example:
+          f [] = 0
+          f (x:xs) = add x (f xs)
+          
+          add x y = x + y
+          
+          The type inference goes like this.
+          
+          Firstly the most general assumptions on the types are made:
+          f :: *
+          add :: *
+          
+          From the first clause of f is deduced:
+          f :: [*] -> num
+          From the second clause of f is deduced (using the known types of f and add):
+          f :: [*] -> **
+          The function should comply to both types so the types are "unified" giving:
+          f :: [*] -> num
+          
+          The same thing is done for the function add giving:
+          add :: num -> num -> num
+          
+          Because the type of add has changed the second clause of the function f should be 
+          considered again giving:
+          f :: [num] -> num
+          
+          This process is repeated until all types are stable.
+          If the programmer has provided types for functions these are taken as a starting point. In 
+          that way the programmer can restrict the type of a function.
+          
+          The repeated approximation of the types makes polymorphism possible. So a strange function 
+          like the following is correctly typed:
+          f x 0 = x
+          f x n = x ,if f 1 0 = 1 \/ f [1] 1 = [1]
+          
+          For local definitions in a where clause a more rigid scheme is used. All occurrences of 
+          such a definition share the same type. This excludes polymorphism, but speeds up the type 
+          inference process and rarely gives problems because polymorphic functions are usually 
+          shared by many functions and are thus global.
+          
+          The types of generic functions are provided by the programmer so at first sight the type 
+          checker only needs to check if all the clauses conform to this given type.
+          
+          But examples like the following show that this is not desirable:
+          generic f :: num -> *
+          
+          f 0 = 'a'
+          f 1 = 1
+          
+          generic g :: [*] -> (*, **)
+          
+          g [1] = (0, 0)
+          g []  = ('a', 'a')
+          
+          Expressions like [f 0, f 1] and [g [], g [1]] are now going wrong.
+          
+          The problem is caused by the occurrence of a new type variable in the result. So this is 
+          not allowed.
+          A similar thing may happen at run time if the patterns of function clauses are not tight 
+          enough.
+          
+          Example:
+          generic print :: * -> [char]
+          
+          print [] = "[]"
+          print (x:xs) = "[" ++ print x ++ concat[", " ++ print x | x <- xs] ++ "]"
+          print n = ftoa n
+          print c = [c]
+          
+          The clauses have the following types:
+          [*] -> [char]
+          [*] -> [char]
+          num -> [char]
+          *   -> [*]          (becomes char -> [char] after unification)
+          
+          They can all be unified with the generic type scheme.
+          But the call (print 'a') goes wrong because the third clause will be used.
+          
+          The problem is caused by the fact that at run time the input determines which clause is 
+          activated but the type is also determined by the output. The pattern of the third clause 
+          is too weak to ensure that only numbers are plugged in. Likewise the pattern of the fourth 
+          clause is too weak.
+          
+          For a clause of a generic function the type checker at first deduces a type based on the 
+          given input patterns and unifies this with the generic type scheme giving the actual type. 
+          Then the type of the result is found and unified with it. If new constraints are found the 
+          clause is rejected.
+          
+          For the third clause (print n = ftoa n) the actual type based on the input is:
+          * -> [char]
+          but the result leads to the type
+          num -> [char]
+          So the result imposes extra constraints and the clause is rejected.
+          
+          The programmer should change the clause to:
+          print (n = num) = ftoa n
+          
+
+      2.3 preprocessing
+
+
+    2.3.1 comments
+
+          
+          After || the rest of a line is treated as a comment.
+          Also a C-style comment is supported.
+          
+          Example:
+          || this is comment
+          
+          /*
+             this is /* a comment */
+             nested within a comment
+          */
+          
+          
+          
+
+    2.3.2 #import
+
+          
+          Using the directive #import the contents of another file can be textually included as in 
+          the C-language. The interpreter keeps track of the imported files, so recursive imports or 
+          repeated imports do not form a problem.
+          The filename (and not the full pathname) is used to determine if the file has already been 
+          imported. Therefore "test.ama", "TEST.AMA" or "/amanda/test.ama" are seen as different 
+          files although the names may actually refer to the same file.
+          
+          Syntax: #import "<filename>" (on a single line)
+          
+          Example:
+          #import "a:/amanda/lib.ama"
+          
+
+    2.3.3 #synonym
+
+          
+          Using the directive #synonym a name can be declared to be a synonym for another name. The 
+          synonym is valid from the point of definition.
+          The synonym is textually replaced by its real name. Therefor it is possible to make 
+          synonyms for operators and even for keywords like where.
+          
+          Syntax: #synonym <synonym> <real name> (on a single line)
+          
+          Examples:
+          #synonym div /
+          #synonym mod %
+          
+          With these definitions one may write [x | x <- [1..10]; x mod 2 = 0] to denote [x | x <- 
+          [1..10]; x % 2 = 0]
+          
+
+    2.3.4 #operator
+
+          
+          Using the directive #operator the associativity and the priority of an operator can be 
+          defined. This directive is valid from the point of definition.
+          The priority should be a natural number from 1 (high priority) upto 7 (low priority).
+          Even built in operators can be changed by this directive.
+          
+          Syntax: #operator <associativity> <priority> <operator> (on a single line)
+          associativity = l | r
+          
+          Example:
+          #operator r 5 @
+          #operator l 6 ?
+          
+          These definitions state that @ associates to the right with priority 5 and that ? 
+          associates to the left with priority 6. So @ binds more strongly than ?
+          
+          The builtin operators have the following associativity and priority
+          operator  associativity  priority
+            :         Right          1
+            &         Left           1
+            !         Left           2
+            ^         Right          2
+            *         Left           3
+            /         Left           3
+            //        Left           3
+            %         Left           3
+            ++        Right          4
+            --        Left           4
+            +         Left           4
+            -         Left           4
+            =         Right          5
+            ~=        Left           5
+            <         Left           5
+            <=        Left           5
+            >         Left           5
+            >=        Left           5
+            /\        Right          6
+            \/        Right          7
+          
+          The default associativity is Left.
+          The default priority is 1.
+          
+          NB: the associativity of the relational operators (=, ~=, >, < etc) is actually 
+          irrelevant, because an expression like 1 < 2 < 3 is not type correct.
+          
+
+        3 predefined functions
+
+
+      3.1 environment functions
+
+
+    3.1.1 exit
+
+          
+          exit
+          
+          Commandline function used to leave Amanda.
+          
+
+    3.1.2 info
+
+          
+          info
+          
+          Commandline function which displays some information about memory size and defined 
+          functions.
+          
+
+    3.1.3 load
+
+          
+          load [char]
+          
+          Commandline function used to load a file with function definitions.
+          
+
+    3.1.4 reload
+
+          
+          reload
+          
+          Commandline function used to reload a file with function definitions.
+          
+
+    3.1.5 time
+
+          
+          time
+          
+          Commandline function used to toggle timing mode.
+          In timing mode the duration of an evaluation is displayed.
+          
+
+    3.1.6 debug
+
+          
+          debug :: * -> ** -> **
+          
+          debug a b = b
+          
+          As a side effect the first argument is displayed without being evaluated.
+          
+          strict debug a b
+          will first evaluate a and then display it
+          
+
+    3.1.7 error
+
+          
+          error :: [char] -> *
+          
+          error message = ...
+          
+          The message will be displayed and the evaluation is stopped.
+          
+          Example:
+          hd [] = error "head of empty list"
+          hd (x:xs) = x
+          
+          
+          
+
+      3.2 predefined operators
+
+
+    3.2.1  ^
+
+          
+          ^ :: num -> num -> num
+          
+          x ^ y = x raised to the power y
+          
+
+    3.2.2  *
+
+          
+          * :: num -> num -> num
+          
+          x * y = x multiplied by y
+          
+
+    3.2.3  /
+
+          
+          / :: num -> num -> num
+          
+          x / y = integral division of x by y (x and y must be integers)
+          
+
+    3.2.4  //
+
+          
+          // :: num -> num -> num
+          
+          x // y = real division of x by y
+          
+
+    3.2.5  %
+
+          
+          % :: num -> num -> num
+          
+          x % y = the rest of the integral division of x by y (x and y must be integers)
+          
+
+    3.2.6  +
+
+          
+          + :: num -> num -> num
+          
+          x + y = the sum of x and y
+          
+
+    3.2.7  -
+
+          
+          - :: num -> num -> num
+          
+          x - y = the difference of x and y
+          
+          - :: num -> num
+          
+          Depending on the context - can denote unary minus
+          (-x) = 0-x
+          
+
+    3.2.8  =
+
+          
+          = :: * -> * -> bool
+          
+          (x = y) = x is structurally equal to y
+          
+
+    3.2.9  ~=
+
+          
+          ~= :: * -> * -> bool
+          
+          (x ~= y) = x is not structurally equal to y
+          
+
+   3.2.10  <
+
+          
+          < :: * -> * -> bool
+          
+          (x < y) = x is smaller than y (normally used for numbers)
+          List comparison is lexicographic.
+          
+
+   3.2.11  <=
+
+          
+          <= :: * -> * -> bool
+          
+          (x <= y) = x is smaller than or equal to y (normally used for numbers)
+          List comparison is lexicographic.
+          
+
+   3.2.12  >
+
+          
+          > :: * -> * -> bool
+          
+          (x > y) = x is larger than y (normally used for numbers)
+          List comparison is lexicographic.
+          
+
+   3.2.13  >=
+
+          
+          >= :: * -> * -> bool
+          
+          (x >= y) = x is larger than or equal to y (normally used for numbers)
+          List comparison is lexicographic.
+          
+
+   3.2.14  .
+
+          
+          . :: (** -> ***) -> (* -> **) -> * -> ***
+          
+          (f . g) x = f(g x)
+          
+
+   3.2.15  :
+
+          
+          : :: * -> [*] -> [*]
+          
+          x : [x1, x2 ... xN] = [x, x1, x2 ... xN]
+          
+
+   3.2.16  !
+
+          
+          ! :: [*] -> num -> *
+          
+          [x0, x1 ...] ! n = xn (the (n+1)st element)
+          
+
+   3.2.17  ++
+
+          
+          ++ :: [*] -> [*] -> [*]
+          
+          [x1, x2 ... xN] ++ [y1, y2 ... yM] = [x1, x2 ... xN, y1, y2 ... yM]
+          
+
+   3.2.18  --
+
+          
+          -- :: [*] -> [*] -> [*]
+          
+          xs -- ys = xs with repeatedly the first occurrence of an element of ys removed
+          (xs -- []) = xs
+          (xs -- (y:ys)) = remove y xs -- ys
+          where
+            remove y [] = []
+            remove y (x:xs) = xs            ,if x = y
+                            = x:remove y xs ,otherwise
+          
+          
+          
+
+   3.2.19  /\
+
+          
+          /\ :: bool -> bool -> bool
+          
+          x /\ y = both x and y are True
+          
+
+   3.2.20  \/
+
+          
+          \/ :: bool -> bool -> bool
+          
+          x \/ y = at least one of x and y is True
+          
+
+   3.2.21  #
+
+          
+          # :: [*] -> num
+          
+          #[x1, x2 ... xn] = n (the number of elements)
+          
+
+   3.2.22  ~
+
+          
+          ~ :: bool -> bool
+          
+          ~ True = False
+          ~ False = True
+          
+
+   3.2.23  &
+
+          
+          & :: * -> * -> *
+          
+          The operator & is used to update a record with information from another record.
+          
+          Example:
+          
+          rectangle ::= { x :: num, y :: num, width :: num, height :: num }
+          
+          translate (rect = { x = x, y = y }) dx dy = rect & { x = x + dx, y = y + dy }
+          
+
+      3.3 predefined constants
+
+
+    3.3.1 True
+
+          
+          True :: bool
+          
+
+    3.3.2 False
+
+          
+          False :: bool
+          
+
+    3.3.3 pi
+
+          
+          pi :: num
+          
+          pi = 3.1415...
+          
+
+    3.3.4 Nil
+
+          
+          Nil :: [*]
+          
+          Nil = []
+          
+
+      3.4 library functions
+
+
+    3.4.1 rep
+
+          
+          rep :: * -> num -> [*]
+          
+          rep x n = [x | k <- [1..n]]
+          
+
+    3.4.2 cjustify
+
+          
+          cjustify :: num -> [char] -> [char]
+          
+          cjustify n string = string centrally justified to occupy n positions
+          
+
+    3.4.3 ljustify
+
+          
+          ljustify :: num -> [char] -> [char]
+          
+          ljustify n string = string left justified to occupy n positions
+          
+
+    3.4.4 rjustify
+
+          
+          rjustify :: num -> [char] -> [char]
+          
+          rjustify n string = string right justified to occupy n positions
+          
+
+    3.4.5 lines
+
+          
+          lines :: [char] -> [[char]]
+          
+          lines "string1\nstring2\n....stringN" = ["string1", "string2" ... "stringN"]
+          
+
+    3.4.6 words
+
+          
+          words :: [char] -> [[char]]
+          
+          words string = list of words in string (spaces, newlines separate words)
+          
+
+    3.4.7 isspace
+
+          
+          isspace :: char -> bool
+          
+          isspace c = c is a space or newline
+          
+
+    3.4.8 isupper
+
+          
+          isupper :: char -> bool
+          
+          isupper c = c is a uppercase character
+          
+
+    3.4.9 islower
+
+          
+          islower :: char -> bool
+          
+          islower c = c is a lowercase character
+          
+
+   3.4.10 toupper
+
+          
+          toupper :: char -> char
+          
+          toupper c = c transformed to uppercase
+          
+
+   3.4.11 tolower
+
+          
+          tolower :: char -> char
+          
+          tolower c = c transformed to lowercase
+          
+
+   3.4.12 nodup
+
+          
+          nodup :: [*] -> [*]
+          
+          nodup removes duplicates from a list and keeps every first occurrence
+          nodup [] = []
+          nodup (x:xs) = x : nodup[y | y <- xs; y ~= x]
+          
+          
+          
+
+   3.4.13 unlines
+
+          
+          unlines :: [[char]] -> [char]
+          
+          unlines ["line1", "line2" ... "lineN"] = "line1\nline2\n...lineN\n"
+          
+
+   3.4.14 sort
+
+          
+          sort :: [*] -> [*]
+          sort [] = []
+          sort (x:xs) = sort[y | y <- xs; y < x] ++ [x] ++ sort[y | y <- xs; y >= x]
+          
+          
+          
+
+   3.4.15 transpose
+
+          
+          transpose :: [[*]] -> [[*]]
+          transpose
+            [[x11, x12 ... x1N],
+             [x21, x22 ... x2N]
+             ...
+             [xM1, xM2 ... xMN]]
+          = [[x11, x21 ... xM1],
+             [x12, x22 ... xM2]
+             ...
+             [x1N, x2N ... xMN]]
+          
+          
+          
+
+   3.4.16 mergeSort
+
+          
+          mergeSort :: [*] -> [*]
+          
+          mergeSort = sort (but using the mergesort algorithm)
+          
+
+   3.4.17 merge
+
+          
+          merge :: [*] -> [*] -> [*]
+          
+          merge xs ys = the ordered merge of the ordered lists xs and ys
+          
+
+   3.4.18 zipwith
+
+          
+          zipwith :: (* -> ** -> ***) -> [*] -> [**] -> [***]
+          
+          zipwith (+) xs ys = [x + y | x, y <- xs, ys]
+          
+
+      3.5 builtin functions
+
+
+    3.5.1 and
+
+          
+          and :: [bool] -> bool
+          
+          and = foldr (/\) True
+          
+
+    3.5.2 abs
+
+          
+          abs :: num -> num
+          abs x = x  ,if x >= 0
+                = -x ,otherwise
+          
+          
+          
+
+    3.5.3 concat
+
+          
+          concat :: [[*]] -> [*]
+          
+          concat [x1, x2 ... xN] = x1 ++ x2 ++ ... xN
+          
+
+    3.5.4 drop
+
+          
+          drop :: num -> [*] -> [*]
+          
+          drop n xs = xs with the first n elements left out
+          
+
+    3.5.5 dropwhile
+
+          
+          dropwhile :: (* -> bool) -> [*] -> [*]
+          dropwhile f [] = []
+          dropwhile f (x:xs) = dropwhile f xs ,if f x
+                             = x:xs           ,otherwise
+          
+          
+          
+
+    3.5.6 empty
+
+          
+          empty :: [*] -> bool
+          empty [] = True
+          empty (x:xs) = False
+          
+          
+          
+
+    3.5.7 filter
+
+          
+          filter :: (* -> bool) -> [*] -> [*]
+          
+          filter f xs = [x | x <- xs; f x]
+          
+
+    3.5.8 foldl
+
+          
+          foldl :: (* -> ** -> *) -> * -> [**] -> *
+          foldl (+) z [] = z
+          foldl (+) z [x1, x2 ... xN] = ((z + x1) + x2) ... + xN
+          
+          In pseudo notation:
+          foldl (+) z xs
+          begin
+            for x <- xs do z := z + x;
+            return z;
+          end
+          
+          
+          
+
+    3.5.9 foldl1
+
+          
+          foldl1 :: (* -> * -> *) -> [*] -> *
+          
+          foldl1 (+) [x1, x2 ... xN] = (x1 + x2) ... + xN
+          
+          In pseudo notation:
+          foldl1 (+) (x:xs)
+          begin
+            z := x;
+            for x <- xs do z := z + x;
+            return z;
+          end
+          
+          
+          
+
+   3.5.10 foldr
+
+          
+          foldr :: (** -> * -> *) -> [**] -> *
+          foldr (+) z [] = z
+          foldr (+) z [x1, x2 ... xN] = x1 + (x2 ... + (xN + z))
+          
+          foldr (+) z = f
+          where
+            f [] = z
+            f (x:xs) = x + f xs
+          
+          
+          
+
+   3.5.11 foldr1
+
+          
+          foldr1 :: (* -> * -> *) -> [*] -> *
+          
+          foldr1 (+) [x1, x2 ... xN] = x1 + (x2 ... + xN)
+          
+
+   3.5.12 fst
+
+          
+          fst :: (*, **) -> *
+          
+          fst(x, _) = x
+          
+
+   3.5.13 if
+
+          
+          if :: bool -> * -> * -> *
+          if test x y = x ,if test
+                      = y ,otherwise
+          
+          
+          
+
+   3.5.14 iterate
+
+          
+          iterate :: (* -> *) -> * -> [*]
+          
+          iterate f x = [x, f x, f(f x), f(f(f x)) ...]
+          
+
+   3.5.15 hd
+
+          
+          hd :: [*] -> *
+          
+          hd (x:_) = x
+          
+
+   3.5.16 map
+
+          
+          map :: (* -> **) -> [*] -> [**]
+          
+          map f [x1, x2 ... xN] = [f x1, f x2 ... f xN]
+          
+
+   3.5.17 max
+
+          
+          max :: [*] -> *
+          
+          max xs = the largest element of xs
+          
+
+   3.5.18 max2
+
+          
+          max2 :: * -> * -> *
+          max2 x y = x ,if x > y
+                   = y ,otherwise
+          
+          
+          
+
+   3.5.19 member
+
+          
+          member :: [*] -> * -> bool
+          member xs x = True  ,if xs contains x
+                      = False ,otherwise
+          
+          
+          
+
+   3.5.20 min
+
+          
+          min :: [*] -> *
+          
+          min xs = the smallest element of xs
+          
+
+   3.5.21 min2
+
+          
+          min2 :: * -> * -> *
+          min2 x y = x ,if x < y
+                   = y ,otherwise
+          
+          
+          
+
+   3.5.22 nat
+
+          
+          nat :: num -> num -> [num]
+          
+          nat k l = [k..l]
+          
+
+   3.5.23 nats
+
+          
+          nats :: num -> [num]
+          
+          nats k = [k..]
+          
+
+   3.5.24 neg
+
+          
+          neg :: num -> num
+          
+          neg x = -x
+          
+
+   3.5.25 or
+
+          
+          or :: [bool] -> bool
+          
+          or = foldr (\/) False
+          
+
+   3.5.26 prod
+
+          
+          prod :: [num] -> num
+          
+          prod = foldl (*) 1
+          
+
+   3.5.27 reverse
+
+          
+          reverse :: [*] -> [*]
+          
+          reverse [x1, x2 ... xN] = [xN ... x2, x1]
+          
+
+   3.5.28 scan
+
+          
+          scan :: (* -> ** -> *) -> * -> [**] -> [*]
+          
+          scan (+) z [] = [z]
+          scan (+) z [x1, x2 ... xN] = [z, z+x1, (z+x1)+x2 ... ((z+x1)+x2) ... +xN]
+          
+
+   3.5.29 seq
+
+          
+          seq :: * -> ** -> **
+          
+          seq x y = y
+          As a side effect x is evaluated
+          
+
+   3.5.30 snd
+
+          
+          snd :: (*, **) -> **
+          
+          snd(_, x) = x
+          
+
+   3.5.31 split
+
+          
+          split :: num -> [*] -> ([*], [*])
+          
+          split n xs = (take n xs, drop n xs)
+          
+
+   3.5.32 splitwhile
+
+          
+          splitwhile :: (* -> bool) -> [*] -> ([*], [*])
+          
+          splitwhile f xs = (takewhile f xs, dropwhile f xs)
+          
+
+   3.5.33 sum
+
+          
+          sum :: [num] -> num
+          
+          sum = foldl (+) 0
+          
+
+   3.5.34 strict
+
+          
+          strict :: (* -> **) -> * -> **
+          
+          strict f x = f x
+          As a side effect x is evaluated first
+          
+
+   3.5.35 take
+
+          
+          take :: num -> [*] -> [*]
+          
+          take n xs = the list of the first n elements of xs
+          
+
+   3.5.36 takewhile
+
+          
+          takewhile :: (* -> bool) -> [*] -> [*]
+          
+          takewhile f [] = []
+          takewhile f (x:xs) = x : takewhile f xs ,if f x
+                             = []
+          
+          
+          
+
+   3.5.37 timedate
+
+          
+          timedate :: (num, num, num, num, num, num)
+          
+          timedate = (second, minute, hour, day /* [1..31] */, month /* [0..11] */, year)
+          
+          timedate delivers the current time and date, it is not referentially transparent
+          
+
+   3.5.38 tl
+
+          
+          tl :: [*] -> [*]
+          
+          tl (_:xs) = xs
+          
+
+   3.5.39 until
+
+          
+          until :: (* -> bool) -> (* -> *) -> * -> *
+          until test f x = x                  ,if test x
+                         = until test f (f x) ,otherwise
+          
+          Alternatively:
+          until test f = hd . dropwhile (~ . test) . iterate f
+          
+
+   3.5.40 zip
+
+          
+          zip :: ([*], [**]) -> [(*, **)]
+          
+          zip(xs, ys) = [(x, y) | x, y <- xs, ys]
+          
+
+   3.5.41 zip2
+
+          
+          zip2 :: [*] -> [**] -> [(*, **)]
+          
+          zip2 xs ys = [(x, y) | x, y <- xs, ys]
+          
+
+   3.5.42 zip3
+
+          
+          zip3 :: [*] -> [**] -> [***] -> [(*, **, ***)]
+          
+          zip3 xs ys zs = [(x, y, z) | x, y, z <- xs, ys, zs]
+          
+
+      3.6 numerical functions
+
+
+    3.6.1 round
+
+          
+          round :: num -> num
+          
+          round x = x rounded to the nearest integer
+          
+
+    3.6.2 trunc
+
+          
+          trunc :: num -> num
+          
+          trunc x = x truncated to the nearest integer (so its absolute value decreases)
+          
+
+    3.6.3 decode
+
+          
+          decode :: num -> char
+          
+          decode n = character with ascii value n (n integer, 0 <= n < 256)
+          
+
+    3.6.4 code
+
+          
+          code :: char -> num
+          
+          code c = ascii value of c
+          
+
+    3.6.5 random
+
+          
+          random :: num -> num
+          
+          random n = a random number r with 0 <= r < n (n integer, n > 0)
+          
+          random should be used with care, because it is not referentially transparent.
+          
+          Example:
+          [r | k <- [1..100]; r := random 10] ~= [r | r := random 10; k <- [1..100]]
+          
+
+    3.6.6 cos
+
+          
+          cos :: num -> num
+          
+
+    3.6.7 sin
+
+          
+          sin :: num -> num
+          
+
+    3.6.8 exp
+
+          
+          exp :: num -> num
+          
+          exp x = e ^ x
+          
+
+    3.6.9 log
+
+          
+          log :: num -> num
+          
+          log x = natural logarithm of x
+          
+
+   3.6.10 sqrt
+
+          
+          sqrt :: num -> num
+          
+          sqrt x = x ^ 0.5
+          
+
+   3.6.11 atan
+
+          
+          atan :: num -> num
+          
+
+   3.6.12 itoa
+
+          
+          itoa :: num -> [char]
+          
+          itoa n = string representation of the integer n
+          
+
+   3.6.13 atoi
+
+          
+          atoi :: [char] -> num
+          
+          atoi s = value of the first integer denoted in s or 0 if none
+          
+
+   3.6.14 ftoa
+
+          
+          ftoa :: num -> [char]
+          
+          ftoa n = string representation of the number n
+          
+
+   3.6.15 atof
+
+          
+          atof :: [char] -> num
+          
+          atof s = value of the first number denoted in s or 0 if none
+          
+
+      3.7 file functions
+
+
+    3.7.1 fread
+
+          
+          fread :: [char] -> [char]
+          
+          fread fileName = list of the characters in the file
+          
+          fread should be used with care, because it is not referentially transparent.
+          
+          Example:
+          lineCount = # . lines . fread
+          
+          fread reads the contents of the file as a list of characters, lines breaks this list in a 
+          list of lines and # counts the number of lines.
+          
+
+    3.7.2 fwrite
+
+          
+          fwrite :: [char] -> [char] -> bool
+          fwrite fileName string = True  ,if the string is written to the file
+                                 = False ,otherwise
+          
+          fwrite should be used with care, because it is not referentially transparent.
+          
+
+    3.7.3 fappend
+
+          
+          fappend :: [char] -> [char] -> bool
+          fappend fileName string = True  ,if the string is appended to the file
+                                  = False ,otherwise
+          
+          fappend should be used with care, because it is not referentially transparent.

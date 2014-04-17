@@ -1,0 +1,279 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> predefined operators</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>predefined operators</H2>
+<TT>
+<BR>
+<A HREF="#page_411"> ^</A>
+<BR>
+<A HREF="#page_412"> *</A>
+<BR>
+<A HREF="#page_413"> /</A>
+<BR>
+<A HREF="#page_414"> //</A>
+<BR>
+<A HREF="#page_415"> %</A>
+<BR>
+<A HREF="#page_416"> +</A>
+<BR>
+<A HREF="#page_417"> -</A>
+<BR>
+<A HREF="#page_418"> =</A>
+<BR>
+<A HREF="#page_419"> ~=</A>
+<BR>
+<A HREF="#page_420"> &lt</A>
+<BR>
+<A HREF="#page_421"> &lt=</A>
+<BR>
+<A HREF="#page_422"> &gt</A>
+<BR>
+<A HREF="#page_423"> &gt=</A>
+<BR>
+<A HREF="#page_424"> .</A>
+<BR>
+<A HREF="#page_425"> :</A>
+<BR>
+<A HREF="#page_426"> !</A>
+<BR>
+<A HREF="#page_427"> ++</A>
+<BR>
+<A HREF="#page_428"> --</A>
+<BR>
+<A HREF="#page_429"> /\</A>
+<BR>
+<A HREF="#page_430"> \/</A>
+<BR>
+<A HREF="#page_431"> #</A>
+<BR>
+<A HREF="#page_432"> ~</A>
+<BR>
+<A HREF="#page_433"> &</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_411"></A><HR><H2> ^</H2>
+<BR>
+^ :: num -&gt num -&gt num
+<BR>
+<BR>
+x ^ y = x raised to the power y
+<BR>
+
+<A NAME="page_412"></A><HR><H2> *</H2>
+<BR>
+* :: num -&gt num -&gt num
+<BR>
+<BR>
+x * y = x multiplied by y
+<BR>
+
+<A NAME="page_413"></A><HR><H2> /</H2>
+<BR>
+/ :: num -&gt num -&gt num
+<BR>
+<BR>
+x / y = integral division of x by y (x and y must be integers)
+<BR>
+
+<A NAME="page_414"></A><HR><H2> //</H2>
+<BR>
+// :: num -&gt num -&gt num
+<BR>
+<BR>
+x // y = real division of x by y
+<BR>
+
+<A NAME="page_415"></A><HR><H2> %</H2>
+<BR>
+% :: num -&gt num -&gt num
+<BR>
+<BR>
+x % y = the rest of the integral division of x by y (x and y must be integers)
+<BR>
+
+<A NAME="page_416"></A><HR><H2> +</H2>
+<BR>
++ :: num -&gt num -&gt num
+<BR>
+<BR>
+x + y = the sum of x and y
+<BR>
+
+<A NAME="page_417"></A><HR><H2> -</H2>
+<BR>
+- :: num -&gt num -&gt num
+<BR>
+<BR>
+x - y = the difference of x and y
+<BR>
+<BR>
+- :: num -&gt num
+<BR>
+<BR>
+Depending on the context - can denote unary minus
+<BR>
+(-x) = 0-x
+<BR>
+
+<A NAME="page_418"></A><HR><H2> =</H2>
+<BR>
+= :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x = y) = x is structurally equal to y
+<BR>
+
+<A NAME="page_419"></A><HR><H2> ~=</H2>
+<BR>
+~= :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x ~= y) = x is not structurally equal to y
+<BR>
+
+<A NAME="page_420"></A><HR><H2> &lt</H2>
+<BR>
+&lt :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x &lt y) = x is smaller than y (normally used for numbers)
+<BR>
+List comparison is lexicographic.
+<BR>
+
+<A NAME="page_421"></A><HR><H2> &lt=</H2>
+<BR>
+&lt= :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x &lt= y) = x is smaller than or equal to y (normally used for numbers)
+<BR>
+List comparison is lexicographic.
+<BR>
+
+<A NAME="page_422"></A><HR><H2> &gt</H2>
+<BR>
+&gt :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x &gt y) = x is larger than y (normally used for numbers)
+<BR>
+List comparison is lexicographic.
+<BR>
+
+<A NAME="page_423"></A><HR><H2> &gt=</H2>
+<BR>
+&gt= :: * -&gt * -&gt bool
+<BR>
+<BR>
+(x &gt= y) = x is larger than or equal to y (normally used for numbers)
+<BR>
+List comparison is lexicographic.
+<BR>
+
+<A NAME="page_424"></A><HR><H2> .</H2>
+<BR>
+. :: (** -&gt ***) -&gt (* -&gt **) -&gt * -&gt ***
+<BR>
+<BR>
+(f . g) x = f(g x)
+<BR>
+
+<A NAME="page_425"></A><HR><H2> :</H2>
+<BR>
+: :: * -&gt [*] -&gt [*]
+<BR>
+<BR>
+x : [x1, x2 ... xN] = [x, x1, x2 ... xN]
+<BR>
+
+<A NAME="page_426"></A><HR><H2> !</H2>
+<BR>
+! :: [*] -&gt num -&gt *
+<BR>
+<BR>
+[x0, x1 ...] ! n = xn (the (n+1)st element)
+<BR>
+
+<A NAME="page_427"></A><HR><H2> ++</H2>
+<BR>
+++ :: [*] -&gt [*] -&gt [*]
+<BR>
+<BR>
+[x1, x2 ... xN] ++ [y1, y2 ... yM] = [x1, x2 ... xN, y1, y2 ... yM]
+<BR>
+
+<A NAME="page_428"></A><HR><H2> --</H2>
+<BR>
+-- :: [*] -&gt [*] -&gt [*]
+<BR>
+<BR>
+xs -- ys = xs with repeatedly the first occurrence of an element of ys removed
+<PRE>
+(xs -- []) = xs
+(xs -- (y:ys)) = remove y xs -- ys
+where
+  remove y [] = []
+  remove y (x:xs) = xs            ,if x = y
+                  = x:remove y xs ,otherwise
+</PRE>
+<BR>
+
+<A NAME="page_429"></A><HR><H2> /\</H2>
+<BR>
+/\ :: bool -&gt bool -&gt bool
+<BR>
+<BR>
+x /\ y = both x and y are True
+<BR>
+
+<A NAME="page_430"></A><HR><H2> \/</H2>
+<BR>
+\/ :: bool -&gt bool -&gt bool
+<BR>
+<BR>
+x \/ y = at least one of x and y is True
+<BR>
+
+<A NAME="page_431"></A><HR><H2> #</H2>
+<BR>
+# :: [*] -&gt num
+<BR>
+<BR>
+#[x1, x2 ... xn] = n (the number of elements)
+<BR>
+
+<A NAME="page_432"></A><HR><H2> ~</H2>
+<BR>
+~ :: bool -&gt bool
+<BR>
+<BR>
+~ True = False
+<BR>
+~ False = True
+<BR>
+
+<A NAME="page_433"></A><HR><H2> &</H2>
+<BR>
+& :: * -&gt * -&gt *
+<BR>
+<BR>
+The operator & is used to update a record with information from another
+record.
+<BR>
+<BR>
+Example:
+<BR>
+<BR>
+rectangle ::= { x :: num, y :: num, width :: num, height :: num }
+<BR>
+<BR>
+translate (rect = { x = x, y = y }) dx dy = rect & { x = x + dx, y = y + dy }
+<BR>
+
+</BODY>
+</HTML>

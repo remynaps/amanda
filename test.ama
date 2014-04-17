@@ -1,0 +1,50 @@
+f = "hallo"
+g = "dag"
+|| h x = x h h
+
+vector * ::= { x:: *, y:: *}
+
+nfib n 
+= 1 ,if n <= 1
+= 1 + nfib (n-1) + nfib (n-2)
+
+volgende n xs ys 
+= take 1 (
+  [ys++[min(xs--ys)] | #ys < n] ++ 
+  [take (n-1) ys ++ [min ys2] | n > 0; #ys = n; y := ys!(n-1); ys2 := [x | x <- xs--ys; x > y]; ys2 ~= []] ++
+  [v | n > 0; #ys = n; ys1 <- volgende (n-1) xs (take (n-1) ys); v <- volgende n xs ys1]
+  )
+
+eps = 0.0000001
+  
+digits current curr3 rest ds n
+= [ds] ,if rest < eps
+= [] ,if n * current < rest
+= digits (current // 2) (curr3 // 3) rest ds n ,if current > rest
+= digits current curr3 (rest-current) (curr3:ds) (n-1) ++
+  digits (current // 2) (curr3 // 3) rest ds n
+  
+perms [] = [[]]
+perms (x:xs) = [is | ps <- perms xs; is <- insert x ps]
+
+insert n [] = [[n]]
+insert n (x:xs) = (n:x:xs) : [x:is | is <- insert n xs]
+
+sumdigits n
+= nodup
+  [ ps | 
+    ds <- digits 1 1 1 [] n;
+    ps <- perms ds;
+    s := sum(zipwith (*) ps [1..]);
+    abs(s - 1) < eps;
+  ]
+  
+check3 n
+= take 1 (gen 1 0 [])
+where
+  pows = take n (iterate (x -> x // 3) 1)
+  gen k s ps 
+  = [reverse ps | abs(s-1) < eps] ,if k > n
+  = [] ,if s > 1 + eps
+  = concat[gen (k+1) (s+k*p) (p:ps) | p <- pows]
+

@@ -1,0 +1,135 @@
+|| Dick Bruin
+|| 16/08/91
+|| afbeelden van en manipuleren met een convexe figuur
+
+|| vector == (x:num, y:num, z:num)
+|| vlak   == (normaal:vector, verschuiving:num)
+|| lijn   == (punt1:vector, punt2:vector, vlak1:vlak, vlak2:vlak)
+
+
+leesVlakken filenaam
+= [normaliseer ((atof x, atof y, atof z), atof d) | regel <- (lines.fread) filenaam; [x,y,z,d] <- [words regel]]
+where
+  normaliseer ((x, y, z), d)
+  = ((x//n, y//n, z//n), d//n)
+  where n = sqrt(x*x + y*y + z*z)
+
+
+maakLijnen vlakken
+= maakLijnen1 vlakken vlakken
+where
+  maakLijnen1 [] vlakken = []
+  maakLijnen1 (vlak:restvlakken) vlakken
+  = concat[maakLijn vlak v vlakken| v <- restvlakken]
+    ++ maakLijnen1 restvlakken vlakken
+
+
+maakLijn vlak1 vlak2 vlakken
+= [] ,if zeroNum determinant \/ gelijken ~= [] \/ plussen = [] \/ minnen = [] \/ negNum (kleinsteplus - grootstemin)
+= [(punt1, punt2, vlak1, vlak2)]
+where
+  (vlak1x, vlak1y, vlak1z) = normaal1
+  (normaal1, d1) = vlak1
+
+  (vlak2x, vlak2y, vlak2z) = normaal2
+  (normaal2, d2) = vlak2
+
+  richtingsvector = (vlak1y*vlak2z-vlak1z*vlak2y, vlak1z*vlak2x-vlak1x*vlak2z, vlak1x*vlak2y-vlak1y*vlak2x)
+
+  inprodukt11 = inprodukt normaal1 normaal1
+  inprodukt12 = inprodukt normaal1 normaal2
+  inprodukt22 = inprodukt normaal2 normaal2
+
+  determinant = inprodukt11*inprodukt22 - inprodukt12*inprodukt12
+
+  factor1 = (inprodukt22*d1 - inprodukt12*d2) // determinant
+  factor2 = (inprodukt11*d2 - inprodukt12*d1) // determinant
+
+  steunvector = (factor1 *** normaal1) +++ (factor2 *** normaal2)
+
+  plussen = [(d - inprodukt normaal steunvector) // inpr | (normaal, d) <- vlakken; inpr <- [inprodukt normaal richtingsvector]; posNum inpr]
+  kleinsteplus = min plussen
+
+  minnen = [(d - inprodukt normaal steunvector) // inpr | (normaal, d) <- vlakken; inpr <- [inprodukt normaal richtingsvector]; negNum inpr]
+  grootstemin = max minnen
+
+  gelijken = [(normaal, d) | (normaal, d) <- vlakken; zeroNum (inprodukt normaal richtingsvector); posNum (inprodukt normaal steunvector - d)]
+
+  punt1 = steunvector +++ (grootstemin *** richtingsvector)
+  punt2 = steunvector +++ (kleinsteplus *** richtingsvector)
+
+
+(n *** (x, y, z)) = (n*x, n*y, n*z)
+((x1 ,y1, z1) +++ (x2, y2, z2)) = (x1+x2, y1+y2, z1+z2)
+inprodukt (x1,y1,z1) (x2,y2,z2) = x1*x2 + y1*y2 + z1*z2
+
+
+zeroNum n = n > -0.0001 /\ n < 0.0001
+negNum n = n < -0.0001
+posNum n = n > 0.0001
+
+textColor = 0
+lineColor = 9
+wisColor  = 15
+
+maakBeeldlijst lijsten
+= GraphRectangle wisColor (-1, -1) (1, 1)
+  : GraphText textColor (-0.4, 0.9) "Manipuleren met een convexe figuur"
+  : GraphText textColor (-0.9, -0.9) "w a s z: rotaties    u h j n: translaties     + -: dilaties"
+  : [GraphPolyLine lineColor [(x1,y1), (x2,y2)] | ((x1,y1,z1), (x2,y2,z2), n1z, n2z) <- lijsten; posNum n1z \/ posNum n2z]
+
+
+draaiLijnXY n cs sn (p1, p2, (n1, d1), (n2, d2))
+= (rot p1, rot p2, (rot n1, d1), (rot n2, d2))
+where
+  rot (x, y, z) = (cs*x+sn*y, -sn*x+cs*y, z)
+
+draaiLijnYZ n cs sn (p1, p2, (n1, d1), (n2, d2))
+= (rot p1, rot p2, (rot n1, d1), (rot n2, d2))
+where
+  rot (x, y, z) = (x, cs*y+sn*z, -sn*y+cs*z)
+
+
+vergrootLijn factor (p1, p2, (n1, d1), (n2, d2))
+= (factor *** p1, factor *** p2, (factor *** n1, factor * d1), (factor *** n2, factor *d1))
+
+
+verplaatsLijn vector (p1, p2, (n1, d1), (n2, d2))
+= (vector +++ p1, vector +++ p2, (n1, inprodukt vector n1 + d1), (n2, inprodukt vector n2 + d2))
+
+
+interactie ch lijnen
+= map (functie ch) lijnen
+where
+  functie 'a' = draaiLijnXY (-1) cs (-sn)
+  functie 's' = draaiLijnXY (1) cs sn
+  functie 'z' = draaiLijnYZ (-1) cs (-sn)
+  functie 'w' = draaiLijnYZ (1) cs sn
+  functie '+' = vergrootLijn (1.1)
+  functie '-' = vergrootLijn (0.90909)
+  functie 'h' = verplaatsLijn (-0.08, 0, 0)
+  functie 'j' = verplaatsLijn (0.08, 0, 0)
+  functie 'u' = verplaatsLijn (0, 0.08, 0)
+  functie 'n' = verplaatsLijn (0, -0.08, 0)
+  functie ch  = id
+  id x = x
+  cs = cos 0.1
+  sn = sin 0.1
+
+
+maakLijst (p1, p2, v1, v2)
+= (p1, p2, n1z, n2z), if p1=p1 /\ p2=p2 /\ v1=v1 /\ v2=v2 /\ d1=d1 /\ d2=d2
+where
+  ((n1x,n1y,n1z),d1) = v1
+  ((n2x,n2y,n2z),d2) = v2
+
+
+object "AmaGraphics" = (lijnen, call)
+where
+  lijnen = (maakLijnen.leesVlakken) "../Amanda/Amagr/kubus.dat"
+  
+  call "Repaint" [] lijnen = repaint lijnen
+  call "Key" [[ch]] lijnen = (repaint . interactie ch) lijnen
+  call _ _ state = (state, [])
+
+  repaint lijnen = (lijnen, (graphicsout . maakBeeldlijst . map maakLijst) lijnen)

@@ -1,0 +1,141 @@
+/*
+  Dick Bruin, 27/03/1999
+  
+  simulator of finite automata
+  
+  types:
+    dfa stateType letterType                      deterministic finite automaton
+    nfa stateType letterType                      non-deterministic finite automaton
+  
+  functions:
+    simDfa :: dfa * ** -> [**] -> [char]          simulates a dfa on a string
+    simNfa :: nfa * ** -> [**] -> [char]          simulates a nfa on a string
+    nfaDfa :: nfa * ** -> dfa [*] **              transforms a nfa into a dfa
+    nfaPar :: [*] -> nfa ** * -> nfa *** * -> nfa (**, ***) *
+                                                  product of two nfa's with a synchronization alfabet
+
+  test functions:
+    myDfa :: dfa num char                         example of a dfa
+    myNfa :: nfa num char                         example of a nfa
+    myNfaLambda :: nfa num char                   example of a nfa with lambda transitions
+    testDfa, testNfa, testNfalambda, testNfaPar   
+*/
+
+dfa * **                                || * = type of the states, ** = type of the letters
+== ( * -> [char]                        || function which shows a state
+   , ** -> [char]                       || function which shows a letter
+   , * -> ** -> *                       || delta function
+   , *                                  || starting state
+   , * -> bool                          || function which tests if a state is a final state
+   )
+
+nfa * **                                || * = type of the states, ** = type of the letters 
+== ( * -> [char]                        || function which shows a state
+   , ** -> [char]                       || function which shows a letter
+   , * -> ** -> [*]                     || delta function
+   , * -> [*]                           || lambda transitions
+   , *                                  || starting state
+   , * -> bool                          || function which tests if a state is a final state
+   )
+
+myDfa :: dfa num char
+myDfa = (showState, showLetter, delta, startState, isFinal)
+where
+  showState n = itoa n
+  showLetter c = [c]
+  startState = 1
+  isFinal n = member [1, 3] n
+
+  delta 1 'a' = 1
+  delta 1 'b' = 2
+  delta 2 'a' = 1
+  delta 2 'b' = 3
+  delta _ _ = error "undefined transition"
+
+myNfa :: nfa num char
+myNfa = (showState, showLetter, delta, deltaLambda, startState, isFinal)
+where
+  showState n = itoa n
+  showLetter c = [c]
+  startState = 1
+  isFinal n = member [3] n
+
+  delta 1 'a' = [1]
+  delta 1 'b' = [1, 2]
+  delta 2 'b' = [3]
+  delta 3 'c' = [4]
+  delta _ _ = []
+  
+  deltaLambda _ = []
+
+myNfaLambda :: nfa num char
+myNfaLambda = (showState, showLetter, delta, deltaLambda, startState, isFinal)
+where
+  showState n = itoa n
+  showLetter c = [c]
+  startState = 1
+  isFinal n = member [2, 7] n
+
+  delta 2 'c' = [3]
+  delta 3 'b' = [2]
+  delta 4 'c' = [5, 7]
+  delta 5 'c' = [4]
+  delta _ _ = []
+  
+  deltaLambda 1 = [2, 4]
+  deltaLambda _ = []
+
+simDfa :: dfa * ** -> [**] -> [char]
+simDfa (showState, showLetter, delta, startState, isFinal) string
+= showState startState ++ simulate startState string
+where
+  simulate s [] = "\naccepted" ,if isFinal s
+                = "\nrejected"
+  simulate s (a:as) = "\n" ++ showLetter a ++ " " ++ showState s1 ++ simulate s1 as
+  where
+    s1 = delta s a
+    
+simNfa :: nfa * ** -> [**] -> [char]
+simNfa x string = simDfa (nfaDfa x) string
+
+nfaDfa :: nfa * ** -> dfa [*] **
+nfaDfa (showState, showLetter, delta, deltaLambda, startState, isFinal)
+= (showState1, showLetter, delta1, startState1, isFinal1)
+where
+  showState1 [] = "[]"
+  showState1 (s:ss) = "[" ++ showState s ++ concat["," ++ showState s | s <- ss] ++ "]"
+  
+  startState1 = lambdaClosure[startState]
+  
+  delta1 ss a = (lambdaClosure.sort.nodup)[s2 | s1 <- ss; s2 <- delta s1 a]
+  
+  isFinal1 ss = or[isFinal s | s <- ss]
+  
+  lambdaClosure ss
+  = ss ,if ss1 = ss
+  = lambdaClosure ss1
+  where
+    ss1 = (sort.nodup)(ss ++ [s2 | s1 <- ss; s2 <- deltaLambda s1])
+
+nfaPar :: [*] -> nfa ** * -> nfa *** * -> nfa (**, ***) *
+nfaPar alfabet 
+       (showState1, showLetter1, delta1, deltaLambda1, startState1, isFinal1)
+       (showState2, showLetter2, delta2, deltaLambda2, startState2, isFinal2)
+= (showState3, showLetter3, delta3, deltaLambda3, startState3, isFinal3)
+where
+  showState3 (s1, s2) = "(" ++ showState1 s1 ++ "," ++ showState2 s2 ++ ")"
+  showLetter3 = showLetter1
+  startState3 = (startState1, startState2)
+  isFinal3 (s1, s2) = isFinal1 s1 /\ isFinal2 s2
+
+  delta3 (s1, s2) a
+  = [(s3, s4) | s3 <- delta1 s1 a; s4 <- delta2 s2 a], if member alfabet a
+  = [(s, s2) | s <- delta1 s1 a] ++ [(s1, s) | s <- delta2 s2 a]
+  
+  deltaLambda3 (s1, s2)
+  = [(s, s2) | s <- deltaLambda1 s1] ++ [(s1, s) | s <- deltaLambda2 s2]
+       
+testDfa string       = simDfa myDfa string
+testNfa string       = simNfa myNfa string
+testNfaLambda string = simNfa myNfaLambda string
+testNfaPar string    = simNfa (nfaPar "b" myNfa myNfaLambda) string

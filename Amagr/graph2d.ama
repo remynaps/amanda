@@ -1,0 +1,96 @@
+|| 3d grafiek
+
+f1 (x, y) = 0
+f2 (x, y) = sin (pi*x) * cos (pi*y)
+f3 (x, y) = (x^2-1) * (y^2-1)
+f4 (x, y) = exp(-0.5*r2) * (1-r2) where r2 = (x^2 + y^2) * 12
+
+torus r1 r2 z (x1, x2) = [f * cos a1, f * sin a1, z + r2 * sin a2 | a1 := pi * x1; a2 := pi * x2; f := r1 + r2 * cos a2]
+
+cone (x1, x2) = [x2 * cos (pi * x1), x2 * sin (pi * x1), x2]
+
+dxyz = 0.5
+
+yz (x, z) = [x, z+dxyz, z]
+xz (x, y) = [x, y, x+dxyz]
+xy (y, z) = [y+dxyz, y, z]
+
+toParametric f (x, y) = [x, y, f (x, y)]
+  
+config
+= [ ("Vlak"  , "False", (calcPatches 10 . toParametric) f1)
+  , ("SinCos", "True" , (calcPatches 10 . toParametric) f2)
+  , ("Berg"  , "False", (calcPatches 10 . toParametric) f3)
+  , ("Hoed"  , "True" , (calcPatches 10 . toParametric) f4)
+  , ("Torus1", "False", calcPatches 10 (torus 0.7 0.3 0.7))
+  , ("Torus2", "False", calcPatches 6 (torus 0.3 0.1 (-0.8)))
+  , ("Kegel" , "False", calcPatches 6 cone)
+  , ("yz"    , "False", calcPatches 6 yz)
+  , ("xz"    , "False", calcPatches 6 xz)
+  , ("xy"    , "False", calcPatches 6 xy)
+  ]
+
+object "AmaGraphics" = ((startBase, startPatches), call)
+where
+  call "DefSystem" _ state = (state, ["showParameters", "True"])
+  call "DefParameters" _ state = (state, [name, value++"|"++if(value="True") "False" "True" | (name, value, _) <- config])
+  
+  call "Repaint" _ state = repaint state
+  call "Key" [[ch]] (base, patches) = /*((changeBase [ch] base, patches), [])*/ repaint (changeBase [ch] base, patches)
+  call "Parameters" params (base, _) = repaint (base, concat[patches | "True", (_, _, patches) <- params, config])
+  call _ _ state = (state, [])
+
+  repaint (base, patches) = ((base, patches), graphicsout (heading ++ drawAxes base ++ drawPatches patches base))
+  
+  startBase = changeBase "zzaaw" [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  startPatches = concat[patches | (_, "True", patches) <- config]
+  
+textColor = 0
+lineColor = 0
+backColor = 15
+axisColor = 2
+fgColor   = 9
+bgColor   = 1
+
+heading
+= [ GraphRectangle backColor (-1, -1) (1, 1)
+  , GraphText textColor (-0.4, 0.9) "Manipuleren met een grafiek"
+  , GraphText textColor (-0.9, -0.9) "w a s z: rotaties"
+  ]
+
+changeBase = foldl1 (.) . map (map . change)
+where
+  change 'w' = rotXZ cs (-sn)
+  change 'z' = rotXZ cs sn
+  change 'a' = rotYZ cs (-sn)
+  change 's' = rotYZ cs sn
+  change _   = p -> p
+  cs = cos 0.1
+  sn = sin 0.1
+  rotXZ cs sn [x, y, z] = [cs*x+sn*z, y, -sn*x+cs*z]
+  rotYZ cs sn [x, y, z] = [x, cs*y+sn*z, -sn*y+cs*z]
+
+calcPatches count f 
+= [ [p1, p2, p3, p4] 
+  | row1, row2 <- grid, tl grid
+  ; pairs := zip2 row1 row2
+  ; (p1, p2), (p3, p4) <- pairs, tl pairs]
+where
+  grid = [ [ (map (0.5 *) . f) (x//count, y//count) | y <- [-count..count]] | x <- [-count..count]]
+
+drawAxes base = [GraphPolyLine axisColor [(0, 0), p2d], GraphText axisColor p2d [ch] | p, ch <- base, "xyz"; p2d := toCoordinate p]
+
+drawPatches patches base 
+= [ GraphPolygon color points2, GraphPolyLine lineColor points2 
+  | (points3, orient) <- (sort . map (orientPatch . map (matMul base))) patches 
+  ; color := if orient fgColor bgColor
+  ; points2 := map toCoordinate  points3
+  ] 
+
+toCoordinate [_, y, z] = (y, z)
+
+matMul [[m11, m21, m31], [m12, m22, m32], [m13, m23, m33]] [p1, p2, p3] = [m11 * p1 + m12 * p2 + m13 * p3, m21 * p1 + m22 * p2 + m23 * p3, m31 * p1 + m32 * p2 + m33 * p3]
+
+orientPatch [p1, p2, p3, p4] = ([p1, p2, p4, p3, p1], orientation p1 p2 p3)
+
+orientation [a1, a2, a3] [b1, b2, b3] [c1, c2, c3] = (b2-a2) * (c3-a3) - (c2-a2) * (b3-a3) > 0

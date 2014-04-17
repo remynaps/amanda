@@ -1,0 +1,67 @@
+Aanpassingen voor amanda onder Ubuntu:
+
+1. ophalen van g++ package en van readline package
+
+sudo apt-get install build-essential
+sudo apt-get install libreadline-dev
+
+2. verbeteren van amcon.c (prompt + add_history)
+
+static void getstring(char prompt[], char string[])
+{
+  #ifdef AMA_READLINE
+    char *s = readline(prompt);
+    add_history(s);
+    strncat(strcpy(string, ""), s, stringsize-1);
+    free(s);
+  #else
+    WriteString(prompt);
+    if(fgets(string, stringsize, stdin) == NULL) exit(0);
+  #endif
+}
+
+3. aanpassen amcheck.c
+
+static void tryunify(Cell *type1, Cell *type2)
+{
+  if(!unify(type1, type2))
+  {
+    Cell *list = make(LIST, type1, type2);
+    list = expandtype(list);
+    Write("\ncannot unify: ");
+    WriteType(list->left);
+    Write(" with: ");
+    WriteType(list->right);
+    typeerror();
+  }
+}
+
+static void checkunify(Cell *type1, Cell *type2, Cell *c, Cell *context)
+{
+  swapcontext(&context);
+  if(!unify(type1, type2))
+  {
+    Cell *list = make(LIST, type1, type2);
+    list = expandtype(list);
+    Write("\nincorrect: ");
+    WriteCell(c);
+    Write("\ntype1    : ");
+    WriteType(list->left);
+    Write("\ntype2    : ");
+    WriteType(list->right);
+    typeerror();
+  }
+  swapcontext(&context);
+}
+
+4. aanpassen linkcommando (volgorde: compileren, linken, output + optimalisatie)
+
+.c.o:
+	$(compiler) -c -DAMA_READLINE -O6 $*.c
+
+exe: $(objfiles)
+	$(compiler) -O6 $(objfiles) -lm -lreadline -o $(exename)
+
+5. gedit-taalbeschrijving
+
+cp amanda.lang ~/.local/share/gtksourceview-3.0/language-specs/

@@ -1,0 +1,413 @@
+|| Tetris
+|| Paul de Mast, 22/05/1996
+|| Dick Bruin  , 06/03/2000
+
+|| keys:
+|| s: start/stop
+|| i: turn
+|| j: left
+|| k: right
+|| m: drop
+|| t: timer
+|| n: new
+
+x1 = -0.7
+y1 = -0.8
+x2 = 0.4
+y2 = 0.9
+
+object "AmaGraphics" = (startGame, call)
+where
+  call "DefSystem" _ state = (state, ["timer", "30"])
+
+  call "Repaint" [] game = repaint game
+  call "Key" [[ch]] game = doKey ch game
+  call "Timer" [] game = doKey 't' game
+  call _ _ state = (state, [])
+
+  repaint game = (game, graphicsout (paintGame game))
+
+startGame = nieuwSpel
+  
+doKey ch  game = (newGame, graphicsout(hertekenVerschilSpel game newGame))
+where
+  newGame 
+  = startStopSpel game ,if ch = 's'
+  = draaiSpel game     ,if ch = 'i'
+  = linksSpel game     ,if ch = 'j'
+  = rechtsSpel game    ,if ch = 'k'
+  = valSpel game       ,if ch = 'm'
+  = nieuwSpel          ,if ch = 'n'
+  = beweegSpel game    ,if ch = 't'
+  = game
+  
+paintGame game = hertekenSpel game
+
+/********************************************************************************
+*  Tetris door Paul de Mast                                                     *
+*********************************************************************************/
+
+#synonym zwart       0
+#synonym blauw       1
+#synonym groen       2
+#synonym blauwgroen  3
+#synonym rood        4
+#synonym paars       5
+#synonym lichtgroen  6
+#synonym grijs       7
+#synonym donkergrijs 8
+#synonym felblauw    9
+#synonym felgroen    10
+#synonym viesblauw   11
+#synonym felpaars    13
+#synonym geel        14
+#synonym wit         15
+
+/********************************************************************************
+*        Gebruikte typen:                                                       *
+*         - het type 'matrix' wordt gebruikt voor het onthouden van bezette     *
+*           posities op het speelveld.                                          *
+*         - een vorm bestaat bij Tetris altijd uit 4 vierkantjes.  De           *
+*           representatie is een lijst i.p.v. een 4-tupel zodat bepaalde        *
+*           operaties eenvoudiger algemener te definieren zijn.                 *
+*         - het type richting geeft alle mogelijke bewegingen weer van een      *
+*           vormpje.                                                            *
+*         - blok geeft alle mogelijke combinaties van 4 aangrenzende            *
+*           vierkantjes weer.                                                   *
+*********************************************************************************/
+
+/********************************************************************************
+*         - in het type toestand wordt vastgelegd:                              *
+*             - is het spel bezig, gepauzeerd of afgelopen ?                    *
+*             - welke posities in het speelveld zijn bezet ?                    *
+*             - wat voor vormpje valt ?                                         *
+*             - welke draaiposities heeft dit vormpje (0-3)?                    *
+*             - wat is de absolute positie van het draaipunt van het vormpje ?  *
+*             - wat is de kleur van het vallende vormpje ?                      *
+*             - wat is de snelheid                                              *
+*                 (het aantal events dat steeds gewacht moet worden)            *
+*             - wat is het aantal nog af te wachten events totdat het blokje    *
+*               weer moet vallen ?                                              *
+*             - wat is de tot dan toe behaalde score ?                          *
+*             - wat is de vorm en kleur van het volgende blokje dat gaat vallen?*
+*********************************************************************************/
+
+matrix  == [[num]]
+coord   == (num,num)
+vorm    == [coord]
+kleur   == num
+
+richting ::= Links | Rechts | Beneden | Draai
+
+blok ::= Lang | Vierkant | Driehoek | HaakLinks | HaakRechts | Vier | VierS
+
+toestand == (mode, matrix, blok, num, coord, kleur, num, num, num, (blok, kleur))
+
+mode ::= Running | Pauze | Einde
+
+/********************************************************************************
+*    Deel 1: functies op vormen en vierkantjes                                  *
+*********************************************************************************/
+
+verplaatspunt :: richting -> coord -> coord
+verplaatspunt Links (x,y)       = (x-1,y)
+verplaatspunt Rechts (x,y)      = (x+1,y)
+verplaatspunt Beneden (x,y)     = (x,y-1)
+
+verplaatsvorm :: richting -> vorm -> vorm
+verplaatsvorm Links v   = map (verplaatspunt Links) v
+verplaatsvorm Rechts v  = map (verplaatspunt Rechts) v
+verplaatsvorm Beneden v = map (verplaatspunt Beneden) v
+verplaatsvorm Draai v   = v
+         
+randomblok :: (blok,kleur)
+randomblok 
+        =       (Lang, rood),                   r=0
+        =       (Vierkant, blauw),              r=1
+        =       (Driehoek, paars),              r=2
+        =       (HaakLinks, blauwgroen),        r=3
+        =       (HaakRechts, felpaars),         r=4
+        =       (Vier, geel),                   r=5
+        =       (VierS, groen),                 r=6
+where r = random 7
+
+lang = [        [ (-2,0), (-1,0), (0,0), (1,0) ],       || draaipositie 0: XXDX
+
+                [ (0,2),  (0,1),  (0,0),  (0,-1) ]      || draaipositie 1 :     X
+                                                        ||                      X
+                                                        ||                      D
+                                                        ||                      X
+        ]
+
+vierkant = [ [ (-1,1),(0,0),(-1,0),(0,1) ] ]            || draaipositie 0:      XX
+                                                        ||                      XD
+
+haaklinks =     [       [ (0,2), (0,1),(0,0),(-1,0)],   || draaipositie 0:       X
+                                                        ||                       X
+                                                        ||                      XD
+
+                        [ (-1,1),(-1,0),(0,0),(1,0)],   || draaipositie 1:      X
+                                                        ||                      XDX
+
+                        [ (-1,0), (-1,1), (-1,2),(0,2)],        || draaipositie 2:      XX
+                                                                ||                      X
+                                                                ||                      D
+
+                        [ (-1,1),(0,1),(1,1),(1,0)]     || draaipositie 3:      XXD
+                                                        ||                        X
+                ]
+
+haakrechts =    [       [ (0,2), (0,1),(0,0),(1,0)],    || draaipositie 0:       X
+                                                        ||                       X
+                                                        ||                       DX
+
+                        [ (0,-1),(0,0),(1,0),(2,0)],    || draaipositie 1:      DXX
+                                                        ||                      X
+
+                        [ (0,2), (1,2), (1,1),(1,0)],   || draaipositie 2:      XD
+                                                        ||                       X
+                                                        ||                       X
+
+                        [ (0,0),(1,0),(2,0),(2,1)]      || draaipositie 3:        X
+                                                        ||                      XXD
+                ]
+
+
+driehoek =      [       [(0,0),(-1,0),(1,0),(0,1)],     || draaipositie 0:       X
+                                                        ||                      XDX
+
+                        [(0,0),(0,1),(0,-1),(1,0)],     || draaipositie 1:      X
+                                                        ||                      DX
+                                                        ||                      X
+
+                        [ (0,0), (-1,0),(1,0),(0,-1) ], || draapositie 2:       XDX
+                                                        ||                       X
+
+                        [ (0,0), (0,1), (0,-1), (-1,0)] || draaipositie 3:       X
+                                                        ||                      DX
+                                                        ||                       X
+                ]
+
+viers =         [       [(0,0),(-1,1),(0,1),(1,0)],     || draaipositie 0:      XX
+                                                        ||                       DX
+
+                        [(0,0),(1,0),(1,1),(0,-1)]      || draaipositie 1:       X
+                                                        ||                      DX
+                                                        ||                      X
+                ]
+
+vier =          [       [(0,0),(-1,0),(0,1),(1,1)],     || draaipositie 0:       XX
+                                                        ||                      XD
+
+                        [(0,0),(1,0),(1,-1),(0,1)]      || draaipositie 1:      X
+                                                        ||                      DX
+                                                        ||                       X
+                ]
+
+
+reltoabs :: blok -> num -> coord -> vorm
+reltoabs Lang n c       = map (cpc c) (lang!n)
+reltoabs Vierkant n c   = map (cpc c) (vierkant!n)
+reltoabs HaakLinks n c  = map (cpc c) (haaklinks!n)
+reltoabs HaakRechts n c = map (cpc c) (haakrechts!n)
+reltoabs Driehoek n c   = map (cpc c) (driehoek!n)
+reltoabs Vier n c       = map (cpc c) (vier!n)
+reltoabs VierS n c      = map (cpc c) (viers!n)
+
+cpc (x1,y1) (x2,y2) = (x1+x2, y1+y2)
+
+draai :: blok -> num -> num
+draai Lang n            = (n+1) % 2
+draai Vierkant n        = n
+draai HaakLinks n       = (n+1) % 4
+draai HaakRechts n      = (n+1) % 4
+draai Driehoek n        = (n+1) % 4
+draai Vier n            = (n+1) % 2
+draai VierS n           = (n+1) % 2
+
+
+/*************************************************************************
+*        Deel 2:                                                         *
+*        Hierin staan de operaties op bord, met als belangrijkste        *
+*        de functie 'voegtoe :: matrix -> vorm -> (matrix,num,num)'      *
+**************************************************************************/
+
+#synonym aantalkolommen 16
+#synonym aantalrijen    25
+
+startpositie = (aantalkolommen / 2, aantalrijen - 3)
+snelheid     = 8     || het aantal events dat steeds gewacht wordt. Hoe hoger dit getal des te langzamer de blokje vallen.
+
+legematrix = rep [] aantalrijen
+
+|| In de matrix worden per rij alleen de bezette kolomposities bijgehouden.
+|| De functie voegtoe voegt de posities van een gevallen vormpje (een vormpje = 4 vierkantjes)
+|| toe aan de matrix. Hierbij worden gevulden rijen opgeschoond door bovenliggende 
+|| rijen 1 rij naar beneden te laten vallen.  Hierbij vallen de bovenliggende vierkantje niet verder door indien dit mogelijk zou zijn.
+|| Dit kan wel gebeuren door de rijen van onderen af twee aan twee te vergelijken en 
+|| niet overlappende aaneengesloten deelrijen naar beneden laten vallen.
+|| De meeste Tetris varianten doen dit echter niet.
+
+|| De functie voegtoe krijgt mee:
+||      - een matrix met daarin reeds bezette posities
+||      - een vorm bestaande uit vier vierkantjes
+|| De functie voegtoe levert een drietupel op:
+||      - een nieuwe matrix, met daarin de posities van de vorm.
+||        Gevulde rijen zijn reeds opgeschoond.
+||      - een rijnr, vanaf waar hertekend moet worden, indien het aantal
+||        gevulde rijen > 0 was. Dit kan nog iets nauwkeuriger worden bepaald
+||        door te zoeken naar de laagst gevulde rij, maar dat kost waarschijnlijk meer
+||        tijd dan het hertekenen van hooguit 3 extra rijen.
+||      - Het aantal gevulde rijen
+
+voegtoe :: matrix -> vorm -> (matrix,num,num)
+voegtoe m v    = (nnnm,vanaf,aantal)
+where   nm     = voegtoe1 m v
+        nnm    = filter f nm where f r = #r < aantalkolommen
+        nnnm   = nnm ++ rep [] aantal
+        aantal = aantalrijen - #nnm
+        vanaf  = min (map snd v), aantal > 0
+               = aantalrijen + 1
+
+voegtoe1 m []
+        = m
+voegtoe1 m (p:ps) 
+        = voegtoe1 nm restpunten 
+
+where
+        nm              = voegtoerij m y prij
+        y               = snd p
+        prij            = [ fst p | p <- (p:ps); snd p = y]
+        restpunten      = [ p | p <- (p:ps); snd p ~= y]
+
+voegtoerij m y prij
+        = take y m ++ [ m!y ++ prij ] ++ drop (y+1) m
+
+kannaar :: richting -> matrix -> vorm -> bool
+kannaar r m v   = ~ (overlapt m (verplaatsvorm r v))
+
+buitenspeelveld :: vorm -> bool
+buitenspeelveld v = or [x < 0 \/ y < 0 \/ x >= aantalkolommen \/ y >= aantalrijen | (x,y) <- v ]
+
+overlapt :: matrix -> vorm -> bool
+overlapt m v    = or [ overlaprij rij prij | y <- (nodup (map snd v)); rij := m!y ; prij := [ fst p | p <- v; snd p = y]]
+
+overlaprij :: [num] -> [num] -> bool
+overlaprij rij1 rij2     = or [member rij1 p | p <- rij2 ]
+
+/*************************************************************************
+*        Deel 3: interface functies                                      *
+**************************************************************************/
+
+hertekenSpel (x,m,b,p,c,k,ms,a,s,(vb,vbk)) 
+= tekenbord ++ 
+  tekenvorm (vakjes m) grijs ++ 
+  tekenvorm (reltoabs b p c) k ++ 
+  tekenvorm (reltoabs vb 0 (aantalkolommen+4, aantalrijen-3)) vbk ++
+  tekenscore x s
+
+hertekenVerschilSpel (x1,m1,b1,p1,c1,k1,ms1,a1,s1,(vb1,vbk1)) (x,m,b,p,c,k,ms,a,s,(vb,vbk))
+= tekenvorm (vm1--vm) wit ++ 
+  tekenvorm (if (k1 ~= k \/ x1 ~= x) bm1 (bm1--bm)) wit ++
+  tekenvorm (vm--vm1) grijs ++ 
+  tekenvorm (if (k1 ~= k \/ x1 ~= x) bm (bm--bm1)) k ++
+  tekenvorm (if (vbk1 ~= vbk) nm1 []) grijs ++ 
+  tekenvorm (if (vbk1 ~= vbk) nm []) vbk ++
+  tekenscore x s
+where
+  nm1 = reltoabs vb1 0 (aantalkolommen+4, aantalrijen-3)
+  nm = reltoabs vb 0 (aantalkolommen+4, aantalrijen-3)
+  bm1 = reltoabs b1 p1 c1
+  bm = reltoabs b p c
+  vm1 = vakjes m1
+  vm = vakjes m
+
+vakjes m = [(x, y) | (rij, y) <- zip2 m [0..]; x <- rij]
+
+tekenbord
+= [GraphRectangle grijs (-1,-1) (1,1), 
+   GraphRectangle donkergrijs (x1-0.04,y1-0.04) (x2+0.04,y2), 
+   GraphRectangle wit (x1,y1) (x2,y2),
+   GraphText 0 (x1, y1-0.15) "TETRIS   s:start/stop i:turn j:left k:right m:drop n:new"
+  ]
+
+tekenscore Einde s = [GraphRectangle grijs (x2+0.1, y1+0.1) (x2+1, y1-0.1), GraphText zwart (x2+0.2, y1+0.05) (itoa s ++ " EINDE")]
+tekenscore _ s = [GraphRectangle grijs (x2+0.1, y1+0.1) (x2+1, y1-0.1), GraphText zwart (x2+0.2, y1+0.05) (itoa s)]
+
+tekenvorm v k = map (tekenvierkant k) v
+where  
+  tekenvierkant k (x,y) = GraphRectangle k (px x, py y) (px (x+1), py (y+1))
+  px x = x1 + (x2-x1)//aantalkolommen * x
+  py y = y1 + (y2-y1)//aantalrijen * y
+
+nieuwSpel = ( Pauze, legematrix, b, 0, startpositie, k, snelheid, snelheid, 0, (nb,nk))
+where (b,k) = randomblok
+     (nb,nk) = randomblok
+
+startStopSpel (Running,m,b,p,c,k,ms,a,s,vb) = (Pauze,m,b,p,c,k,ms,a,s,vb)
+startStopSpel (Pauze,m,b,p,c,k,ms,a,s,vb)   = (Running,m,b,p,c,k,ms,a,s,vb)
+startStopSpel spel = spel
+
+linksSpel (Running,m,b,p,c,k,ms,a,s,vb)
+= (Running,m,b,p,c,k,ms,a,s,vb) ,if buitenspeelveld nv \/ overlapt m nv
+= (Running,m,b,p,nc,k,ms,na,s,vb)
+where
+  nc = verplaatspunt Links c
+  nv = reltoabs b p nc
+  na = max2 0 (a-1)
+linksSpel spel = spel
+
+rechtsSpel (Running,m,b,p,c,k,ms,a,s,vb)
+= (Running,m,b,p,c,k,ms,a,s,vb) ,if buitenspeelveld nv \/ overlapt m nv
+= (Running,m,b,p,nc,k,ms,na,s,vb)
+where
+  nc = verplaatspunt Rechts c
+  nv = reltoabs b p nc
+  na = max2 0 (a-1)
+rechtsSpel spel = spel
+
+draaiSpel (Running,m,b,p,c,k,ms,a,s,vb)
+= (Running,m,b,p,c,k,ms,a,s,vb) ,if buitenspeelveld nv \/ overlapt m nv
+= (Running,m,b,np,c,k,ms,na,s,vb)
+where
+  np = draai b p
+  nv = reltoabs b np c
+  na = max2 0 (a-1)
+draaiSpel spel = spel
+
+valSpel (Running,m,b,p,c,k,ms,a,s,(vb,vk))
+= (Einde,nm,vb,0,startpositie,vk,nieuwesnelheid,ms,ns,(nieuwblok,nk)) ,if buitenspeelveld v \/ overlapt m v
+= (Running,nm,vb,0,startpositie,vk,ms,ms,ns,(nieuwblok,nk))
+where
+  (nieuwblok,nk)    = randomblok
+  (nm,vanaf,aantal) = voegtoe m nv
+  v                 = reltoabs b p c
+  nv                = val v
+  ns                = s + 4 + 10*aantal
+  nieuwesnelheid    = min2 ms (snelheid - ns / 500)
+  val v
+  = v ,if buitenspeelveld bv \/ overlapt m bv
+  = val bv
+  where
+    bv = verplaatsvorm Beneden v
+valSpel spel = spel
+
+beweegSpel (Running,m,b,p,c,k,ms,a,s,(vb,vk)) 
+= (Running,m,b,p,c,k,ms,a-1,s,(vb,vk))                                  ,if a > 0
+= (Einde,nm,vb,0,startpositie,vk,nieuwesnelheid,ms,ns,(nieuwblok,nk))   ,if nietOK /\ nietOKnieuw /\ aantal > 0
+= (Running,nm,vb,0,startpositie,vk,ms,nieuwesnelheid,ns,(nieuwblok,nk)) ,if nietOK /\ ~nietOKnieuw /\ aantal > 0
+= (Einde,nm,vb,0,startpositie,vk,ms,nieuwesnelheid,ns,(nieuwblok,nk))   ,if nietOK /\ nietOKnieuw
+= (Running,nm,vb,0,startpositie,vk,ms,nieuwesnelheid,ns,(nieuwblok,nk)) ,if nietOK /\ ~nietOKnieuw
+= (Running,m,b,p,nc,k,ms,ms,s,(vb,vk))
+where
+  v                 = reltoabs b p c
+  nc                = verplaatspunt Beneden c
+  nv                = reltoabs b p nc
+  (nieuwblok,nk)    = randomblok
+  nieuwblokvorm     = reltoabs nieuwblok 0 startpositie
+  nietOK            = buitenspeelveld nv \/ overlapt m nv
+  nietOKnieuw       = buitenspeelveld nieuwblokvorm \/ overlapt nm nieuwblokvorm
+  (nm,vanaf,aantal) = voegtoe m v
+  ns                = s+4+10*aantal
+  nieuwesnelheid    = min2 ms (snelheid - ns / 500)
+beweegSpel spel = spel

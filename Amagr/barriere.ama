@@ -1,0 +1,265 @@
+|| Dick Bruin, 05/04/1999
+|| Barriere-spel a la clean
+|| Rood moet een aaneengesloten lijn van boven naar onder maken
+|| Groen moet een aaneengesloten lijn van links naar rechts maken
+|| er wint altijd iemand
+
+kleur ::= Rood | Groen | Geen
+spel  ::= AanZet kleur | Gewonnen kleur
+vak   ==  ((num, num), kleur, kleur)
+
+zwart   = 0
+rood    = 4
+groen   = 2
+lGrijs  = 7
+dGrijs  = 8
+hRood   = 12
+hGroen  = 10
+
+object "AmaGraphics" = (beginSpel 5, call)
+where
+  call "DefParameters" _ state = (state, ["Grootte", "4|5|6|7"])
+  call "DefActions" _ state = (state, ["Mens", "Computer", "Vrij", "Terug"])
+
+  call "Action" ["Mens"] spel = repaint (nieuwSpel Groen spel)
+  call "Action" ["Computer"] spel = repaint (nieuwSpel Rood spel)
+  call "Action" ["Vrij"] spel = repaint (nieuwSpel Geen spel)
+  call "Action" ["Terug"] spel = repaint (terugSpel spel)
+
+  call "Parameters" [g] spel = repaint (beginSpel (atoi g))
+
+  call "MouseDown" [x1, y1, x2, y2] spel = zetSpel (atof x1, atof y1) spel
+
+  call "Repaint" [] spel = repaint spel
+  call _ _ spel = (spel, [])
+  
+  repaint spel = (spel, graphicsout(tekenSpel spel))
+
+beginSpel g = (AanZet Rood, Geen, initVakken veld, [], veld)
+where
+  veld = maakVeld g
+
+nieuwSpel kleur (spel, soort, vakken, notatie, veld) = fst (autoZet ((AanZet Rood, kleur, initVakken veld, [], veld), []))
+
+terugSpel (spel, soort, vakken, notatie, veld)
+= (spel, soort, vakken, notatie, veld) ,if #notatie < aantal
+= (nieuwSpel, soort, nieuwVakken, nieuwNotatie, veld)
+where
+  aantal = aantalTerug spel soort
+  aantalTerug (AanZet Rood)    Groen = 2
+  aantalTerug (Gewonnen Groen) Groen = 2
+  aantalTerug (AanZet Groen)   Rood  = 2
+  aantalTerug (Gewonnen Rood)  Rood  = 2
+  aantalTerug spel soort = 1
+  nieuwNotatie = drop aantal notatie
+  wijzigingen = take aantal notatie
+  nieuwSpel = AanZet kleur where (p, kl, kleur) = notatie!(aantal-1)
+  nieuwVakken = map wijzigVak vakken
+  wijzigVak v = wijzig v ,if member wijzigingen v
+              = v        ,otherwise
+  wijzig (p, kl1, kl2) = (p, kl1, Geen)
+
+zetSpel p (AanZet Rood, soort, vakken, notatie, veld) = autoZet (zet Rood Groen p soort vakken notatie veld)
+zetSpel p (AanZet Groen, soort, vakken, notatie, veld) = autoZet (zet Groen Rood p soort vakken notatie veld)
+zetSpel p (spel, soort, vakken, notatie, veld) = ((spel, soort, vakken, notatie, veld), [])
+
+autoZet ((AanZet Rood,  Rood,  vakken, notatie, veld), gr) = doeZet Rood Groen (computerZet Rood Groen vakken veld) Rood  vakken notatie veld gr
+autoZet ((AanZet Groen, Groen, vakken, notatie, veld), gr) = doeZet Groen Rood (computerZet Groen Rood vakken veld) Groen vakken notatie veld gr
+autoZet ((spel, soort, vakken, notatie, veld), gr) = ((spel, soort, vakken, notatie, veld), gr)
+
+doeZet kleur1 kleur2 vak soort vakken notatie veld gr
+= ((nieuwSpel, soort, nieuwVakken, nieuwNotatie, veld), gr ++ graphicsout output)
+where
+  nieuwVak = wijzig vak
+  nieuwVakken = map wijzigVak vakken
+  wijzigVak v = nieuwVak ,if v = vak
+              = v        ,otherwise
+  wijzig (p, kl1, kl2) = (p, kl1, kleur1)
+  nieuwNotatie = nieuwVak:notatie
+  nieuwSpel = Gewonnen kleur1 ,if winst kleur1 veld nieuwVakken
+            = AanZet kleur2   ,otherwise
+  output
+  = mededeling nieuwSpel ++
+    tekenStaat True veld nieuwVak ++
+    concat(map (tekenStaat False veld) (take 1 notatie))
+    
+zet kleur1 kleur2 (mx, my) soort vakken notatie veld
+= ((AanZet kleur1, soort, vakken, notatie, veld), []) ,if lijst = []
+= doeZet kleur1 kleur2 vak soort vakken notatie veld []
+where
+  (grootte, minVeld, maxVeld, d, afst) = veld
+  mx1 = (mx + 1) // d - 4
+  my1 = (my + 1) // d - 4
+  lijst = [((m, n), kleur, Geen) |
+            ((m, n), kleur, Geen) <- vakken;
+            abs((m+n)-(mx1+my1)) < 1;
+            abs((m-n)-(mx1-my1)) < 1;
+          ]
+  vak = hd lijst
+
+tekenSpel (spel, soort, vakken, notatie, veld)
+= [GraphRectangle lGrijs (-1, -1) (1, 1)] ++ 
+  mededeling spel ++
+  concat(map (tekenVak veld) vakken) ++
+  concat(map (tekenStaat True veld) (take 1 notatie))
+
+tekst (AanZet Rood)    = "Rood aan zet"
+tekst (AanZet Groen)   = "Groen aan zet"
+tekst (Gewonnen Rood)  = "Rood heeft gewonnen"
+tekst (Gewonnen Groen) = "Groen heeft gewonnen"
+
+grootte (grootte, minVeld, maxVeld, d, afst) = grootte
+
+maakVeld g
+= (grootte, minVeld, maxVeld, d, afst)
+where
+  grootte = if(g < 1) 1 (if(g > 10) 10 g)
+  minVeld = -1
+  maxVeld = 2*grootte-1
+  d       = 1 // (grootte+3)
+  afst    = d * 0.15
+
+mededeling spel
+= seq spel [GraphRectangle lGrijs (-0.9, 0.9) (0, 0.8), GraphText zwart (-0.9, 0.86) (tekst spel)]
+
+initVakken (grootte, minVeld, maxVeld, d, afst)
+= sort(
+    [((m, n), Groen, Geen) | m <- [0,2..2*grootte-2]; n <- [0,2..2*grootte-2]] ++
+    [((m, n), Rood , Geen) | m <- [1,3..2*grootte-3]; n <- [1,3..2*grootte-3]]
+  )
+
+tekenVak (grootte, minVeld, maxVeld, d, afst) ((m, n), kleur, staat)
+= [GraphPolyLine dGrijs [(x-d, y), (x, y-d), (x+d, y), (x, y+d), (x-d, y)]] ++
+  tekenHoekPunten kleur ++
+  tekenStaat False (grootte, minVeld, maxVeld, d, afst) ((m, n), kleur, staat)
+where
+  x = (m+4) * d - 1
+  y = (n+4) * d - 1
+  tekenHoekPunten Rood
+  = [GraphRectangle rood (x-d-afst, y-afst) (x-d+afst, y+afst),
+     GraphRectangle rood (x+d-afst, y-afst) (x+d+afst, y+afst),
+     GraphRectangle groen (x-afst, y-d-afst) (x+afst, y-d+afst),
+     GraphRectangle groen (x-afst, y+d-afst) (x+afst, y+d+afst)]
+  tekenHoekPunten Groen
+  = [GraphRectangle groen (x-d-afst, y-afst) (x-d+afst, y+afst),
+     GraphRectangle groen (x+d-afst, y-afst) (x+d+afst, y+afst),
+     GraphRectangle rood (x-afst, y-d-afst) (x+afst, y-d+afst),
+     GraphRectangle rood (x-afst, y+d-afst) (x+afst, y+d+afst)]
+
+tekenStaat high (grootte, minVeld, maxVeld, d, afst) ((m, n), kleur, staat)
+= []                                                                ,if staat = Geen
+= [GraphRectangle (kl staat) (x-d+afst, y-afst) (x+d-afst, y+afst)] ,if staat = kleur
+= [GraphRectangle (kl staat) (x-afst, y-d+afst) (x+afst, y+d-afst)] ,otherwise
+where
+  x = (m+4) * d - 1
+  y = (n+4) * d - 1
+  kl Rood  = if high hRood rood
+  kl Groen = if high hGroen groen
+
+selector Rood  = snd
+selector Groen = fst
+incident l1 l2 = [x | x <- l1; member l2 x] ~= []
+
+winst kleur (grootte, minVeld, maxVeld, d, afst) vakken
+= or[member lijnen minVeld /\ member lijnen maxVeld | component <- componenten kleur vakken; lijnen := map (selector kleur) component]
+
+componenten kleur vakken
+= afsluiting[l | v <- vakken; l := lijn kleur v; l ~= []]
+where
+  lijn kleur ((m, n), kl1, kl2)
+  = []                   ,if kl2 ~= kleur
+  = [(m-1, n), (m+1, n)] ,if kl1 = kleur
+  = [(m, n-1), (m, n+1)] ,otherwise
+
+  afsluiting componenten
+  = afsluiting (componenten--c:cs++[nodup(concat(c:cs))]) ,if lijst ~= []
+  = componenten                                           ,otherwise
+  where
+    (c, cs) = hd lijst
+    lijst = [(c, cs) | c <- componenten; cs := [d | d <- componenten; d ~= c; incident c d]; cs ~= []]
+
+randomElement l = l ! random(#l)
+
+computerZet kleur1 kleur2 vakken (grootte, minVeld, maxVeld, d, afst)
+= randomElement eigenVakken ,if zetten < 2
+= element pad1              ,if len1 = 1
+= element pad2              ,if len2 = 1
+= hd dwang1                 ,if len1 = 2 /\ dwang1 ~= []
+= hd dwang2                 ,if len2 = 2 /\ dwang2 ~= []
+= element pad2              ,if zetten < 8 /\ len1 = len2
+= element pad1              ,if len1 <= len2
+= element pad2              ,otherwise
+where
+  zetten = #vakken - #legeVakken
+  legeVakken = [(p, kleur, Geen) | (p, kleur, Geen) <- vakken]
+  eigenVakken = [(p, Groen, Geen) | (p, Groen, Geen) <- vakken]
+
+  component1 = componenten kleur1 vakken
+  component2 = componenten kleur2 vakken
+
+  pad1 = minimaalPad kleur1 component1 vakken legeVakken
+  pad2 = minimaalPad kleur2 component2 vakken legeVakken
+
+  len1 = #pad1
+  len2 = #pad2
+
+  dwang1 = dwangZetten kleur1 component1 kleur2 component2 legeVakken 1
+  dwang2 = dwangZetten kleur2 component2 kleur1 component1 legeVakken 1
+
+  element pad
+  = randomElement doorsnee1     ,if doorsnee1 ~= []
+  = randomElement doorsnee2     ,if doorsnee2 ~= []
+  = randomElement aangrenzende1 ,if aangrenzende1 ~= []
+  = randomElement aangrenzende2 ,if aangrenzende2 ~= []
+  = randomElement eigenrichting ,if eigenrichting ~= []
+  = randomElement pad           ,otherwise
+  where
+    doorsnee1 = [p | p <- aangrenzende1; member eigenrichting p]
+    doorsnee2 = [p | p <- aangrenzende2; member eigenrichting p]
+    aangrenzende1 = [p | p <- pad; incident (lijn kleur1 p) comp1]
+    aangrenzende2 = [p | p <- pad; incident (lijn kleur2 p) comp2]
+    eigenrichting = [((m,n), Groen, Geen) | ((m,n), Groen, Geen) <- pad]
+    comp1 = concat component1
+    comp2 = concat component2
+
+  lijn kleur ((m, n), kl, Geen)
+  = [(m-1, n), (m+1, n)] ,if kl = kleur
+  = [(m, n-1), (m, n+1)] ,otherwise
+
+  minimaalPad kleur cs vakken legeVakken
+  = map inversLijn (bestFirst cond (comps--map fst minComps) ls minComps)
+  where
+    inversLijn l = hd[v | v <- legeVakken; lijn kleur v = l]
+    cond comp = member (map (selector kleur) comp) maxVeld
+    ls = map (lijn kleur) legeVakken
+    ps = [[p] | p <- nodup(concat ls)--concat cs]
+    comps = cs ++ ps
+    minComps = [(c, []) | c <- comps; member (map (selector kleur) c) minVeld]
+
+  bestFirst cond cs ls ((comp, pad):rest)
+  = pad ,if cond comp
+  = bestFirst cond (cs--map fst minComps) (ls--map (hd.snd) minComps) (rest++minComps)
+  where
+    minComps = [(c, l:pad) | l <- ls; incident l comp; c <- cs; incident l c]
+
+  dwangZetten kl1 comp1 kl2 comp2 lv diepte
+  = [v1 | ccomp1 := concat comp1;
+          v1 <- lv;
+          l1 := lijn kl1 v1;
+          incident l1 ccomp1 \/ incident [minVeld, maxVeld] (map (selector kl1) l1);
+          (c1, w1) := verbinding kl1 v1 comp1;
+          dz := [dwangZetten kl1 c1 kl2 c2 (lv--[v1, v2]) (diepte+1) ~= []
+                | v2 <- filter (incident l1 . lijn kl1) (lv--[v1]);
+                  (c11, True) := verbinding kl1 v2 c1;
+                  (c2, False) := verbinding kl2 v2 comp2
+                ];
+          w1 \/ diepte > grootte \/ (dz ~= [] /\ and dz)
+    ]
+
+  verbinding kleur v cs
+  = (cs -- lcs ++ [c], member lijnen minVeld /\ member lijnen maxVeld)
+  where
+    l = lijn kleur v
+    lcs = [c | c <- cs; incident l c]
+    c = concat lcs -- l ++ l;
+    lijnen = map (selector kleur) c

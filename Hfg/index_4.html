@@ -1,0 +1,375 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> constructs</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>constructs</H2>
+<TT>
+<BR>
+<A HREF="#page_301">expressions</A>
+<BR>
+<A HREF="#page_302">functions</A>
+<BR>
+<A HREF="#page_303">patterns</A>
+<BR>
+<A HREF="#page_304">where clauses</A>
+<BR>
+<A HREF="#page_305">lambda abstractions</A>
+<BR>
+<A HREF="#page_306">listcomprehensions</A>
+<BR>
+<A HREF="#page_307">operators</A>
+<BR>
+<BR>
+<A HREF="index_3.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_301"></A><HR><H2>expressions</H2>
+<BR>
+Amanda is about reducing expressions. So expressions form the heart of Amanda.
+<BR>
+<BR>
+Expressions can be numbers, characters, strings, booleans, constructors, tuples, lists, records,
+function applications, operator applications, operator sections and list comprehensions.
+<BR>
+<BR>
+Examples:
+<PRE>
+12
+'a'
+"Hello world"
+True
+False
+GraphPolyLine 1 [(-1, -1), (-1, 1), (0, 0)]
+()
+(-13, "Bye world", 'a')
+[]
+[1, 2, 3, 5]
+[1..10]
+{ x = 0, y = 0, z = 0 }
+fac 3
+12 + 3 * 8
+(2 *)
+[x | x &lt- [1..100]; x % 2 = 0]
+</PRE>
+Special characters are denoted as in the C-language like \n, \b, \t, \r, \a.
+<BR>
+\e denotes the escape character.
+<BR>
+\xFF denotes a character using hexadecimal ascii notation.
+<BR>
+
+<A NAME="page_302"></A><HR><H2>functions</H2>
+<BR>
+Functions are defined using equations in the style of Bird and Wadler.
+<BR>
+<BR>
+Example:
+<PRE>
+fac 0 = 1
+fac n = n * fac (n-1)
+</PRE>
+Example:
+<PRE>
+fac n = 1             ,if n = 0
+      = n * fac (n-1) ,otherwise
+</PRE>
+Note: in situations of multiple definitions for one left hand side the
+defining symbols '=' should be written exactly under each other.
+<BR>
+<BR>
+The left hand side may contain patterns.
+<BR>
+But important restrictions on the use of patterns are:
+<BR>
+- in a single definition all pattern variables must have different names
+<BR>
+- patterns of the form (n+1) are not allowed
+<BR>
+- multiple definitions of the same function must have different patterns
+<BR>
+<BR>
+Wrong definitions are:
+<BR>
+<BR>
+Counterexample:
+<PRE>
+equal x x = True
+equal x y = False
+</PRE>
+This is wrong because the first definition has
+two pattern variables with the same name.
+<BR>
+<BR>
+Counterexample:
+<PRE>
+equal x y = True  ,if x = y
+equal x y = False ,if x ~= y
+</PRE>
+This is wrong because the patterns of the definitions
+coincide.
+<BR>
+It is accepted by the interpreter but will never use
+the second definition.
+<BR>
+The correct way to define this function is:
+<PRE>
+equal x y = True  ,if x = y
+          = False ,if x ~= y
+</PRE>
+A function can have private definitions in a where clause.
+<BR>
+<BR>
+Example:
+<PRE>
+mergeSort list
+= list ,if half &lt 1
+= merge (mergeSort(take half list)) (mergeSort(drop half list))
+where
+  half = (# list) / 2
+</PRE>
+<BR>
+See also:
+<A HREF="#page_303">patterns</A>
+<A HREF="#page_304">where clauses</A>
+<BR>
+
+<A NAME="page_303"></A><HR><H2>patterns</H2>
+<BR>
+Patterns occur in the left hand side of a function definition, in the
+generators of listcomprehensions and in the left hand side of local definitions.
+<BR>
+Patterns play two distinct roles: they define selectors for parts of an expression
+and they constrain the type of an expression (see
+<A HREF="index_5.html#page_318">generic functions</A>
+)
+<BR>
+<BR>
+Patterns may contain:
+<PRE>
+  constants
+  basic types (num, bool, char)
+  lists
+  tuples
+  constructors of an algebraic type
+  records
+  aliases
+  wildcards (the underscore _)
+</PRE>
+An alias is a name of a part of a pattern as the next example shows:
+<PRE>
+merge (l1 = h1:t1) (l2 = h2:t2) = h1 : merge t1 l2 ,if h1 &lt h2
+                                = h2 : merge l1 t2 ,otherwise
+</PRE>
+Here l1 is an alias for h1:t1 and can be used on the right hand side.
+<BR>
+<BR>
+The wildcard _ may be used to indicate a don't care pattern.
+Wildcards may occur more than once in the same pattern expression.
+<BR>
+
+<A NAME="page_304"></A><HR><H2>where clauses</H2>
+<BR>
+A where clause contains private local definitions of a function.
+<BR>
+The layout rule for where clauses is:
+<BR>
+<BR>
+Layout rule 1:
+<BR>
+The keyword 'where' can be put right under or to the right of the symbol '='
+of the function definition and the definitions in the where clause
+are put to the right of the symbol '='.
+<BR>
+<BR>
+Example:
+<PRE>
+  fac n
+= p [1..n]
+   where
+  p = prod
+</PRE>
+Layout rule 2:
+<BR>
+The keyword 'where' can be placed right under or to the right of
+the function name and the definitions in the where clause are put to the
+right (so not under) the keyword 'where'.
+<BR>
+<BR>
+Example:
+<PRE>
+fac n = p [1..n]
+where
+  p = prod
+</PRE>
+<BR>
+
+<A NAME="page_305"></A><HR><H2>lambda abstractions</H2>
+<BR>
+Lambda abstraction is an alternative way to define a function.
+<BR>
+<BR>
+Its basic form is:
+<BR>
+&ltpattern&gt -&gt &ltexpression based on the pattern&gt
+<BR>
+<BR>
+In order to define a function with more than 1 argument this construction
+should be used repeatedly:
+<BR>
+&ltpattern1&gt -&gt &ltpattern2&gt -&gt ... -&gt &ltpatternN&gt -&gt &ltexpression&gt
+<BR>
+<BR>
+Alternatives are separated by |
+<BR>
+<BR>
+Examples:
+<PRE>
+map (n -&gt n+1) [1..]
+foldl (n -&gt m -&gt n // m) 1 [1..10]
+
+minmax = foldl ((min, max) -&gt x -&gt (min2 min x, max2 max x)) (infinite, -infinite)
+where
+  infinite = 100000
+
+fac = 0 -&gt 1 | n -&gt n * fac (n-1)
+
+divide = x -&gt (0 -&gt error "division by zero" | y -&gt x / y)
+</PRE>
+Of course this is a clumsy way to define the divide function.
+<BR>
+Better is:
+<PRE>
+divide = x -&gt 0 -&gt error "division by zero" | x -&gt y -&gt x / y
+</PRE>
+Much better is:
+<PRE>
+divide x 0 = error "division by zero"
+divide x y = x / y
+
+weird = x -&gt x -&gt x
+</PRE>
+From the last definition it is obvious that patterns in a lambda abstraction may
+be the same.
+<BR>
+It is renamed like:
+<PRE>
+weird = var1 -&gt var2 -&gt var2
+</PRE>
+<BR>
+
+<A NAME="page_306"></A><HR><H2>listcomprehensions</H2>
+<BR>
+Listcomprehensions extend Bird and Wadler syntax.
+<BR>
+<BR>
+Besides generators and conditions a listcomprehension may introduce
+an abbreviation using the assignment operator (:=).
+<BR>
+Another feature is the implicit zip notation.
+<BR>
+<BR>
+A generator like:
+<BR>
+  x, y &lt- [1..100], [1..]
+<BR>
+is the equivalent of
+<BR>
+  (x, y) &lt- zip2 [1..100] [1..]
+<BR>
+<BR>
+Likewise
+<BR>
+  a, b, c := 1, 2, 3
+<BR>
+denotes
+<BR>
+  (a, b, c) &lt- zip3 [1] [2] [3]
+<BR>
+<BR>
+Example:
+<PRE>
+pythagoras = [ (x, y, z) |
+                 z &lt- [1..];
+                 y &lt- [1..z];
+                 x &lt- [1..y];
+                 x^2 + y^2 = z^2
+             ]
+
+evenQuadrats = [ x * x | x &lt- [0..]; x % 2 = 0 ]
+
+evenQuadrats = [ x * x | x &lt- [0,2..] ]
+
+evenQuadrats = [ y | x &lt- [0..]; y := x * x; y % 2 = 0 ]
+
+evenQuadrats = [ y | x &lt- [0,2..]; y := x * x]
+
+queens 0 = [[]]
+queens m = [ p ++ [n] |
+              positions := [1..8];
+              p &lt- queens (m-1);
+              n &lt- positions;
+              [True | i, j &lt- positions, p; j=n \/ i+j=m+n \/ i-j=m-n] = []
+           ]
+</PRE>
+<BR>
+Also multiple results may be generated like in:
+<BR>
+[x, x+y, x+2*y | x &lt- [1..10]; y &lt- [1..x]]
+<BR>
+which is the equivalent of:
+<BR>
+[z | x &lt- [1..10]; y &lt- [1..x]; z &lt- [x, x+y, x+2*y]]
+<BR>
+
+<A NAME="page_307"></A><HR><H2>operators</H2>
+<BR>
+Infix operators can be defined as in the following examples:
+<BR>
+<BR>
+Example:
+<PRE>
+|| a complex number is represented by a pair
+complex == (num, num)
+
++++ :: complex-&gtcomplex-&gtcomplex
+( (x1,y1) +++ (x2, y2) ) = (x1+x2, y1+y2)
+</PRE>
+The name of an operator consists of punctuation characters
+like +, -, *, /, #, etc...
+<BR>
+The left-hand side of the definition must be enclosed in parentheses.
+<BR>
+<BR>
+Infix operators may be used as functions using prefix notation.
+<BR>
+<BR>
+Example:
+<PRE>
+addComplex :: complex-&gtcomplex-&gtcomplex
+addComplex c1 c2 = +++ c1 c2    || equivalent to  c1 +++ c2
+</PRE>
+Functions with at least two arguments may be used as operators
+using a $ as prefix.
+<BR>
+<BR>
+Example:
+<PRE>
+c1 $addComplex c2
+</PRE>
+Sections can be defined just like in Bird and Wadler (be careful to
+surround them with parentheses).
+<BR>
+<BR>
+Examples:
+<PRE>
+positiveNumbers :: [num] -&gt [num]
+negativeNumbers :: [num] -&gt [num]
+positiveNumbers = filter (0 &lt)
+negativeNumbers = filter (&lt 0)
+</PRE>
+See also:
+<A HREF="index_6.html#page_324">#operator</A>
+<BR>
+
+</BODY>
+</HTML>

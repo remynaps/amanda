@@ -1,0 +1,162 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> numerical functions</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>numerical functions</H2>
+<TT>
+<BR>
+<A HREF="#page_521">round</A>
+<BR>
+<A HREF="#page_522">trunc</A>
+<BR>
+<A HREF="#page_523">decode</A>
+<BR>
+<A HREF="#page_524">code</A>
+<BR>
+<A HREF="#page_525">random</A>
+<BR>
+<A HREF="#page_526">cos</A>
+<BR>
+<A HREF="#page_527">sin</A>
+<BR>
+<A HREF="#page_528">exp</A>
+<BR>
+<A HREF="#page_529">log</A>
+<BR>
+<A HREF="#page_530">sqrt</A>
+<BR>
+<A HREF="#page_531">atan</A>
+<BR>
+<A HREF="#page_532">itoa</A>
+<BR>
+<A HREF="#page_533">atoi</A>
+<BR>
+<A HREF="#page_534">ftoa</A>
+<BR>
+<A HREF="#page_535">atof</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_521"></A><HR><H2>round</H2>
+<BR>
+round :: num -&gt num
+<BR>
+<BR>
+round x = x rounded to the nearest integer
+<BR>
+
+<A NAME="page_522"></A><HR><H2>trunc</H2>
+<BR>
+trunc :: num -&gt num
+<BR>
+<BR>
+trunc x = x truncated to the nearest integer (so its absolute value decreases)
+<BR>
+
+<A NAME="page_523"></A><HR><H2>decode</H2>
+<BR>
+decode :: num -&gt char
+<BR>
+<BR>
+decode n = character with ascii value n (n integer, 0 &lt= n &lt 256)
+<BR>
+
+<A NAME="page_524"></A><HR><H2>code</H2>
+<BR>
+code :: char -&gt num
+<BR>
+<BR>
+code c = ascii value of c
+<BR>
+
+<A NAME="page_525"></A><HR><H2>random</H2>
+<BR>
+random :: num -&gt num
+<BR>
+<BR>
+random n = a random number r with 0 &lt= r &lt n (n integer, n &gt 0)
+<BR>
+<BR>
+random should be used with care, because it is not referentially transparent.
+<BR>
+<BR>
+Example:
+<BR>
+[r | k &lt- [1..100]; r := random 10] ~= [r | r := random 10; k &lt- [1..100]]
+<BR>
+
+<A NAME="page_526"></A><HR><H2>cos</H2>
+<BR>
+cos :: num -&gt num
+<BR>
+
+<A NAME="page_527"></A><HR><H2>sin</H2>
+<BR>
+sin :: num -&gt num
+<BR>
+
+<A NAME="page_528"></A><HR><H2>exp</H2>
+<BR>
+exp :: num -&gt num
+<BR>
+<BR>
+exp x = e ^ x
+<BR>
+
+<A NAME="page_529"></A><HR><H2>log</H2>
+<BR>
+log :: num -&gt num
+<BR>
+<BR>
+log x = natural logarithm of x
+<BR>
+
+<A NAME="page_530"></A><HR><H2>sqrt</H2>
+<BR>
+sqrt :: num -&gt num
+<BR>
+<BR>
+sqrt x = x ^ 0.5
+<BR>
+
+<A NAME="page_531"></A><HR><H2>atan</H2>
+<BR>
+atan :: num -&gt num
+<BR>
+
+<A NAME="page_532"></A><HR><H2>itoa</H2>
+<BR>
+itoa :: num -&gt [char]
+<BR>
+<BR>
+itoa n = string representation of the integer n
+<BR>
+
+<A NAME="page_533"></A><HR><H2>atoi</H2>
+<BR>
+atoi :: [char] -&gt num
+<BR>
+<BR>
+atoi s = value of the first integer denoted in s or 0 if none
+<BR>
+
+<A NAME="page_534"></A><HR><H2>ftoa</H2>
+<BR>
+ftoa :: num -&gt [char]
+<BR>
+<BR>
+ftoa n = string representation of the number n
+<BR>
+
+<A NAME="page_535"></A><HR><H2>atof</H2>
+<BR>
+atof :: [char] -&gt num
+<BR>
+<BR>
+atof s = value of the first number denoted in s or 0 if none
+<BR>
+
+</BODY>
+</HTML>

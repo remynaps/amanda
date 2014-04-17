@@ -1,0 +1,191 @@
+|| jigsaw puzzle, Dick Bruin, 24/05/96, 07/04/1999
+
+puzzel          == [stuk]
+stuk            == ([driehoek], [punt], verplaatsing) /* grenzende driehoeken, hoekpunten gesorteerd */
+driehoek        == (punt, punt, punt, [polygon]) /* positief georienteerd */
+verplaatsing    == punt
+polygon         == ([punt], kleur) /* positief georienteerd */
+punt            == (num, num) /* (x, y) */
+kleur           == num
+
+maakPuzzel      :: num -> puzzel
+verplStuk       :: stuk -> verplaatsing -> stuk
+tekenStuk       :: stuk -> [graphics]
+tekenPuzzel     :: puzzel -> [graphics]
+puntInStuk      :: punt -> stuk -> bool
+grenst          :: stuk -> stuk -> bool
+fusie           :: stuk -> stuk -> stuk
+
+grijs   = 7
+paars   = 5
+geel    = 14
+bruin   = 6
+zwart   = 0
+groen   = 10
+blauw   = 9
+rood    = 12
+wit     = 15
+
+eps = 0.0001
+
+((x1,y1) +++ (x2,y2)) = (x1+x2,y1+y2)
+
+((x1,y1) --- (x2,y2)) = (x1-x2,y1-y2)
+
+(f *** (x,y)) = (f*x, f*y)
+
+dist (x1,y1) (x2,y2) = sqrt((x1-x2)^2 + (y1-y2)^2)
+
+orientatie (x,y) (x1,y1) (x2,y2) = (x-x1)*(y1-y2) - (y-y1)*(x1-x2)
+
+inPolygon q (p:ps) = and[orientatie q p1 p2 > -eps | p1, p2 <- p:ps, ps ++ [p]]
+
+uitproduct (x1,y1) (x2,y2) = x1*y2 - y1*x2
+
+shuffle xs 
+= xs ,if len < 2
+= x:shuffle(xs--[x])
+where
+  len = #xs
+  x = xs ! (random len)
+
+doorsnee (x:xs) (y:ys)
+= doorsnee xs (y:ys) ,if x < y
+= doorsnee (x:xs) ys ,if x > y
+= x:doorsnee xs ys   ,otherwise
+doorsnee xs ys = []
+
+mergeUnique (x:xs) (y:ys)
+= x:mergeUnique xs (y:ys) ,if x < y
+= y:mergeUnique (x:xs) ys ,if x > y
+= x:mergeUnique xs ys     ,otherwise
+mergeUnique xs ys = xs ++ ys
+
+figuur  /* positief georienteerd  binnen (-1,-1)-(0,0) */
+= [rechthoek zwart (-0.9, -0.9) (-0.1, -0.1),
+   rechthoek blauw (-0.8, -0.8) (-0.4, -0.4),
+   rechthoek groen (-0.7, -0.7) (-0.3, -0.3),
+   rechthoek rood  (-0.6, -0.6) (-0.2, -0.2),
+   ([(-0.55, -0.55), (-0.25, -0.55), (-0.4, -0.25)], paars)]
+where
+  rechthoek kl (x1,y1) (x2,y2) = ([(x1,y1),(x2,y1),(x2,y2),(x1,y2)], kl)
+
+maakPuzzel n = (map driehoekStuk.(! (n-8)).iterate splitsDriehoeken.shuffle)[dh1,dh2,dh3,dh4,dh5,dh6,dh7,dh8]
+where
+  (x1,y1) = (-1, -1)
+  (x2,y2) = (0, 0)
+  f1 = (3+random 10)//15
+  f2 = (3+random 10)//15
+  f3 = (3+random 10)//15
+  f4 = (3+random 10)//15
+  p1 = (x1,y1)
+  p2 = (f4*x1+(1-f4)*x2, y1)
+  p3 = (x2,y1)
+  p4 = (x2,f3*y1+(1-f3)*y2)
+  p5 = (x2,y2)
+  p6 = (f2*x1+(1-f2)*x2, y2)
+  p7 = (x1,y2)
+  p8 = (x1,f1*y1+(1-f1)*y2)
+  p9 = 0.25 *** (p2 +++ p4 +++ p6 +++ p8) 
+  dh1 = (p1, p2, p8)
+  dh2 = (p2, p3, p4)
+  dh3 = (p4, p5, p6)
+  dh4 = (p6, p7, p8)
+  dh5 = (p8, p2, p9)
+  dh6 = (p2, p4, p9)
+  dh7 = (p4, p6, p9)
+  dh8 = (p6, p8, p9)
+
+  splitsDriehoeken (dh:dhs) = dhs ++ shuffle(splitsDriehoek dh)
+
+  splitsDriehoek (p1, p2, p3) = (splits.snd.max)[(dist q2 q3, (q1, q2, q3)) | (q1, q2, q3) <- [(p1, p2, p3), (p2, p3, p1), (p3, p1, p2)]]
+
+  splits (p1, p2, p3) = [(p1, p2, p4), (p1, p4, p3)]
+  where
+    p4 = 0.5 *** (p2 +++ p3)
+
+  driehoekStuk (p1, p2, p3) = ([(p1, p2, p3, polygons)], sort[p1, p2, p3], (v1, v2))
+  where
+    v1 = random 100 // 100
+    v2 = random 100 // 100
+    polygons = [(polygon, kl) | (ps, kl) <- figuur; polygon := polygonDoorsnee [p1,p2,p3] ps; #polygon >= 3]
+
+polygonDoorsnee pg1 pg2 = omhulsel[p | p <- pg1 ++ pg2 ++ [snijpunt l1 l2 | l1 <- lijnen pg1; l2 <- lijnen pg2]; inPolygon p pg1; inPolygon p pg2]
+where
+  lijnen pg = zip(pg, tl pg ++ [hd pg])
+  snijpunt (p1, p2) (p3, p4) = p1 +++ (f *** p21)
+  where
+    p21 = p2 --- p1
+    p43 = p4 --- p3
+    p31 = p3 --- p1
+    teller = uitproduct p31 p43
+    noemer = uitproduct p21 p43
+    f = if(abs noemer < eps) (-1) (teller // noemer)
+  omhulsel = foldl voegtoe []
+  where
+    voegtoe (p1:p2:ps) p
+    = p1:p2:ps   ,if dist p p1 < eps
+    = p1:p:p2:ps ,if orientatie p1 p p2 > eps
+    = p1:voegtoe (p2:ps) p
+    voegtoe [p1] p
+    = [p1]    ,if dist p p1 < eps
+    = [p1, p] ,otherwise
+    voegtoe [] p = [p]
+
+verplStuk (dhs, hps, v) p = (dhs, hps, v+++p)
+
+tekenStuk (dhs, _, v) = (concat.map tekenDriehoek)dhs
+where
+  tekenDriehoek (p1, p2, p3, ls)
+  = [GraphPolygon geel [p1+++v, p2+++v, p3+++v]] ++
+    [GraphPolygon kl (map(v+++)ps) | (ps, kl) <- ls] ++
+    [GraphPolyLine bruin [p1+++v, p2+++v, p3+++v, p1+++v]]
+    
+tekenRand (dhs, _, v) = (concat.map tekenDriehoek)dhs
+where
+  tekenDriehoek (p1, p2, p3, ls)
+  = [GraphPolyLine wit [p1+++v, p2+++v, p3+++v, p1+++v]]
+    
+tekenPuzzel puzzel = clrscr ++ (concat.map tekenStuk)puzzel
+where
+  clrscr
+  = [GraphRectangle grijs (-1,-1) (1,1)] ,if #puzzel > 1
+  = [GraphRectangle paars (-1,-1) (1,1), GraphRectangle grijs (-0.9,-0.9) (0.9,0.9)]
+
+puntInStuk p (dhs, _, v) = (or.map (hit (p---v)))dhs
+where
+  hit p (p1, p2, p3, _) = inPolygon p [p1, p2, p3]
+
+grenst (_, hps1, v1) (_, hps2, v2) = dist v1 v2 < 0.05 /\ doorsnee hps1 hps2 ~= []
+
+fusie (dhs1, hps1, _) (dhs2, hps2, v) = (dhs1++dhs2, mergeUnique hps1 hps2, v)
+
+object "AmaGraphics" = ((maakPuzzel 25, 25), call)
+where
+  call "DefParameters" _ state = (state, ["Grootte", "25"])
+  call "DefActions" _ state = (state, ["Nieuw"])
+
+  call "Action" ["Nieuw"] (puzzel, n)           = repaint (maakPuzzel n, n)
+  call "Parameters" [s] (puzzel, _)             = ((puzzel, n), []) where n = min[50, max[10, atoi s]]
+  call "Repaint" [] (puzzel, n)                 = repaint (puzzel, n)
+  call "MouseDown" [x1, y1, x2, y2] (puzzel, n) = repaint (down (atof x1, atof y1) (atof x2, atof y2) puzzel, n)
+  call "MouseDrag" [x1, y1, x2, y2] (puzzel, n) = ((puzzel, n), graphicsout (drag (atof x1, atof y1) (atof x2, atof y2) puzzel))
+  call _ _ (puzzel, n) = ((puzzel, n), [])
+  
+  repaint (puzzel, n) = ((puzzel, n), graphicsout(tekenPuzzel puzzel))
+  
+  down p1 p2 puzzel
+  = puzzel  ,if ss1 = []
+  = puzzel1 ,if ss2 = []
+  = puzzel2 ,otherwise
+  where
+    ss1 = [s | s <- reverse puzzel; puntInStuk p1 s]
+    s1 = hd ss1
+    s11 = verplStuk s1 (p2---p1)
+    puzzel1 = puzzel -- [s1] ++ [s11]
+    ss2 = [s | s <- puzzel -- [s1]; grenst s11 s]
+    s2 = hd ss2
+    puzzel2 = puzzel -- [s1, s2] ++ [fusie s11 s2]
+  
+  drag p1 p2 puzzel
+  = (concat.map tekenRand.take 1)[verplStuk s (p2---p1) | s <- reverse puzzel; puntInStuk p1 s]

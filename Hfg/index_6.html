@@ -1,0 +1,143 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> preprocessing</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>preprocessing</H2>
+<TT>
+<BR>
+<A HREF="#page_321">comments</A>
+<BR>
+<A HREF="#page_322">#import</A>
+<BR>
+<A HREF="#page_323">#synonym</A>
+<BR>
+<A HREF="#page_324">#operator</A>
+<BR>
+<BR>
+<A HREF="index_3.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_321"></A><HR><H2>comments</H2>
+<BR>
+After || the rest of a line is treated as a comment.
+<BR>
+Also a C-style comment is supported.
+<BR>
+<BR>
+Example:
+<PRE>
+|| this is comment
+
+/*
+   this is /* a comment */
+   nested within a comment
+*/
+</PRE>
+<BR>
+
+<A NAME="page_322"></A><HR><H2>#import</H2>
+<BR>
+Using the directive #import the contents of another file can be
+textually included as in the C-language. The interpreter keeps track of
+the imported files, so recursive imports or repeated imports do not form a
+problem.
+<BR>
+The filename (and not the full pathname) is used to determine if the file has
+already been imported. Therefore "test.ama", "TEST.AMA" or "/amanda/test.ama"
+are seen as different files although the names may actually refer to the same file.
+<BR>
+<BR>
+Syntax: #import "&ltfilename&gt"  (on a single line)
+<BR>
+<BR>
+Example:
+<BR>
+#import "a:/amanda/lib.ama"
+<BR>
+
+<A NAME="page_323"></A><HR><H2>#synonym</H2>
+<BR>
+Using the directive #synonym a name can be declared to be a synonym for
+another name. The synonym is valid from the point of definition.
+<BR>
+The synonym is textually replaced by its real name. Therefor it is possible
+to make synonyms for operators and even for keywords like where.
+<BR>
+<BR>
+Syntax: #synonym &ltsynonym&gt &ltreal name&gt  (on a single line)
+<BR>
+<BR>
+Examples:
+<BR>
+#synonym div /
+<BR>
+#synonym mod %
+<BR>
+<BR>
+With these definitions one may write [x | x &lt- [1..10]; x mod 2 = 0] to denote
+[x | x &lt- [1..10]; x % 2 = 0]
+<BR>
+
+<A NAME="page_324"></A><HR><H2>#operator</H2>
+<BR>
+Using the directive #operator the associativity and the priority of an operator
+can be defined. This directive is valid from the point of definition.
+<BR>
+The priority should be a natural number from 1 (high priority) upto 7 (low
+priority).
+<BR>
+Even built in operators can be changed by this directive.
+<BR>
+<BR>
+Syntax: #operator &ltassociativity&gt &ltpriority&gt &ltoperator&gt  (on a single line)
+<BR>
+associativity = l | r
+<BR>
+<BR>
+Example:
+<BR>
+#operator r 5 @
+<BR>
+#operator l 6 ?
+<BR>
+<BR>
+These definitions state that @ associates to the right with priority 5 and
+that ? associates to the left with priority 6. So @ binds more strongly
+than ?
+<BR>
+<BR>
+The builtin operators have the following associativity and priority
+<PRE>
+operator  associativity  priority
+  :         Right          1
+  &         Left           1
+  !         Left           2
+  ^         Right          2
+  *         Left           3
+  /         Left           3
+  //        Left           3
+  %         Left           3
+  ++        Right          4
+  --        Left           4
+  +         Left           4
+  -         Left           4
+  =         Right          5
+  ~=        Left           5
+  &lt         Left           5
+  &lt=        Left           5
+  &gt         Left           5
+  &gt=        Left           5
+  /\        Right          6
+  \/        Right          7
+</PRE>
+The default associativity is Left.
+<BR>
+The default priority is 1.
+<BR>
+<BR>
+NB: the associativity of the relational operators (=, ~=, &gt, &lt etc) is
+actually irrelevant, because an expression like 1 &lt 2 &lt 3 is not type correct.
+<BR>
+
+</BODY>
+</HTML>

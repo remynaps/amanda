@@ -1,0 +1,220 @@
+/*
+  Dick Bruin, 25/09/2000
+  
+  robot control using finite automata
+  one automaton models a robot in a grid and executes commands such as advance the robot
+  one automaton models a controller which sequences the commands
+  by composing them in parallel a system is constructed which should guide the robot to a treasure
+
+  types:
+    robotAlfabet           shared alfabet
+    grid                   grid + robot position and orientation
+
+  functions:
+    runMoore               runs a nfa randomly and returns a trace of the visited states
+    robot matrix control   composes the grid with the control and graphically shows a trace
+    matrixGrid             builds a grid from the matrix
+    showGrid               displays the grid and the robot
+  
+  test functions:
+    robot
+  
+  gridNfa:
+    a nfa which interprets its input as commands
+    and which changes the position and orientation of the robot
+    and which opens doors
+    
+    initial: (not looking)
+      (not looking) -- Go     --> (not looking)      robot does one step
+      (not looking) -- Push   --> (not looking)      robot pushes a door open
+      (not looking) -- Left   --> (not looking)      robot turns left
+      (not looking) -- Right  --> (not looking)      robot turns right
+      (not looking) -- Look   --> (looking)
+      (looking)     -- Open   --> (not looking)      robot sees open space
+      (looking)     -- Door   --> (not looking)      robot sees a door
+      (looking)     -- Found  --> (not looking)      robot sees a treasure
+      (looking)     -- Closed --> (not looking)      robot sees a wall
+    final: robot position = treasure position
+  
+  controlNfa:
+    a nfa which sequences the commands for the grid
+    typical orders are:
+      Look Open Go                   after seeing open space the robot can advance
+      Look Door Push Go              after seeing a door it is opened and the robot enters
+      Look Found Go                  after seeing a treasure the robot can advance
+      Look Closed Left               after seeing a wall the robot turns
+      Look Closed Right              after seeing a wall the robot turns
+*/
+
+#import "../Amanda/Amagr/nfadfa.ama"
+
+runMoore :: [**] -> nfa * ** -> [*]
+runMoore alfabet (showState, showLetter, delta, deltaLambda, startState, isFinal)
+= runRandom startState
+where
+  runRandom s
+  = [s] ,if isFinal s
+  = [s] ,if ss = []
+  = s : runRandom (randomElement ss)
+  where
+    ss = nodup([ s1 | a <- alfabet; s1 <- delta s a] ++ [s1 | s1 <- deltaLambda s])
+
+randomElement :: [*] -> *
+randomElement xs = xs ! random(#xs)
+
+robotAlfabet ::= Look | Open | Door | Found | Closed | Push | Go | Left | Right
+
+dir ::= North | East | South | West
+coord == (num, num)
+grid 
+== ( num        || the number of rows
+   , num        || the number of columns
+   , [coord]    || the coordinates of empty fields
+   , [coord]    || the coordinates of doors
+   , [coord]    || the coordinates of treasures
+   , coord      || the position of the robot
+   , dir        || the orientation of the robot
+   , bool       || True if the robot is looking
+   )
+
+step :: dir -> coord
+step North = (0, -1)
+step East  = (1, 0)
+step South = (0, 1)
+step West  = (-1, 0)
+
+toLeft :: dir -> dir
+toLeft North = West
+toLeft East  = North
+toLeft South = East
+toLeft West  = South
+
+toRight :: dir -> dir
+toRight North = East  
+toRight East  = South  
+toRight South = West  
+toRight West  = North
+
+advance :: coord -> dir -> coord
+advance (x, y) dir = (x+dx, y+dy)
+where
+  (dx, dy) = step dir  
+
+matrixGrid :: [[char]] -> grid
+matrixGrid matrix = (#matrix, #(hd matrix), coords "=R", coords "D", coords "T", hd (coords "R"), North, False)
+where
+  coords ns = [(i, j) | j, row <- [1..], matrix; i, n <- [1..], row; member ns n]
+
+myGridMatrix
+= ["             "
+  ," R=D======== "
+  ,"   =    =  = "
+  ," ====== =  = "
+  ,"      =      "
+  ," =====D===== "
+  ,"           = "
+  ," = T=======D "
+  ," T         = "
+  ," =========== "
+  ,"             "
+  ]
+
+showGrid :: grid -> [graphics]
+showGrid (rows, cols, fields, doors, treasures, robotPos, dir, looking)
+= concat
+  ([rect 15 pos | (i, j) <- fields -- [robotPos]; pos := position (i, j)] ++
+   [rect 15 pos ++ door 8 spos | (i, j) <- doors; pos := position (i, j); spos := scale pos] ++
+   [rect 15 pos ++ circle 12 spos | (i, j) <- treasures; pos := position (i, j); spos := scale pos] ++
+   [rect 15 pos ++ circle 14 spos ++ line spos | pos := position robotPos; spos := scale pos])
+where
+  f = 0.1
+  dx = 2 // cols
+  dy = 2 // rows
+  position (i, j) = (x - dx, y, x, y + dy)
+  where
+    x = -1 + i * dx
+    y = 1 - j * dy
+  scale (x1, y1, x2, y2) = (x1+f*dx, y1+f*dy, x2-f*dx, y2-f*dy)
+  rect color (x1, y1, x2, y2) = [GraphRectangle color (x1, y1) (x2, y2)]
+  door color (x1, y1, x2, y2) = [GraphPolyLine color [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]]
+  circle color (x1, y1, x2, y2) = [GraphDisc color (x1, y1) (x2, y2), GraphEllipse 0 (x1, y1) (x2, y2)]
+  line (x1, y1, x2, y2) = [GraphPolyLine 0 [(x, y), endPos dir]]
+  where
+    x = (x1 + x2) // 2
+    y = (y1 + y2) // 2
+    endPos North = (x, y2)
+    endPos East  = (x2, y)
+    endPos South = (x, y1)
+    endPos West  = (x1, y)
+
+showDiffGrid :: grid -> grid -> [graphics]
+showDiffGrid
+  (rows1, cols1, fields1, doors1, treasures1, robotPos1, dir1, looking1)
+  (rows2, cols2, fields2, doors2, treasures2, robotPos2, dir2, looking2)
+= showGrid 
+  (rows2, cols2, fields2--fields1++[robotPos1], doors2--doors1, treasures2--treasures1, robotPos2, dir2, looking2)
+
+gridNfa :: [[char]] -> nfa grid robotAlfabet
+gridNfa matrix = (showState, showLetter, delta, deltaLambda, startState, isFinal)
+where
+  showState _ = []
+  showLetter _ = []
+  deltaLambda _ = []
+  startState = matrixGrid matrix
+  isFinal (rows, cols, fields, doors, treasures, robotPos, dir, looking) = ~looking /\ member treasures (advance robotPos dir)
+
+  delta (rs, cs, fs, ds, ts, rPos, dir, True ) Open   = [(rs, cs, fs, ds, ts, rPos, dir, False) | member fs (advance rPos dir)]
+  delta (rs, cs, fs, ds, ts, rPos, dir, True ) Door   = [(rs, cs, fs, ds, ts, rPos, dir, False) | member ds (advance rPos dir)]
+  delta (rs, cs, fs, ds, ts, rPos, dir, True ) Found  = [(rs, cs, fs, ds, ts, rPos, dir, False) | member ts (advance rPos dir)]
+  delta (rs, cs, fs, ds, ts, rPos, dir, True ) Closed = [(rs, cs, fs, ds, ts, rPos, dir, False) | ~(member (fs++ds++ts) (advance rPos dir))]
+  delta (rs, cs, fs, ds, ts, rPos, dir, False) Look   = [(rs, cs, fs, ds, ts, rPos, dir, True)]
+  delta (rs, cs, fs, ds, ts, rPos, dir, False) Push   = [(rs, cs, fs++[nPos], ds--[nPos], ts, rPos, dir, False) | nPos := advance rPos dir; member ds nPos]
+  delta (rs, cs, fs, ds, ts, rPos, dir, False) Go     = [(rs, cs, fs, ds, ts, nPos, dir, False) | nPos := advance rPos dir; member (fs++ts) nPos]
+  delta (rs, cs, fs, ds, ts, rPos, dir, False) Left   = [(rs, cs, fs, ds, ts, rPos, toLeft dir, False)]
+  delta (rs, cs, fs, ds, ts, rPos, dir, False) Right  = [(rs, cs, fs, ds, ts, rPos, toRight dir, False)]
+  delta _ _ = []
+
+myControlNfa :: nfa num robotAlfabet
+myControlNfa = (showState, showLetter, delta, deltaLambda, startState, isFinal)
+where
+  showState _ = []
+  showLetter _ = []
+  deltaLambda _ = []
+  startState = 1
+  isFinal n = member [4] n
+  
+  delta  1 Left   = [2]
+  delta  2 Look   = [3]
+  delta  3 Open   = [6]
+  delta  3 Closed = [7]  
+  delta  3 Door   = [5]  
+  delta  3 Found  = [4]  
+  delta  5 Push   = [6]
+  delta  6 Go     = [1]
+  delta  7 Right  = [2]
+  delta _ _ = []
+
+robot = graphAnimate 400 400 (
+          [GraphRectangle 8 (-1, -1) (1, 1)] ++ 
+          showGrid (hd ss) ++ 
+          concat[[GraphWait ms] ++ showDiffGrid s1 s2 | s1, s2 <- ss, tl ss]
+        )
+where
+  ms = 20
+  alfabet = [Look, Open, Door, Found, Closed, Push, Go, Left, Right]
+  ss = [s | (s, _) <- runMoore alfabet (nfaPar alfabet (gridNfa myGridMatrix) myControlNfa)]
+
+object "AmaGraphics" = (ss, call)
+where
+  alfabet = [Look, Open, Door, Found, Closed, Push, Go, Left, Right]
+  ss = [s | (s, _) <- runMoore alfabet (nfaPar alfabet (gridNfa myGridMatrix) myControlNfa)]
+
+  call "DefSystem" _ state = (state, ["timer", "30"])
+  call "DefActions" _ state = (state, ["Opnieuw"])
+
+  call "Action" _ _ = (ss, [])
+  call "Repaint" [] (s:ss) = (s:ss, graphicsout([GraphRectangle 8 (-1, -1) (1, 1)] ++ showGrid s))
+  call "Timer" [] (s1:s2:ss) = (s2:ss, graphicsout(showDiffGrid s1 s2))
+  call _ _ state = (state, [])
+
+ 

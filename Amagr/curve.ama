@@ -1,0 +1,66 @@
+|| Dick Bruin, 05/04/1999
+|| Curves
+
+display rellist = [GraphRectangle 15 (-1, -1) (1, 1), GraphPolyLine 1 abslist]
+where
+  abslist = scan (+++) (-1, -1) rellist
+  ((x1, y1) +++ (x2, y2)) = (x1+x2, y1+y2)
+
+displayHilbert m = (display . map ((x, y) -> (x * displ, y * displ)) . hilbert) n
+where 
+  n = 1 ,if m < 1
+    = 8 ,if m > 8
+    = m ,otherwise
+  displ = 2 // (2^n-1)
+
+hilbert 0 = []
+hilbert n
+= map left (hilbert (n-1))++
+  [(1, 0)] ++
+  (hilbert (n-1)) ++
+  [(0, 1)] ++
+  (hilbert (n-1)) ++
+  [(-1, 0)] ++
+  map right (hilbert (n-1))
+where
+  left (x, y) = (y, x)
+  right (x, y) = (-y, -x)
+
+displayTartan m = (display . map ((x, y) -> (x * displ, y * displ))) output
+where
+  n = 1 ,if m < 1
+    = 6 ,if m > 6
+    = m ,otherwise
+  displ = 2 // (8*2^n-3)
+  output = tartan n ++ [(-1, 1)] ++ map flip (tartan n)
+  flip (x, y) = (-x, -y)
+
+tartan 0 = [(5, 5)]
+tartan n
+= (tartan (n-1)) ++
+  [(1, 1), (1, -1)] ++
+  map (rot3) (tartan (n-1)) ++
+  [(1, 1)] ++
+  map (rot1) (tartan (n-1)) ++
+  [(-1, 1), (1, 1)] ++
+  (tartan (n-1))
+where
+  rot1 (x, y) = (-y, x)
+  rot3 (x, y) = (y, -x)
+
+drawState ::= Hilbert num | Tartan num
+
+object "AmaGraphics" = (Hilbert 5, call)
+where
+  call "DefSystem" _ state = (state, ["showParameters", "True"])
+  call "DefParameters" _ state = (state, ["type", "Hilbert|Tartan", "size", "3|4|5|6|7|8"])
+
+  call "Parameters" ["Hilbert", n] _ = repaint (Hilbert (atoi n)) 
+  call "Parameters" ["Tartan", n] _ = repaint (Tartan (atoi n)) 
+  call "Repaint" [] state = repaint state
+  call _ _ state = (state, [])
+
+  repaint (Hilbert n) = (Hilbert n, graphicsout(displayHilbert n))
+  repaint (Tartan n) = (Tartan n, graphicsout(displayTartan n))
+  repaint state = (state, [])
+

@@ -1,0 +1,206 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> library functions</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>library functions</H2>
+<TT>
+<BR>
+<A HREF="#page_451">rep</A>
+<BR>
+<A HREF="#page_452">cjustify</A>
+<BR>
+<A HREF="#page_453">ljustify</A>
+<BR>
+<A HREF="#page_454">rjustify</A>
+<BR>
+<A HREF="#page_455">lines</A>
+<BR>
+<A HREF="#page_456">words</A>
+<BR>
+<A HREF="#page_457">isspace</A>
+<BR>
+<A HREF="#page_458">isupper</A>
+<BR>
+<A HREF="#page_459">islower</A>
+<BR>
+<A HREF="#page_460">toupper</A>
+<BR>
+<A HREF="#page_461">tolower</A>
+<BR>
+<A HREF="#page_462">nodup</A>
+<BR>
+<A HREF="#page_463">unlines</A>
+<BR>
+<A HREF="#page_464">sort</A>
+<BR>
+<A HREF="#page_465">transpose</A>
+<BR>
+<A HREF="#page_466">mergeSort</A>
+<BR>
+<A HREF="#page_467">merge</A>
+<BR>
+<A HREF="#page_468">zipwith</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_451"></A><HR><H2>rep</H2>
+<BR>
+rep :: * -&gt num -&gt [*]
+<BR>
+<BR>
+rep x n = [x | k &lt- [1..n]]
+<BR>
+
+<A NAME="page_452"></A><HR><H2>cjustify</H2>
+<BR>
+cjustify :: num -&gt [char] -&gt [char]
+<BR>
+<BR>
+cjustify n string = string centrally justified to occupy n positions
+<BR>
+
+<A NAME="page_453"></A><HR><H2>ljustify</H2>
+<BR>
+ljustify :: num -&gt [char] -&gt [char]
+<BR>
+<BR>
+ljustify n string = string left justified to occupy n positions
+<BR>
+
+<A NAME="page_454"></A><HR><H2>rjustify</H2>
+<BR>
+rjustify :: num -&gt [char] -&gt [char]
+<BR>
+<BR>
+rjustify n string = string right justified to occupy n positions
+<BR>
+
+<A NAME="page_455"></A><HR><H2>lines</H2>
+<BR>
+lines :: [char] -&gt [[char]]
+<BR>
+<BR>
+lines "string1\nstring2\n....stringN" = ["string1", "string2" ... "stringN"]
+<BR>
+
+<A NAME="page_456"></A><HR><H2>words</H2>
+<BR>
+words :: [char] -&gt [[char]]
+<BR>
+<BR>
+words string = list of words in string (spaces, newlines separate words)
+<BR>
+
+<A NAME="page_457"></A><HR><H2>isspace</H2>
+<BR>
+isspace :: char -&gt bool
+<BR>
+<BR>
+isspace c = c is a space or newline
+<BR>
+
+<A NAME="page_458"></A><HR><H2>isupper</H2>
+<BR>
+isupper :: char -&gt bool
+<BR>
+<BR>
+isupper c = c is a uppercase character
+<BR>
+
+<A NAME="page_459"></A><HR><H2>islower</H2>
+<BR>
+islower :: char -&gt bool
+<BR>
+<BR>
+islower c = c is a lowercase character
+<BR>
+
+<A NAME="page_460"></A><HR><H2>toupper</H2>
+<BR>
+toupper :: char -&gt char
+<BR>
+<BR>
+toupper c = c transformed to uppercase
+<BR>
+
+<A NAME="page_461"></A><HR><H2>tolower</H2>
+<BR>
+tolower :: char -&gt char
+<BR>
+<BR>
+tolower c = c transformed to lowercase
+<BR>
+
+<A NAME="page_462"></A><HR><H2>nodup</H2>
+<BR>
+nodup :: [*] -&gt [*]
+<BR>
+<BR>
+nodup removes duplicates from a list and keeps every first occurrence
+<PRE>
+nodup [] = []
+nodup (x:xs) = x : nodup[y | y &lt- xs; y ~= x]
+</PRE>
+<BR>
+
+<A NAME="page_463"></A><HR><H2>unlines</H2>
+<BR>
+unlines :: [[char]] -&gt [char]
+<BR>
+<BR>
+unlines ["line1", "line2" ... "lineN"] = "line1\nline2\n...lineN\n"
+<BR>
+
+<A NAME="page_464"></A><HR><H2>sort</H2>
+<BR>
+sort :: [*] -&gt [*]
+<PRE>
+sort [] = []
+sort (x:xs) = sort[y | y &lt- xs; y &lt x] ++ [x] ++ sort[y | y &lt- xs; y &gt= x]
+</PRE>
+<BR>
+
+<A NAME="page_465"></A><HR><H2>transpose</H2>
+<BR>
+transpose :: [[*]] -&gt [[*]]
+<PRE>
+transpose
+  [[x11, x12 ... x1N],
+   [x21, x22 ... x2N]
+   ...
+   [xM1, xM2 ... xMN]]
+= [[x11, x21 ... xM1],
+   [x12, x22 ... xM2]
+   ...
+   [x1N, x2N ... xMN]]
+</PRE>
+<BR>
+
+<A NAME="page_466"></A><HR><H2>mergeSort</H2>
+<BR>
+mergeSort :: [*] -&gt [*]
+<BR>
+<BR>
+mergeSort = sort (but using the mergesort algorithm)
+<BR>
+
+<A NAME="page_467"></A><HR><H2>merge</H2>
+<BR>
+merge :: [*] -&gt [*] -&gt [*]
+<BR>
+<BR>
+merge xs ys = the ordered merge of the ordered lists xs and ys
+<BR>
+
+<A NAME="page_468"></A><HR><H2>zipwith</H2>
+<BR>
+zipwith :: (* -&gt ** -&gt ***) -&gt [*] -&gt [**] -&gt [***]
+<BR>
+<BR>
+zipwith (+) xs ys = [x + y | x, y &lt- xs, ys]
+<BR>
+
+</BODY>
+</HTML>

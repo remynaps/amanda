@@ -1,0 +1,160 @@
+|| Dick Bruin, 13/02/94, 06/04/1999
+|| Geen3
+
+bordx1 = -0.6
+bordx2 = 0.6
+bordy1 = -0.6
+bordy2 = 0.6
+
+kleurVeld    = 7
+kleurSchaduw = 0
+kleurBord    = 2
+kleurLijn    = 0
+kleurText    = 0
+kleur 1      = 15
+kleur 2      = 0
+
+object "AmaGraphics" = (nieuwSpel 1 8, call)
+where
+  call "DefParameters" _ state = (state, ["Grootte", "4|5|6|7"])
+  call "DefActions" _ state = (state, ["Info", "Mens", "Computer", "Terug"])
+
+  call "Action" ["Info"] spel = (spel, graphicsout(mededeling "Geen3: plaats telkens een steen en vermijd 3 op een rij"))
+  call "Action" ["Mens"] spel = repaint (nieuwSpel 1 (bordGrootte spel))
+  call "Action" ["Computer"] spel = repaint (doeZet stand (computerZet stand)) where stand = nieuwSpel 2 (bordGrootte spel)
+  call "Action" ["Terug"] spel = repaint (zetTerug spel)
+  call "Parameters" [g] spel = repaint (nieuwSpel 1 (atoi g))
+  call "MouseDown" [x1, y1, x2, y2] spel = zetSpel (atof x1, atof y1) spel
+  call "Repaint" [] spel = repaint spel
+  call _ _ spel = (spel, [])
+  
+  repaint spel = (spel, graphicsout(tekenSpel spel))
+
+zetSpel (mx, my) stand
+= (stand, []) ,if ~(legaleZet zet stand)
+= (stand1, graphicsout mensZ) ,if ~(legaleZet zet1 stand1)
+= (stand2, graphicsout (mensZ ++ compZ)) 
+where
+  zet = (-1, -1) ,if mx < bordx1 \/ mx > bordx2 \/ my < bordy1 \/ my > bordy2
+      = (trunc((mx - bordx1) // borddx), trunc((my - bordy1) // borddy))
+  grootte = bordGrootte stand
+  borddx = (bordx2-bordx1) // grootte
+  borddy = (bordy2-bordy1) // grootte
+  stand1 = doeZet stand zet
+  zet1 = computerZet stand1
+  stand2 = doeZet stand1 zet1
+  mensZ = tekenZet zet (speler stand) grootte ++ resultaat "computer" stand1
+  compZ = tekenZet zet1 (speler stand1) grootte ++ resultaat "mens" stand2
+
+tekenSpel stand
+= tekenBord grootte ++
+  concat[tekenZet zet speler grootte | (zet, speler) <- notatie stand] ++
+  mededeling "mens aan zet"
+where
+  grootte = bordGrootte stand
+
+tekenBord grootte
+= [GraphRectangle kleurVeld (-1,-1) (1,1)] ++
+  [GraphRectangle kleurSchaduw (bordx1+0.1, bordy1-0.1) (bordx2+0.1, bordy2-0.1)] ++
+  [GraphRectangle kleurBord (bordx1, bordy1) (bordx2, bordy2)] ++
+  [GraphPolyLine kleurLijn [(x, bordy1), (x, bordy2)] | k <- [0..grootte]; x := bordx1 + k//grootte*(bordx2-bordx1)] ++
+  [GraphPolyLine kleurLijn [(bordx1, y), (bordx2, y)] | k <- [0..grootte]; y := bordy1 + k//grootte*(bordy2-bordy1)]
+
+tekenZet (x, y) speler grootte
+= [GraphDisc (kleur speler) (x1+dx, y1+dy) (x2-dx, y2-dy)] ++
+  [GraphEllipse (kleur (3-speler)) (x1+dx, y1+dy) (x2-dx, y2-dy)]
+where
+  borddx = (bordx2-bordx1) // grootte
+  borddy = (bordy2-bordy1) // grootte
+  dx = 0.1 * borddx
+  dy = 0.1 * borddy
+  x1 = bordx1 + x * borddx
+  y1 = bordy1 + y * borddy
+  x2 = x1 + borddx
+  y2 = y1 + borddy
+
+mededeling string
+= [GraphRectangle kleurVeld (-1, bordy2+0.1) (1, bordy2+0.3), GraphText kleurText (bordx1, bordy2 + 0.2) string]
+
+resultaat spelernaam stand
+= mededeling (spelernaam ++ " heeft gewonnen") ,if winst stand
+= mededeling "remise"                          ,if remise stand
+= mededeling (spelernaam ++ " aan zet")        ,otherwise
+
+/********************************* SPEL *************************************/
+
+zet    == (num, num)
+status ::= Bezig | Remise | Gewonnen
+waarde == (num, zet)
+stand  == (status, num, num, [zet], [zet], [waarde])
+
+speler (status, mensnr, grootte, notatie, zetten, waardes) = 1 + #notatie % 2
+
+nieuwSpel mensnr grootte
+= (Bezig, mensnr, grootte, [], zetten, map waarde zetten)
+where
+  zetten = [(x, y) | x <- [0..grootte-1]; y <- [0..grootte-1]]
+  waarde (x, y)
+  = (3, (x, y)) ,if member rand x /\ member rand y
+  = (5, (x, y)) ,if member rand x \/ member rand y
+  = (8, (x, y)) ,otherwise
+  rand = [0, grootte-1]
+
+bordGrootte (status, mensnr, grootte, notatie, zetten, waardes) = grootte
+
+notatie (status, mensnr, grootte, not, zetten, waardes) = [(zet, 1 + k % 2) | zet, k <- (reverse not), [0..]]
+
+winst (status, mensnr, grootte, notatie, zetten, waardes) = status = Gewonnen
+
+remise (status, mensnr, grootte, notatie, zetten, waardes) = status = Remise
+
+doeZet (Bezig, mensnr, grootte, notatie, zetten, waardes) zet
+= (status, mensnr, grootte, zet:notatie, zetten--[zet], nieuweWaardes)
+where
+  status
+  = Gewonnen ,if maakt3 [z | z, k <- notatie, [1..]; k % 2 = 0] zet
+  = Remise   ,if #zetten = 1
+  = Bezig    ,otherwise
+  nieuweWaardes
+  = [wijzigWaarde dw1 dw2 zet (w, z) | (w, z) <- waardes; z ~= zet]
+  where
+    (dw1, dw2) = (-1, 2)   ,if 1 + #notatie % 2 = mensnr
+               = ( 1, 0.5) ,otherwise
+  wijzigWaarde dw1 dw2 (x, y) (w, (zx, zy))
+  = (w+dw1, (zx, zy)) ,if member [-1, 0, 1] (zx-x) /\ member [-1, 0, 1] (zy-y)
+  = (w+dw2, (zx, zy)) ,if member [-2, 0, 2] (zx-x) /\ member [-2, 0, 2] (zy-y)
+  = (w, (zx, zy))     ,otherwise
+doeZet stand zet = stand
+
+maakt3 zetten (x, y)
+= doorsnee buren1 buren2 \/ doorsnee buren1 (reverse(map spiegel buren1))
+where
+  buren1 = sort[(dx, dy) | (zx, zy) <- zetten; dx := zx-x; member [-1, 0, 1] dx; dy := zy-y; member [-1, 0, 1] dy]
+  buren2 = sort[(dx, dy) | (zx, zy) <- zetten; dx := (zx-x) // 2; member [-1, 0, 1] dx; dy := (zy-y) // 2; member [-1, 0, 1] dy]
+  spiegel (x, y) = (-x, -y)
+  doorsnee (a:as) (b:bs) = True               ,if a = b
+                         = doorsnee as (b:bs) ,if a < b
+                         = doorsnee (a:as) bs ,otherwise
+  doorsnee as bs = False
+
+zetTerug (status, mensnr, grootte, not, zetten, waardes)
+= (status, mensnr, grootte, not, zetten, waardes)        ,if #not < 2
+= foldl doeZet (nieuwSpel mensnr grootte) (reverse not1) ,otherwise
+where
+  not1 = drop 2 not ,if 1 + #not % 2 = mensnr
+       = drop 1 not ,otherwise
+
+legaleZet zet (Bezig, mensnr, grootte, notatie, zetten, waardes) = member zetten zet
+legaleZet zet stand = False
+
+computerZet (status, mensnr, grootte, notatie, zetten, waardes)
+= (-1, -1)                 ,if status ~= Bezig
+= hd betereZetten          ,if betereZetten ~= []
+= hd goedeZetten           ,if goedeZetten ~= []
+= zetten ! random(#zetten) ,otherwise
+where
+  goedeZetten = (filter (~ . maakt3 velden) . map snd .sort) waardes
+  velden = [z | z, k <- notatie, [1..]; k % 2 = 0]
+  betereZetten = filter (~ . maakt3 andereVelden) goedeZetten
+  andereVelden = [z | z, k <- notatie, [1..]; k % 2 ~= 0]
+

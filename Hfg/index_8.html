@@ -1,0 +1,104 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> environment functions</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>environment functions</H2>
+<TT>
+<BR>
+<A HREF="#page_401">exit</A>
+<BR>
+<A HREF="#page_402">info</A>
+<BR>
+<A HREF="#page_403">load</A>
+<BR>
+<A HREF="#page_404">reload</A>
+<BR>
+<A HREF="#page_405">time</A>
+<BR>
+<A HREF="#page_406">debug</A>
+<BR>
+<A HREF="#page_407">error</A>
+<BR>
+<BR>
+<A HREF="index_7.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_401"></A><HR><H2>exit</H2>
+<BR>
+exit
+<BR>
+<BR>
+Commandline function used to leave Amanda.
+<BR>
+
+<A NAME="page_402"></A><HR><H2>info</H2>
+<BR>
+info
+<BR>
+<BR>
+Commandline function which displays some information about memory size and
+defined functions.
+<BR>
+
+<A NAME="page_403"></A><HR><H2>load</H2>
+<BR>
+load [char]
+<BR>
+<BR>
+Commandline function used to load a file with function definitions.
+<BR>
+
+<A NAME="page_404"></A><HR><H2>reload</H2>
+<BR>
+reload
+<BR>
+<BR>
+Commandline function used to reload a file with function definitions.
+<BR>
+
+<A NAME="page_405"></A><HR><H2>time</H2>
+<BR>
+time
+<BR>
+<BR>
+Commandline function used to toggle timing mode.
+<BR>
+In timing mode the duration of an evaluation is displayed.
+<BR>
+
+<A NAME="page_406"></A><HR><H2>debug</H2>
+<BR>
+debug :: * -&gt ** -&gt **
+<BR>
+<BR>
+debug a b = b
+<BR>
+<BR>
+As a side effect the first argument is displayed without being evaluated.
+<BR>
+<BR>
+strict debug a b
+<BR>
+will first evaluate a and then display it
+<BR>
+
+<A NAME="page_407"></A><HR><H2>error</H2>
+<BR>
+error :: [char] -&gt *
+<BR>
+<BR>
+error message = ...
+<BR>
+<BR>
+The message will be displayed and the evaluation is stopped.
+<BR>
+<BR>
+Example:
+<PRE>
+hd [] = error "head of empty list"
+hd (x:xs) = x
+</PRE>
+<BR>
+
+</BODY>
+</HTML>

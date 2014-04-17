@@ -1,0 +1,359 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> Windows implementation</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>Windows implementation</H2>
+<TT>
+<BR>
+<A HREF="#page_104">files</A>
+<BR>
+<A HREF="#page_106">remote objects</A>
+<BR>
+<A HREF="#page_108">amanda graphics</A>
+<BR>
+<A HREF="#page_544">graphAnimate</A>
+<BR>
+<BR>
+<A HREF="index_1.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_104"></A><HR><H2>files</H2>
+<BR>
+The Windows implementation contains all the basic functionality.
+<BR>
+<BR>
+The Windows implementation consists of the files:
+<PRE>
+- ama.exe               console application
+- amanda.exe            windows application
+- amadll.dll            dll with amanda kernel
+- amanda.ini            initialisation file
+- amanda.hlp            help file
+- amanda.cnt            help contents file
+</PRE>
+<BR>
+See also:
+<A HREF="index_1.html#page_102">initialisation</A>
+<BR>
+
+<A NAME="page_106"></A><HR><H2>remote objects</H2>
+<BR>
+The dynamic link library amadll.dll can be used from other Windows programs to
+create and use remote objects.
+<BR>
+<BR>
+Remote objects are defined in Amanda by specifying the function object like this:
+<PRE>
+primes = sieve [2..] 
+
+sieve l = x : sieve [y | y &lt- xs; y % x ~= 0]
+where
+  x = hd l
+  xs = tl l
+
+object "primes" = ([], call)
+where
+  call "Start" _ _ = (primes, [])
+  call "Next" _ (p:ps) = (ps, [itoa p])
+  call "Between" [low, high] ps = (ps, (map itoa . takewhile (&lt hi) . dropwhile (&lt= lo)) ps)
+  where
+    lo = atoi low
+    hi = atoi high
+</PRE>
+<BR>
+This declares an object called "primes" with methods "Start", "Next" and "Between".
+<BR>
+The object has a state which is initially [] and which is manipulated by the function called "call".
+This function defines the response of the object to the methods "Start", "Next" and "Between".
+<BR>
+The method "Start" initialises the state and returns no answers.
+<BR>
+The method "Next" ignores possible parameters and changes the state from p:ps to ps and returns one 
+answer: itoa p.
+<BR>
+The method "Between" has two parameters, does not change the state and returns all the
+prime numbers which are in the state and are between the lo and hi values.
+<BR>
+<BR>
+The corresponding Delphi object might be:
+<PRE>
+uses AmaDllUnit;
+
+type
+  TPrimes = class(TAmaObject)
+  public
+    constructor Create;
+    procedure Start;
+    function Next: Integer;
+    function CountBetween(low, high: Integer): Integer;
+    // CountBetween is easier than Between itself
+  end;
+
+constructor TPrimes.Create;
+begin
+  inherited Create('primes');
+end;
+
+procedure TPrimes.Start;
+begin
+  Call('Start');
+end;
+
+function TPrimes.Next: Integer;
+var
+  s: String;
+begin
+  Call('Next');
+  if not Get(s) then raise Exception.Create('First press Start');
+  result := StrToInt(s)
+end;
+
+function CountBetween(low, high: Integer): Integer;
+var
+  s: String;
+begin
+  Put(IntToStr(low));
+  Put(IntToStr(high));
+  Call('Between');
+  result := 0;
+  while Get(s) do result := result + 1;
+end;
+</PRE>
+<BR>
+Here TAmaObject is defined in the unit AmaDllUnit and has Create, Put, Call and Get methods.
+<PRE>
+Create   makes a connection to an Amanda remote object
+Put      defines a parameter to a method call
+Call     calls a method
+Get      retrieves a return value
+</PRE>
+<BR>
+Names of objects, names of methods, parameters and return values are all strings, which makes
+things both flexible and error prone (no explicit type checking in Delphi and in Amanda).
+<BR>
+<BR>
+The function object has the following type:
+<PRE>
+object :: [char] -&gt (*, [char] -&gt [[char]] -&gt * -&gt (*, [[char]]))
+
+with intended meaning:
+object objectname = (state, callfunction)
+callfunction methodname listOfParameters state = (state, listOfReturnValues)
+</PRE>
+<BR>
+For more information consult the file AmaDllUnit.pas:
+<PRE>
+unit AmaDllUnit;
+(*
+  Dick Bruin, 25/10/1998
+
+  interface to Amadll.dll
+  assumptions: Amanda.ini and Amadll.dll are in the same directory as the executable
+
+  Example:
+
+  Amanda part:
+  object "main" = ([], call)
+  where
+    call "start" _    _  = (primes, ["YES"])
+    call "next"  [sn] ps = (drop n ps, (map itoa . take n) ps) where n = atoi sn
+
+  primes = sieve [2..]
+  sieve l = x : sieve [y | y &lt- xs; y % x ~= 0]
+  where
+    x = hd l
+    xs = tl l
+
+  the object "main" has a state consisting of prime numbers (initially [])
+  and can respond to calls to "start" and "next"
+  the remote call "start" changes the state and returns the answer "YES"
+  the remote call "next" changes the state and returns some prime numbers
+
+  Delphi part:
+  AmaInit('...');
+  main = TAmaObject.Create('main');
+  if main.Ok then
+  begin
+    main.Call('start');
+
+    main.Put(IntToStr(10));
+    main.Call('next');
+    Edit1.Text := '';
+    while main.Get(s) do Edit1.Text := Edit1.Text + s + ' ';
+  end;
+  main.Free;
+*)
+
+interface
+
+function AmaInit(const filename: String): Boolean;
+
+type
+  TAmaObject = class(TObject)
+  public
+    constructor Create(const name: String);
+    destructor Destroy; override;
+    function Ok: Boolean;
+    procedure Put(const param: String);
+    function Call(const fun: String): Boolean;
+    function Get(var res: String): Boolean;
+  private
+    handle: Integer;
+  end;
+
+(*
+  Explanation:
+  
+  AmaInit               initialises Amadll and loads the given Amanda file
+  TAmaObject.Create     tries to connect to a remote object with the given name
+  TAmaObject.Destroy    releases a remote object
+  TAmaObject.Ok         indicates if a connection to a remote object is made
+  TAmaObject.Put        sets a parameter for a remote procedure call
+  TAmaObject.Call       performs a remote procedure call
+  TAmaObject.Get        retrieves a result string from a remote procedure call
+*)
+
+function AmaInitialise(const filename: String; ws: Pointer): Boolean;
+
+implementation
+uses SysUtils;
+
+function  AmaInitRemote(path, filename: PChar; ws, cio: Pointer): Integer; stdcall; external 'amadll.dll';
+function  AmaCreateRemote(s: PChar): Integer;                              stdcall; external 'amadll.dll';
+procedure AmaDropRemote(handle: Integer);                                  stdcall; external 'amadll.dll';
+procedure AmaPutRemote(handle: Integer; s: PChar);                         stdcall; external 'amadll.dll';
+function  AmaCallRemote(handle: Integer; s: PChar): Integer;               stdcall; external 'amadll.dll';
+function  AmaGetRemote(handle: Integer; s: PChar; size: Integer): Integer; stdcall; external 'amadll.dll';
+
+var
+  buffer: array[0..2047] of Char;
+
+function AmaInit(const filename: String): Boolean;
+begin
+  result := AmaInitRemote(PChar(ParamStr(0)), PChar(filename), Nil, Nil) &lt&gt 0;
+end;
+
+constructor TAmaObject.Create(const name: String);
+begin
+  inherited Create;
+  handle := AmaCreateRemote(PChar(name));
+end;
+
+destructor TAmaObject.Destroy;
+begin
+  AmaDropRemote(handle);
+  inherited Destroy;
+end;
+
+function TAmaObject.Ok: Boolean;
+begin
+  result := handle &gt= 0;
+end;
+
+procedure TAmaObject.Put(const param: String);
+begin
+  AmaPutRemote(handle, PChar(param));
+end;
+
+function TAmaObject.Call(const fun: String): Boolean;
+begin
+  result := AmaCallRemote(handle, PChar(fun)) &lt&gt 0;
+end;
+
+function TAmaObject.Get(var res: String): Boolean;
+begin
+  result := AmaGetRemote(handle, buffer, sizeof(buffer)) &lt&gt 0;
+  if result then res := buffer;
+end;
+
+function AmaInitialise(const filename: String; ws: Pointer): Boolean;
+begin
+  result := AmaInitRemote(PChar(ParamStr(0)), PChar(filename), ws, Nil) &lt&gt 0;
+end;
+
+end.
+</PRE>
+<BR>
+<BR>
+
+<A NAME="page_108"></A><HR><H2>amanda graphics</H2>
+<BR>
+AmaGr is an application to do graphical interaction with Amanda
+<BR>
+usage: AmaGr &ltAmanda file&gt
+<BR>
+<BR>
+from Amanda issue the command: amaGraphics
+<BR>
+<BR>
+it loads an Amanda file which should contain an interaction object
+<BR>
+user events are forwarded to this object, which result in a change of
+the state of the object and a list of graphical commands which is
+displayed in a paintbox
+<BR>
+<BR>
+example of the AmaObject:
+<PRE>
+object "AmaGraphics" = (beginSpel 5, call)
+where
+  call "DefSystem" _ state     = (state, ["timer", "0", "showParameters", "False"])
+  call "DefParameters" _ state = (state, ["Grootte", "4|5|6|7"])
+  call "DefActions" _ state    = (state, ["Mens", "Computer", "Vrij", "Terug"])
+
+  call "Action" ["Mens"] spel     = repaint (nieuwSpel Groen spel)
+  call "Action" ["Computer"] spel = repaint (nieuwSpel Rood spel)
+  call "Action" ["Vrij"] spel     = repaint (nieuwSpel Geen spel)
+  call "Action" ["Terug"] spel    = repaint (terugSpel spel)
+
+  call "Parameters" [g] spel = repaint (beginSpel (atoi g))
+
+  call "MouseDown" [x1, y1, x2, y2] spel = zetSpel (atof x1, atof y1) spel
+
+  call "Repaint" [] spel = repaint spel
+  call _ _ spel = (spel, [])
+
+  repaint spel = (spel, graphicsout(tekenSpel spel))
+</PRE>
+<BR>
+<BR>
+The interaction object must be called AmaGraphics.
+<BR>
+The call DefSystem should respond with values for timer and showParameters.
+If the timer value is bigger than zero a timer generates calls like: call "Timer" []
+The value of showParameters should be False or True.
+<BR>
+<BR>
+The call DefParameters initialises the parameters window and consists of item, value pairs.
+Multiple value possibilities should be separated by bars.
+The "set" button of the parameters window generates a call like: call "Parameters" ["4"]
+(the order of the parameters is obeyed)
+<BR>
+<BR>
+The call DefActions initialises the menu items.
+A menu item generates a call like: call "Action" ["Mens"]
+<BR>
+<BR>
+Dragging generates a call like: call "MouseDown" [x1, y1, x2, y2]
+where (x1, y1) is the position of the mouseDown and (x2, y2) the position of the mouseUp
+<BR>
+During the dragging calls are generated like: call "MouseDrag" [x1, y1, x2, y2]
+They are similar to the MouseDown calls except drawing is in XOR-mode
+<BR>
+<BR>
+Painting of the paintbox generates a call of the AmaObject like: call "Repaint" []
+<BR>
+
+<A NAME="page_544"></A><HR><H2>graphAnimate</H2>
+<BR>
+graphAnimate :: num -&gt num -&gt [graphics] -&gt bool
+<BR>
+<BR>
+graphAnimate width height graphicsCommands opens a graphical window
+in which the graphical commands are displayed.
+<BR>
+GraphWait msecs causes a pause of the given amount of millisecs, which makes
+animation possible.
+
+</BODY>
+</HTML>

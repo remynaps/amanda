@@ -1,0 +1,294 @@
+<HTML>
+<HEAD><TITLE>Amanda V2.05 -> introduction</TITLE></HEAD>
+<BODY><H2>Amanda V2.05</H2>
+<HR>
+<BODY><H2>introduction</H2>
+<TT>
+<BR>
+<A HREF="#page_101">amanda</A>
+<BR>
+<A HREF="#page_102">initialisation</A>
+<BR>
+<A HREF="#page_107">restrictions</A>
+<BR>
+<A HREF="#page_103">default implementation</A>
+<BR>
+<A HREF="index_2.html">Windows implementation</A>
+<BR>
+<BR>
+<A HREF="index_0.html">Up</A>
+  <A HREF="amanda.html">Index</A>
+</TT>
+<A NAME="page_101"></A><HR><H2>amanda</H2>
+<BR>
+Amanda is a functional programming language developed by Dick Bruin
+for recreational purposes (solving mathematical puzzles).
+<BR>
+Anyone can freely use the Amanda interpreter to develop his/her own
+functional programs. Amanda has been tested on a large set of programs
+and seems to function unproblematic. But please note that the author
+cannot be blamed for any unexpected behaviour.
+<BR>
+<BR>
+Amanda is based on the notation used in the book "Introduction to Functional Programming"
+written by Richard Bird and Philip Wadler and published by Prentice Hall.
+<BR>
+<BR>
+Amanda is implemented using the ideas described in the book
+"The implementation of functional programming languages" written by
+Simon Peyton Jones and published by Prentice Hall.
+<BR>
+
+<A NAME="page_102"></A><HR><H2>initialisation</H2>
+<BR>
+On startup Amanda loads the file amanda.ini which is an Amanda script file
+containing definitions of a few library functions and the startup settings.
+<BR>
+NB: make sure Amanda can locate amanda.ini (in the same directory as the
+executable image of the interpreter)
+<BR>
+<BR>
+The following settings can be defined:
+<PRE>
+MemorySize        (the number of available cells)
+WinFontName       (the name of the font used by a graphical environment)
+WinFontSize       (the size of this font)
+</PRE>
+Default version of amanda.ini:
+<PRE>
+|| amanda.ini, Dick Bruin
+
+|| MemorySize  = 100000
+|| WinFontName = "Courier New"
+|| WinFontSize = 10
+|| ConPrompt   = "&gt "
+
+rep:: * -&gt num -&gt [*]
+
+rep x n = [x | k &lt- [1..n]]
+
+
+cjustify:: num -&gt [char] -&gt [char]
+
+cjustify n str = rep ' ' (s / 2) ++ str ++ rep ' ' (s - s / 2)
+where
+  s = n - # str
+
+
+ljustify:: num -&gt [char] -&gt [char]
+
+ljustify n str = str ++ rep ' ' (n - # str)
+
+
+rjustify:: num -&gt [char] -&gt [char]
+
+rjustify n str = rep ' ' (n - # str) ++ str
+
+
+lines:: [char] -&gt [[char]]
+
+lines [] = []
+lines string = first : lines (drop 1 rest)
+where
+  (first, rest) = splitwhile ('\n' ~=) string
+
+
+unlines:: [[char]] -&gt [char]
+
+unlines lines = [ch | line &lt- lines; ch &lt- line ++ "\n"]
+
+
+words:: [char] -&gt [[char]]
+
+words [] = []
+words string = first : words (dropwhile isspace rest)
+where
+  (first, rest) = (splitwhile (~ . isspace) . dropwhile isspace) string
+
+
+isspace:: char -&gt bool
+
+isspace ch = ch = ' ' \/ ch = '\n' \/ ch = '\t'
+
+
+isupper:: char -&gt bool
+
+isupper ch = ch &gt= 'A' /\ ch &lt= 'Z'
+
+
+islower:: char -&gt bool
+
+islower ch = ch &gt= 'a' /\ ch &lt= 'z'
+
+
+toupper:: char -&gt char
+
+toupper ch = decode (code ch + code 'A' - code 'a') ,if islower ch
+           = ch                                     ,otherwise
+
+
+tolower:: char -&gt char
+
+tolower ch = decode (code ch + code 'a' - code 'A') ,if isupper ch
+           = ch                                     ,otherwise
+
+
+nodup:: [*] -&gt [*]
+
+nodup (h:t) = h : nodup (filter (h ~=) t)
+nodup l     = l
+
+
+sort:: [*] -&gt [*]
+
+sort (h:t) = sort [u | u &lt- t; u &lt h] ++ [h] ++ sort [u | u &lt- t; u &gt= h]
+sort l     = []
+
+
+transpose:: [[*]] -&gt [[*]]
+
+transpose x = []                              ,if empty x \/ or(map empty x)
+            = map hd x : transpose (map tl x) ,otherwise
+
+
+mergeSort:: [*] -&gt [*]
+
+mergeSort list
+= list ,if half &lt 1
+= merge (mergeSort(take half list)) (mergeSort(drop half list))
+where
+  half = (# list) / 2
+
+
+merge:: [*] -&gt [*] -&gt [*]
+
+merge (l1=h1:t1) (l2=h2:t2) = h1 : merge t1 l2 ,if h1 &lt h2
+                            = h2 : merge l1 t2 ,otherwise
+merge [] l2                 = l2
+merge l1 []                 = l1
+
+
+zipwith :: (* -&gt ** -&gt ***) -&gt [*] -&gt [**] -&gt [***]
+
+zipwith (+) xs ys = [x + y | x, y &lt- xs, ys]
+
+
+#synonym div /
+#synonym mod %
+
+|| graphics protocol
+
+graphics ::= GraphText num (num, num) [char] 
+           | GraphPolyLine num [(num, num)] 
+           | GraphPolygon num [(num, num)] 
+           | GraphRectangle num (num, num) (num, num)
+           | GraphEllipse num (num, num) (num, num)
+           | GraphDisc num (num, num) (num, num)
+
+graphicsout:: [graphics] -&gt [[char]]
+
+graphicsout = concat.map graphicsToString
+
+graphicsToString (GraphText color (x, y) text) = ["GraphText", itoa color] ++ coordsToString (x, y) ++ [text]
+graphicsToString (GraphPolyLine color ps) = ["GraphPolyLine", itoa color] ++ concat[coordsToString (x, y) | (x, y) &lt- ps] ++ ["End"]
+graphicsToString (GraphPolygon color ps) = ["GraphPolygon", itoa color] ++ concat[coordsToString (x, y) | (x, y) &lt- ps] ++ ["End"]
+graphicsToString (GraphRectangle color (x1, y1) (x2, y2)) = ["GraphRectangle", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+graphicsToString (GraphEllipse color (x1, y1) (x2, y2)) = ["GraphEllipse", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+graphicsToString (GraphDisc color (x1, y1) (x2, y2)) = ["GraphDisc", itoa color] ++ coordsToString (x1, y1) ++ coordsToString (x2, y2)
+
+coordsToString (x, y) = map ftoa [x, y]
+</PRE>
+<BR>
+
+<A NAME="page_107"></A><HR><H2>restrictions</H2>
+<BR>
+Amanda has been designed with a PC-DOS environment in mind. The awkward
+memory structure of PC-DOS still leaves traces in Amanda.
+<BR>
+<BR>
+Some memory related restrictions:
+<BR>
+- a global function definition should not be larger than 4000 cells
+<BR>
+- the internal stack is rather small
+<BR>
+- patterns can only be 32 levels deep
+<BR>
+<BR>
+The implementation of pattern matching and selection might lead to
+memory leaks as the following example shows:
+<PRE>
+primes = sieve [2..]
+sieve (x:xs) = x : sieve[y | y &lt- xs; y % x ~= 0]
+</PRE>
+This example will very quickly go out of memory, because in order to access
+x the list comprehension keeps a reference to the whole list (x:xs).
+<BR>
+To avoid this it should be changed to:
+<PRE>
+primes = sieve [2..]
+sieve l = x : sieve[y | y &lt- xs; y % x ~= 0]
+where
+  x = hd l
+  xs = tl l
+</PRE>
+Or to:
+<PRE>
+primes = sieve [2..]
+sieve (x:xs) = s x xs
+s x xs = x : sieve[y | y &lt- xs; y % x ~= 0]
+</PRE>
+Another cause of excessive memory usage might be lazy evaluation itself.
+As an example consider a function that calculates the frequencies of characters
+in a string:
+<PRE>
+freq string = foldl insert [0 | k &lt- [0..255]] string
+where
+  insert table c = table1 ++ (f+1):table2
+  where
+    (table1, f:table2) = split (code c - 1) table
+</PRE>
+This will usually go out of memory very quickly, because insert operations
+are done lazily and large closures of work to be done are kept.
+<BR>
+To avoid this the whole table should be evaluated every time.
+<PRE>
+freq string = foldl insert [0 | k &lt- [0..255]] string
+where
+  insert table c = seq (sum result) result
+  where
+    (table1, f:table2) = split (code c - 1) table
+    result = table1 ++ (f+1):table2
+</PRE>
+The function seq always evaluates its first argument and sum will traverse
+the whole list.
+<BR>
+
+<A NAME="page_103"></A><HR><H2>default implementation</H2>
+<BR>
+Amanda is written in ANSI-C and can be ported easily to many platforms.
+<BR>
+<BR>
+The default implementation acts like an advanced calculator. It displays
+a commandline on which an expression can be entered. The result of the
+evaluation (reduction) of the expression is displayed. By appending :: after
+an expression not its value but its type will be displayed.
+<BR>
+<BR>
+Examples:
+<PRE>
+Amanda&gt 1 + 2
+3
+Amanda&gt 1 + 2 ::
+num
+Amanda&gt fac 3 where fac 0 = 1; fac n = n * fac (n-1)
+6
+Amanda&gt load "a:\test.ama"
+Amanda&gt info
+....
+Amanda&gt exit
+</PRE>
+<BR>
+
+</BODY>
+</HTML>

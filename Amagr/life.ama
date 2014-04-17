@@ -1,0 +1,106 @@
+|| Dick Bruin
+|| 27/12/93
+|| Conway's game of life
+
+/*********************** constants ***************************************/
+
+colorField = 7
+colorText  = 0
+
+colorCell True  = 1
+colorCell False = 15
+
+boardSize   = 0.75
+boardFactor = 0.75
+
+posGen  = (-0.9, 0.9)
+posText = (-0.05, 0.9)
+
+/*********************** display functions *******************************/
+
+text playing gen 
+= [ GraphRectangle colorField (-1, 0.8) (1, 1)
+  , GraphText colorText posText (if playing "Play" "Edit")
+  , GraphText colorText posGen (itoa gen)
+  ]
+
+/*********************** board functions *********************************/
+
+fillBoard val rows cols
+= (fillRows, fillCols, [[val | col <- [0..fillCols-1]] | row <- [0..fillRows-1]])
+where
+  fillRows = max2 5 rows
+  fillCols = max2 5 cols
+
+displayCell rows cols val row col
+= [GraphRectangle (colorCell val) (x, y) (x+offsetX, y+offsetY)]
+where
+  x = -boardSize + col * displacementX;
+  y = -boardSize + row * displacementY
+  displacementX = 2 * boardSize // cols
+  displacementY = 2 * boardSize // rows
+  offsetX = boardFactor * displacementX
+  offsetY = boardFactor * displacementY
+
+displayBoard (rows, cols, board)
+= [GraphRectangle colorField (-1, -1) (1, 1)] ++
+  concat[displayCell rows cols val row col |
+          row, boardRow <- [0..], board;
+          col, val      <- [0..], boardRow
+        ]
+
+displayChangedBoard (rows1, cols1, board1) (rows2, cols2, board2)
+= concat[displayCell rows2 cols2 val2 row col |
+           row, board1Row, board2Row <- [0..], board1, board2;
+           col, val1     , val2      <- [0..], board1Row, board2Row;
+           val1 ~= val2
+        ]
+
+randomBoard (rows, cols, board)
+= (rows, cols, [[random 2 = 0 | col <- [0..cols-1]] | row <- [0..rows-1]])
+
+toggleBoard (rows, cols, board) x y
+= (rows, cols, [[toggle val row col| col, val <- [0..], boardRow] | row, boardRow <- [0..], board])
+where
+  displacementX = 2 * boardSize // cols
+  displacementY = 2 * boardSize // rows
+  cellX = trunc((x + boardSize) // displacementX)
+  cellY = trunc((y + boardSize) // displacementY)
+  toggle val row col
+  = ~val ,if row = cellY /\ col = cellX
+  = val  ,otherwise
+
+nextGeneration (rows, cols, board)
+= (rows, cols,
+    [[living val (count1+count2+count3) | val, count1, count2, count3 <- row, nb1, nb2, nb3] |
+      row, nb1, nb2, nb3 <- board, (drop (rows-1) nb++nb), nb, (drop 1 nb++nb)
+    ]
+  )
+where
+  living val count = count = 3 \/ (val /\ count = 4)
+  nb = map countNeighbours board
+  countNeighbours row
+  = [#[v|v<-[v1,v2,v3]; v]| v1, v2, v3 <- (drop (cols-1) row++row), row, (drop 1 row++row)]
+
+/*********************** interaction *************************************/
+
+object "AmaGraphics" = (newBoard 20 20, call)
+where
+  call "DefSystem" _     state = (state, ["timer", "100"])
+  call "DefParameters" _ state = (state, ["rows", "20", "columns", "20"])
+  call "DefActions" _    state = (state, ["Play", "Edit", "Random"])
+
+  call "Action" ["Play"]          (_, gen, board)     = repaint (True, gen, board)
+  call "Action" ["Edit"]          (_, gen, board)     = repaint (False, gen, board)
+  call "Action" ["Random"]        (_, gen, board)     = repaint (True, gen+1, randomBoard board)
+  call "Parameters" [rs, cs]      state               = repaint (newBoard (atoi rs) (atoi cs))
+  call "MouseDown" [xs, ys, _, _] (False, gen, board) = paintChanges board (False, gen, toggleBoard board (atof xs) (atof ys))
+  call "Timer" _                  (True, gen, board)  = paintChanges board  (True, gen+1, nextGeneration board)
+  call "Repaint" []               state               = repaint state
+  call _ _ state = (state, [])
+  
+  repaint (state=(playing, gen, board)) = (state, graphicsout(displayBoard board ++ text playing gen))
+
+  paintChanges board1 (state=(playing, gen, board2)) = (state, graphicsout(displayChangedBoard board1 board2 ++ text playing gen))
+
+  newBoard r c = (False, 0, fillBoard False r c)

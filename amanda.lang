@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Author: Dick Bruin
+ Add to: 
+   C:\Program Files\gedit\share\gtksourceview-2.0\language-specs
+   ~/.local/share/gtksourceview-3.0/language-specs
+-->
+<language id="amanda" _name="Amanda" version="2.0" _section="Scripts">
+    <metadata>
+      <property name="globs">*.ama</property>
+    </metadata>
+    
+    <definitions>
+        <context id="amanda">
+            <include>
+
+                <context ref="def:string"/>
+                <context ref="def:single-quoted-string"/>
+                <context ref="def:decimal"/>
+                <context ref="def:float"/>
+
+                <context id="comment" style-ref="def:comment">
+                    <start>\|\|</start>
+                    <end>$</end>
+                </context>
+
+                <context id="block-comment" style-ref="def:comment">
+                    <start>\/\*</start>
+                    <end>\*\/</end>
+                    <include>
+                      <context ref="block-comment"/>
+                    </include>
+                </context>
+
+                <context id="keywords" style-ref="def:keyword">
+                    <keyword>if</keyword>
+                    <keyword>otherwise</keyword>
+                    <keyword>where</keyword>
+                    <keyword>object</keyword>
+                    <keyword>abstype</keyword>
+                    <keyword>with</keyword>
+                </context>
+                
+                <context id="constructor" style-ref="def:type">
+                    <match>\b[A-Z][0-9a-zA-Z_]*</match>
+                </context>
+    
+            </include>
+        </context>
+    </definitions>
+</language>
