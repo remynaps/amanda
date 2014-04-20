@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -O6 -Wall -Wextra -Isrc -rdynamic -DNDEBUG -DAMA_READLINE $(OPTFLAGS)
 LIBS=-ldl -lm -lreadline $(OPTLIBS)
 PREFIX?=/usr/local
 
@@ -16,7 +16,7 @@ dev: all
 
 $(TARGET): CFLAGS += -fPIC
 $(TARGET): build $(OBJECTS)
-	$(CC) -O6 $(OBJECTS) $(LIBS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)
 
 build:
 	@mkdir -p build
