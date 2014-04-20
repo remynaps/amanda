@@ -21,10 +21,12 @@ $(TARGET): build $(OBJECTS)
 build:
 	@mkdir -p build
 	@mkdir -p bin
+	@cp misc/amanda.ini bin/amanda.ini
+	@cp misc/test.ama  bin/test.ama
 
 # The Cleaner
 clean:
 	rm -rf build $(OBJECTS) $(TESTS)
-	rm -f tests/tests.log
+	#rm -f tests/tests.log
 	find . -name "*.gc*" -exec rm {} \;
 	rm -rf `find . -name "*.dSYM" -print`
