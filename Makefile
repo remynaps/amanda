@@ -1,14 +1,16 @@
-exename = amanda
+CC = gcc
 
-objfiles = amcheck.o amcon.o amerror.o ameval.o amio.o amlex.o amlib.o ammem.o ammodify.o amparse.o ampatter.o amprint.o amstack.o amsyslib.o amtable.o
+EXE_NAME = amanda
 
-compiler = gcc
+SOURCES=$(wildcard src/**/*.c src/*.c)
+OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
 .c.o:
-	$(compiler) -c -DAMA_READLINE -O6 $*.c
+	$(CC) -c -DAMA_READLINE -O6 $*.c
 
-amanda: $(objfiles)
-	$(compiler) -O6 $(objfiles) -lm -lreadline -o $(exename)
+amanda: $(OBJECTS)
+	@mkdir -p bin
+	$(CC) -O6 $(OBJECTS) -lm -lreadline -o bin/$(EXE_NAME)
 
 clean:
 	rm *.o
