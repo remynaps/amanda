@@ -1,16 +1,30 @@
-CC = gcc
-
-EXE_NAME = amanda
+CFLAGS=-g -O2 -Wall -Wextra -Isrc -rdynamic -DNDEBUG $(OPTFLAGS)
+LIBS=-ldl -lm -lreadline $(OPTLIBS)
+PREFIX?=/usr/local
 
 SOURCES=$(wildcard src/**/*.c src/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
-.c.o:
-	$(CC) -c -DAMA_READLINE -O6 $*.c
+TARGET=bin/amanda
+SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
-amanda: $(OBJECTS)
+# The Target Build
+all: $(TARGET)
+
+dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
+dev: all
+
+$(TARGET): CFLAGS += -fPIC
+$(TARGET): build $(OBJECTS)
+	$(CC) -O6 $(OBJECTS) $(LIBS) -o $(TARGET)
+
+build:
+	@mkdir -p build
 	@mkdir -p bin
-	$(CC) -O6 $(OBJECTS) -lm -lreadline -o bin/$(EXE_NAME)
 
+# The Cleaner
 clean:
-	rm *.o
+	rm -rf build $(OBJECTS) $(TESTS)
+	rm -f tests/tests.log
+	find . -name "*.gc*" -exec rm {} \;
+	rm -rf `find . -name "*.dSYM" -print`
