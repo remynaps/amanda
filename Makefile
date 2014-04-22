@@ -1,4 +1,5 @@
-CFLAGS=-g -O6 -Wall -Wextra -Isrc -rdynamic -DNDEBUG -DAMA_READLINE $(OPTFLAGS)
+CC=gcc-4.9
+CFLAGS=-g -O6 -Wall -Wextra -Isrc -DNDEBUG -DAMA_READLINE $(OPTFLAGS)
 LIBS=-ldl -lm -lreadline $(OPTLIBS)
 PREFIX?=/usr/local
 
