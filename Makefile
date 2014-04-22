@@ -1,4 +1,12 @@
-CC=gcc-4.9
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+	CC=gcc
+endif
+
+ifeq ($(UNAME), Darwin)
+	CC=gcc-4.9
+endif
+
 CFLAGS=-g -O6 -Wall -Wextra -Isrc -DNDEBUG -DAMA_READLINE $(OPTFLAGS)
 LIBS=-ldl -lm -lreadline $(OPTLIBS)
 PREFIX?=/usr/local
