@@ -1,10 +1,17 @@
-UNAME := $(shell uname)
-ifeq ($(UNAME), Linux)
+ifeq ($(OS),Windows_NT)
 	CC=gcc
-endif
+	TARGET=bin/amanda.exe
+else
+	UNAME := $(shell uname)
+	ifeq ($(UNAME), Linux)
+		CC=gcc
+		TARGET=bin/amanda
+	endif
 
-ifeq ($(UNAME), Darwin)
-	CC=gcc-4.9
+	ifeq ($(UNAME), Darwin)
+		CC=gcc-4.9
+		TARGET=bin/amanda
+	endif
 endif
 
 CFLAGS=-g -O6 -Wall -Wextra -Isrc -DNDEBUG -DAMA_READLINE $(OPTFLAGS)
@@ -14,7 +21,6 @@ PREFIX?=/usr/local
 SOURCES=$(wildcard src/**/*.c src/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
-TARGET=bin/amanda
 SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
 # The Target Build
