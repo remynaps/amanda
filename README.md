@@ -4,7 +4,7 @@ amanda
 Functional programming language implemented in C, initially written by
 Dick Bruin.
 
-Cross-platform compiling
+Platform compiling
 ======
 <b>Linux</b>
 
@@ -34,6 +34,14 @@ need to alter your PATH variable. Instructions:
 * If it doesn't already exist, make a new one and add "C:\MinGW\bin"
 
 `mingw32-make` in the `amanda` folder will now do your servings.
+
+<b>Cross-compile from Linux to Windows</b>
+
+You need the MinGW compiler under Linux.
+
+    sudo apt-get install mingw-w64 mingw32 mingw32-binutils
+
+Then compile using `CROSSFLAG=-cross make`
 
 original fork message (acda6a917f)
 ======
