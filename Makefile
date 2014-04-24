@@ -4,8 +4,12 @@ LIBS=$(OPTLIBS)
 ifeq ($(OS),Windows_NT)
 	CC=gcc
 	TARGET=bin/amanda.exe
+	RM=del /f /q
+	MKDIR=mkdir
 else
 	UNAME := $(shell uname)
+	RM=rm -rf
+	MKDIR=mkdir -p
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
 		TARGET=bin/amanda.exe
@@ -42,25 +46,29 @@ $(TARGET): build $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)
 
 build:
-	ifeq ($OS),Windows_NT)
-		mkdir build
-		mkdir bin
-		copy misc\amanda.ini bin
-		copy misc\test.ama bin
-	else
-		@mkdir build
-		@mkdir bin
-		@cp misc/amanda.ini bin/amanda.ini
-		@cp misc/test.ama  bin/test.ama
-	endif
+	$(MKDIR) build
+	$(MKDIR) bin
+	#COPY STUFF
+#	ifeq ($(OS),Windows_NT)
+#		mkdir build
+#		mkdir bin
+#		copy misc\amanda.ini bin
+#		copy misc\test.ama bin
+#	else
+#		@mkdir build
+#		@mkdir bin
+#		@cp misc/amanda.ini bin/amanda.ini
+#		@cp misc/test.ama  bin/test.ama
+#	endif
 
 # The Cleaner
 clean:
-	ifeq ($(OS),Windows_NT)
-		del /f /q build $(OBJECTS) $(TESTS)
-	else
-		rm -rf build $(OBJECTS) $(TESTS)
-		#rm -f tests/tests.log
-		find . -name "*.gc*" -exec rm {} \;
-		rm -rf `find . -name "*.dSYM" -print`
-	endif
+	$(RM) build $(OBJECTS) $(TESTS)
+#	ifeq ($(OS),Windows_NT)
+#		del /f /q build $(OBJECTS) $(TESTS)
+#	else
+#		rm -rf build $(OBJECTS) $(TESTS)
+#		#rm -f tests/tests.log
+#		find . -name "*.gc*" -exec rm {} \;
+#		rm -rf `find . -name "*.dSYM" -print`
+#	endif
