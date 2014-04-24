@@ -4,6 +4,37 @@ amanda
 Functional programming language implemented in C, initially written by
 Dick Bruin.
 
+Cross-platform compiling
+======
+<b>Linux</b>
+
+Compiling under Linux is a no-brainer.
+
+    sudo apt-get install build-essential libreadline-dev
+
+Then `make` inside the `amanda` folder.
+
+<b>OS X</b>
+
+Ensure you have XCode installed, and its command-line tools. Also make
+sure that `gcc-4.9` is installed. The standard GCC compiler will be
+used, without Apple's standard LLVM back-end. Once this is set up,
+a simple `make` will do.
+
+<b>Windows</b>
+
+This is a bit more complex. Install [MinGW](http://www.mingw.org/).
+This will provide everything you need, but to access your tools, you
+need to alter your PATH variable. Instructions:
+
+* Right-click "My PC", and go to properties
+* Go to "Advanced system settings"
+* Click on "Environment variables..."
+* If PATH exists as <b>user variable</b>, edit it and add "; C:\MinGW\bin"
+* If it doesn't already exist, make a new one and add "C:\MinGW\bin"
+
+`mingw32-make` in the `amanda` folder will now do your servings.
+
 original fork message (acda6a917f)
 ======
 
