@@ -7,11 +7,13 @@ ifeq ($(OS),Windows_NT)
 	RM=del /f /q
 	MKDIR=mkdir
 	SOURCES=$(wildcard src\*.c)
+	OBJECTS=src/amcheck.o src/amcon.o src/amerror.o src/ameval.o src/amio.o src/amlex.o src/amlib.o src/ammem.o src/ammodify.o src/amparse.o src/ampatter.o src/amprint.o src/amstack.o src/amsyslib.o src/amtable.o
 else
 	UNAME := $(shell uname)
 	RM=rm -rf
 	MKDIR=mkdir -p
 	SOURCES=$(wildcard src/*.c)
+	OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
 		TARGET=bin/amanda.exe
@@ -31,8 +33,6 @@ else
 endif
 
 PREFIX?=/usr/local
-
-OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
 SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
