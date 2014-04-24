@@ -3,13 +3,15 @@ LIBS=$(OPTLIBS)
 
 ifeq ($(OS),Windows_NT)
 	CC=gcc
-	TARGET=bin/amanda.exe
+	TARGET=bin\amanda.exe
 	RM=del /f /q
 	MKDIR=mkdir
+	SOURCES=$(wildcard src\*.c)
 else
 	UNAME := $(shell uname)
 	RM=rm -rf
 	MKDIR=mkdir -p
+	SOURCES=$(wildcard src/*.c)
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
 		TARGET=bin/amanda.exe
@@ -30,7 +32,6 @@ endif
 
 PREFIX?=/usr/local
 
-SOURCES=$(wildcard src/**/*.c src/*.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 
 SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
