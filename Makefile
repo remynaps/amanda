@@ -37,7 +37,7 @@ PREFIX?=/usr/local
 SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
 
 # The Target Build
-all: $(TARGET)
+all: $(TARGET) copyfiles
 
 dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
 dev: all
@@ -50,6 +50,7 @@ build:
 	$(MKDIR) build
 	$(MKDIR) bin
 	#COPY STUFF
+
 #	ifeq ($(OS),Windows_NT)
 #		mkdir build
 #		mkdir bin
@@ -63,6 +64,16 @@ build:
 #	endif
 
 # The Cleaner
+ifeq ($(OS),Windows_NT)
+copyfiles: build
+	copy misc\amanda.ini bin
+	copy misc\test.ama bin
+else
+copyfiles: build
+	cp misc/amanda.ini bin/amanda.ini
+	cp misc/test.ama bin/test.ama
+endif
+
 clean:
 	$(RM) build $(OBJECTS) $(TESTS)
 #	ifeq ($(OS),Windows_NT)
