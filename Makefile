@@ -13,13 +13,14 @@ else
 	RM=rm -rf
 	MKDIR=mkdir -p
 	SOURCES=$(wildcard src/*.c)
+	SOURCES-=src/amcon.c
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
 		EXE=bin/amanda.exe
 		AMALIB=bin/amanda.dll
 	else
 		EXE=bin/amanda
-		AMALIB=bin/amanda.so
+		AMALIB=/tmp/amanda.so
 		CFLAGS+=-DAMA_READLINE
 		LIBS+=-ldl -lm -lreadline
 
@@ -36,12 +37,15 @@ endif
 PREFIX?=/usr/local
 
 OBJECTS=$(addsuffix .o,$(basename $(SOURCES)))
+LIBOBJECTS=src/amcheck.o src/amerror.o src/ameval.o src/amio.o src/amlex.o\
+src/amlib.o src/ammem.o src/ammodify.o src/amparse.o src/ampatter.o\
+src/amprint.o src/amstack.o src/amsyslib.o src/amtable.o
 
 # The Target Build
 all: copyfiles $(EXE)
 
 LIB: $(OBJECTS)
-	$(CC) -shared $(CFLAGS) $(OBJECTS) -o $(AMALIB)
+	$(CC) -shared $(CFLAGS) $(LIBOBJECTS) -o $(AMALIB)
 
 $(EXE): LIB
 	$(CC) $(CFLAGS) src/amcon.o $(AMALIB) $(LIBS) -o $(EXE)
@@ -62,4 +66,4 @@ copyfiles: build
 endif
 
 clean:
-	$(RM) build $(OBJECTS) $(TESTS)
+	$(RM) build $(OBJECTS)
