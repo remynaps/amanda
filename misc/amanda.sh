@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-UNAME_STR=`uname`
 PROGRAM_DIRECTORY="`dirname "$0"`"
-if [[ $UNAME_STR == 'Linux' ]]; then
+
+if [[ "$OSTYPE" == 'linux-gnu' ]]; then
     export LD_LIBRARY_PATH="$PROGRAM_DIRECTORY"
 else
     export DYLD_LIBRARY_PATH="$PROGRAM_DIRECTORY"
