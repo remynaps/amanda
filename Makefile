@@ -1,9 +1,10 @@
-CFLAGS=-g -O6 -Wall -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -O6 -Wall -Wextra -Isrc -fPIC -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 
 ifeq ($(OS),Windows_NT)
 	CC=gcc
-	TARGET=bin\amanda.exe
+	EXE=bin\amanda.exe
+	AMALIB=bin\libamanda.dll
 	RM=del /f /q
 	MKDIR=mkdir
 	SOURCES=$(subst /,\,$(wildcard src/*.c)))
@@ -12,11 +13,14 @@ else
 	RM=rm -rf
 	MKDIR=mkdir -p
 	SOURCES=$(wildcard src/*.c)
+	#SOURCES-=src/amcon.c
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
-		TARGET=bin/amanda.exe
+		EXE=bin/amanda.exe
+		AMALIB=bin/libamanda.dll
 	else
-		TARGET=bin/amanda
+		EXE=bin/amanda
+		AMALIB=bin/libamanda.so
 		CFLAGS+=-DAMA_READLINE
 		LIBS+=-ldl -lm -lreadline
 
@@ -25,43 +29,30 @@ else
 		endif
 
 		ifeq ($(UNAME),Darwin)
-			CC=gcc-4.9
+			CC=gcc-4.8
 		endif
 	endif
 endif
 
-PREFIX?=/usr/local
+LIBPATH=/tmp
 
 OBJECTS=$(addsuffix .o,$(basename $(SOURCES)))
-
-SO_TARGET=$(patsubst %.a,%.so,$(TARGET))
+LIBOBJECTS=src/amcheck.o src/amerror.o src/ameval.o src/amio.o src/amlex.o\
+src/amlib.o src/ammem.o src/ammodify.o src/amparse.o src/ampatter.o\
+src/amprint.o src/amstack.o src/amsyslib.o src/amtable.o
 
 # The Target Build
-all: $(TARGET) copyfiles
+all: copyfiles $(EXE)
 
-dev: CFLAGS=-g -Wall -Isrc -Wall -Wextra $(OPTFLAGS)
-dev: all
+LIB: $(OBJECTS)
+	$(CC) -shared $(LIBS) $(CFLAGS) $(OBJECTS) -o $(AMALIB)
 
-$(TARGET): CFLAGS += -fPIC
-$(TARGET): build $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)
+$(EXE): LIB
+	$(CC) $(CFLAGS) src/amcon.o -Lbin -lamanda $(LIBS) -o $(EXE)
 
 build:
 	$(MKDIR) build
 	$(MKDIR) bin
-	#COPY STUFF
-
-#	ifeq ($(OS),Windows_NT)
-#		mkdir build
-#		mkdir bin
-#		copy misc\amanda.ini bin
-#		copy misc\test.ama bin
-#	else
-#		@mkdir build
-#		@mkdir bin
-#		@cp misc/amanda.ini bin/amanda.ini
-#		@cp misc/test.ama  bin/test.ama
-#	endif
 
 # The Cleaner
 ifeq ($(OS),Windows_NT)
@@ -72,15 +63,9 @@ else
 copyfiles: build
 	cp misc/amanda.ini bin/amanda.ini
 	cp misc/test.ama bin/test.ama
+	cp misc/amanda.sh bin/amanda.sh
+	chmod u+x bin/amanda.sh
 endif
 
 clean:
-	$(RM) build $(OBJECTS) $(TESTS)
-#	ifeq ($(OS),Windows_NT)
-#		del /f /q build $(OBJECTS) $(TESTS)
-#	else
-#		rm -rf build $(OBJECTS) $(TESTS)
-#		#rm -f tests/tests.log
-#		find . -name "*.gc*" -exec rm {} \;
-#		rm -rf `find . -name "*.dSYM" -print`
-#	endif
+	$(RM) build $(OBJECTS)
