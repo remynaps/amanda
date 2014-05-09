@@ -29,7 +29,7 @@ else
 		endif
 
 		ifeq ($(UNAME),Darwin)
-			CC=gcc-4.9
+			CC=gcc-4.8
 		endif
 	endif
 endif
@@ -45,7 +45,7 @@ src/amprint.o src/amstack.o src/amsyslib.o src/amtable.o
 all: copyfiles $(EXE)
 
 LIB: $(OBJECTS)
-	$(CC) -shared $(CFLAGS) $(LIBOBJECTS) -o $(AMALIB)
+	$(CC) -shared $(LIBS) $(CFLAGS) $(OBJECTS) -o $(AMALIB)
 
 $(EXE): LIB
 	$(CC) $(CFLAGS) src/amcon.o -Lbin -lamanda $(LIBS) -o $(EXE)
