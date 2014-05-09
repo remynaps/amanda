@@ -4,7 +4,7 @@ LIBS=$(OPTLIBS)
 ifeq ($(OS),Windows_NT)
 	CC=gcc
 	EXE=bin\amanda.exe
-	AMALIB=bin\amanda.dll
+	AMALIB=bin\libamanda.dll
 	RM=del /f /q
 	MKDIR=mkdir
 	SOURCES=$(subst /,\,$(wildcard src/*.c)))
@@ -13,14 +13,14 @@ else
 	RM=rm -rf
 	MKDIR=mkdir -p
 	SOURCES=$(wildcard src/*.c)
-	SOURCES-=src/amcon.c
+	#SOURCES-=src/amcon.c
 	ifeq ($(CROSSFLAG),-cross)
 		CC=x86_64-w64-mingw32-gcc
 		EXE=bin/amanda.exe
-		AMALIB=bin/amanda.dll
+		AMALIB=bin/libamanda.dll
 	else
 		EXE=bin/amanda
-		AMALIB=/tmp/amanda.so
+		AMALIB=bin/libamanda.so
 		CFLAGS+=-DAMA_READLINE
 		LIBS+=-ldl -lm -lreadline
 
@@ -34,7 +34,7 @@ else
 	endif
 endif
 
-PREFIX?=/usr/local
+LIBPATH=/tmp
 
 OBJECTS=$(addsuffix .o,$(basename $(SOURCES)))
 LIBOBJECTS=src/amcheck.o src/amerror.o src/ameval.o src/amio.o src/amlex.o\
@@ -48,7 +48,7 @@ LIB: $(OBJECTS)
 	$(CC) -shared $(CFLAGS) $(LIBOBJECTS) -o $(AMALIB)
 
 $(EXE): LIB
-	$(CC) $(CFLAGS) src/amcon.o $(AMALIB) $(LIBS) -o $(EXE)
+	$(CC) $(CFLAGS) src/amcon.o -Lbin -lamanda $(LIBS) -o $(EXE)
 
 build:
 	$(MKDIR) build
@@ -63,6 +63,8 @@ else
 copyfiles: build
 	cp misc/amanda.ini bin/amanda.ini
 	cp misc/test.ama bin/test.ama
+	cp misc/amanda.sh bin/amanda.sh
+	chmod u+x bin/amanda.sh
 endif
 
 clean:
