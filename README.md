@@ -40,8 +40,8 @@ need to alter your PATH variable. Instructions:
 * Right-click "My PC", and go to properties
 * Go to "Advanced system settings"
 * Click on "Environment variables..."
-* If PATH exists as <b>user variable</b>, edit it and add "; C:\MinGW\bin"
-* If it doesn't already exist, make a new one and add "C:\MinGW\bin"
+* If PATH exists as <b>user variable</b>, edit it and add `; C:\MinGW\bin`
+* If it doesn't already exist, make a new one and add `C:\MinGW\bin`
 
 `mingw32-make` in the `amanda` folder will now do your servings.
 
