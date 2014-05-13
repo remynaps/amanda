@@ -1,0 +1,11 @@
+<h1>Voorwoord</h1>
+
+Dit verslag documenteert de verdere ontwikkeling van Amanda 3.0, een
+functionele programmeertaal ontwikkelt door Dick Bruin. Het is geschreven als
+schoolverslag voor P4P van de opleiding informatica, jaar 1.
+
+Dit verslag is bestemd voor software engineers of mensen met enige kennis van
+concepten uit software engineering. Mede hierom is de layout van dit verslag
+expliciet simpel.
+
+Veel dank aan Dick Bruin voor het basisskelet van Amanda 2.05.

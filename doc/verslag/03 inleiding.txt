@@ -1,0 +1,67 @@
+<h1>Inleiding</h1>
+
+Amanda is een functionele programmeertaal gebasseerd op de syntax van Miranda.
+Deze syntax probeert zo dicht mogelijk bij wiskundige syntax te blijven. De
+originele auteur van Amanda is Dick Bruin, en aan de broncode worden geen
+rechten verbonden. Amanda wordt als programmeertaal intern gebruikt binnen de
+NHL voor onderwijsdoeleinden. Jaarlijks bevorderen studenten de taal.
+
+<h2>Probleemvaststelling</h2>
+
+De verbetering die in dit project toegepast worden op Amanda zijn afhankelijk
+van de problemen die in het begin vastgesteld werden.
+
+Eén van de grootste problemen met Amanda is Amandas versiediaspora. Er is geen
+duidelijke referentie-implementatie die als gulden standaard fungeert. Dit is
+vooral voor programmeertalen vitaal. Hoewel prestigieus, hoopt dit project
+Amanda 3.0 tot referentie-implementatie te promoveren.
+
+Tevens is Amanda in veel huidige implementaties afhankelijk op grafische
+interfaces. Deze grafische interfaces fungeren in hoofdzaak als IDEs
+(Integrated Development Environments), wat an sich geen problemen zou moeten
+veroorzaken. Echter zijn deze IDEs in deze implementaties de enige manier om
+Amanda te gebruiken. Dit is voor programmeertalen niet flexibel genoeg.
+
+De huidige interactieve interpreter heeft enige beperkingen die het gebruik
+sub-obtimaal maken. Er kunnen niet dynamisch functies aangemaakt worden, en er
+kunnen geen multiline prompts gegeven worden. Om Amanda bruikbaar in
+console-omgevingen te maken, moeten deze beperkingen verholpen worden.
+
+Tussen de diaspora van Amanda-versies zijn onafhankelijke Windows- en
+Unix-implementaties. Idealiter werkt Amanda platformonafhankelijk.
+
+Het verhelpen van de bovengenoemde problemen zijn tevens de randvoorwaarden van
+het voltooien van het project.
+
+<h2>Methoden</h2>
+
+Om de ontwikkeling van Amanda te bevorderen zijn enige ontwikkelingsmethoden
+gekozen.
+
+<h3>git</h3>
+
+De hoofdtool van ontwikkeling voor Amanda 3.0 is git. git [sic] is een Source
+Control Management tool. Het houdt alle revisies bij en stelt de ontwikkelaar in
+staat om basisacties uit te voeren zoals: forken, branchen en mergen. git is
+verkozen boven andere SCM-tools door haar gebruiksgemak en grote userbase.
+
+Na ervaring met voorgaande git-projecten is besloten om schrijfrechten naar de
+referentie-repository aan slechts één persoon te geven. Dit voorkomt merge
+conflicts an algemene chaos. Non-maintainers werken in hun eigen fork, en
+sturen contributies terug naar de referentie-repository in de vorm van pull
+requests. Maintainers (in Amanda's geval; de maintainer) kunnen deze pull
+requests per geval accepteren.
+
+GitHub is verkozen als repository host. Elke andere git repository host was
+goed genoeg geweest. GitHub heeft echter de grootste userbase, wat een obstakel
+alvorens contributie vermindert.
+
+GitHub wordt extensief gebruikt voor documentatie en issue tracking. Dit zorgt
+voor structuur en doelgerichtheid.
+
+<h3>Modulariteit</h3>
+
+Om Amanda 3.0 als referentie-implementatie van Amanda te bevorderen wordt een
+zo modulair mogelijke aanpak genomen. Dit betekent vooral separation of
+concerns. Dit is historisch bij Amanda niet altijd even goed gelukt, vooral met
+betrekking op grafische interfaces.
