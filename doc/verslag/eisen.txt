@@ -1,0 +1,14 @@
+<h1>Programma van eisen</h1>
+
+1. Platformonafhankelijke versie Amanda interpeter.
+2. Uitbreiden van de interpeter om functies uit te voeren en multiline.
+3. Via bestanden functies uitvoeren.
+4. Patches backporten.
+
+De grootste eis is om Amanda platformonafhankelijk te maken.
+
+Als er nog genoeg tijd over is na dit werk kan de Amanda-interpeter uitgebreid
+worden met meer functies en multiline mogelijkheden.
+
+Ondertussen wordt er ook gewerkt aan het backporten van patches die door de
+jaren heen zijn toegevoegd aan Amanda.

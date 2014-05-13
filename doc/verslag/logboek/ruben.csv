@@ -1,0 +1,6 @@
+2014-04-20,"Begin aan makefile"
+2014-04-22,"Mac compatibility fixed in, Windows clauses added"
+2014-04-23,"Grand picture of makefile logic complete"
+2014-04-24,"Windows makefile construction work"
+2014-04-25,"Dynamic .o files generated"
+2014-04-30,"Python diff tool created for creating diffs between project and other projects"

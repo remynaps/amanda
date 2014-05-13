@@ -1,0 +1,155 @@
+body, td { font-family: Verdana, Helvetica, Arial, sans-serif; 	font-size: 10pt; font-weight: normal; color: #000000; background-color: #FFFFFF; }
+
+.upperLeft {
+	background-color: #FFFFFF;
+	text-align: left;
+	vertical-align: bottom;
+	width: 219px;
+	height: 66px;
+}
+
+.upperRight {
+	background-color: #FFFFFF;
+	text-align: left;
+	vertical-align: bottom;
+	width: 531px;
+	height: 66px;
+    }
+
+.lowerLeft {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	font-weight:bold;
+	color: #666633;
+	background-color: #CCCC99;
+	text-align: left;
+	vertical-align: top;
+	width: 492px;
+	height: 82px;
+    }
+
+.lowerRight {
+	background-color: #999966;
+	text-align: left;
+	vertical-align: top;
+	width: 258px;
+	height: 82px;
+	}
+
+.middle {
+	background-color: #FFFFFF;
+	text-align: left;
+	vertical-align: top;
+	width: 750px;
+	height: 350px;
+	}
+
+.gfxDisp {
+	background-color: #CCCC99;
+ }
+	
+.titel_tekst {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	font-weight:bold;
+	color: #000000;
+	vertical-align: middle;
+	padding-left: 12px;
+	}
+
+.top_tekst {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 12pt;
+	font-weight:bold;
+	color: #FF6600;
+	background-color: #FFFFFF;
+	}
+	 
+.tekst {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	font-weight: normal;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+
+.disclaimer {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 8pt;
+	font-weight: normal;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+
+.rapportKopTitel, h1 {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 15pt;
+	font-weight: bold;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+
+.rapportKop1, h2 {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 13pt;
+	font-weight: bold;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+
+.rapportKop2, h3 {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 12pt;
+	font-weight: bold;
+	color: #000000;
+	background-color: #FFFFFF;
+}
+
+.tekstKop, th {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	font-weight: bold;
+	color: #FF6600;
+}
+
+.tekstbg {
+	font-family: Verdana, Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	font-weight:normal;
+	color: #000000;
+	background-color: #f5f5eC;
+	}
+
+a.tekst:link {
+    color: #CC0033;
+    text-decoration: none;
+	 }
+a.tekst:visited {
+    color: #CC0033;
+    text-decoration: none;
+	 }
+a.tekst:hover {
+    color: #660033;
+    text-decoration: none;
+	}
+a.tekst:active {
+    color: #660033;
+    text-decoration: none;
+	 }
+
+a.top_tekst:link {
+    color: #E5E5CC;
+    text-decoration: none;
+	 }
+a.top_tekst:visited {
+    color: #E5E5CC;
+    text-decoration: none;
+	 }
+a.top_tekst:hover {
+    color: #CCCC99;
+    text-decoration: none;
+	}
+a.top_tekst:active {
+    color: #CCCC99;
+    text-decoration: none;
+	 }

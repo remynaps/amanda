@@ -1,0 +1,16 @@
+<h1>Methoden</h1>
+
+Git wordt gebruikt voor version control.
+
+GitHubs wikifunctionaliteit wordt (eventueel tij elijk) gebruikt voor
+documentatie.
+
+Het standaard opensource-model van referenti repositories en forks wordt
+toegepast om conflicten te verminderen.
+
+Unit tests worden mogelijk geschreven om specifieke methodes te testen.
+
+Packaging wordt zo standaard mogelijk ged an met de native packagesystemen van
+elk platform.
+
+Modulariteit wordt zo veel mogelijk aangehouden.

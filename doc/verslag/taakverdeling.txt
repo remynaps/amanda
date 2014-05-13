@@ -1,0 +1,17 @@
+<h1>Rol- en takenverdeling</h1>
+
+<h2>Ian</h2>
+Backports. Notulist.
+
+<h2>Lukas</h2>
+Dynamische aanmak van functies.
+
+<h2>Remy</h2>
+Mac compatibiliteit & packaging. Communicatie. Multiline interpreter.
+
+<h2>Ruben</h2>
+Projectmanagement. Linux compatibiliteit & packaging. Documentatie. Evt. unit
+testing.
+
+<h2>Yusuf</h2>
+Planning. Uitvoerbare .ama-files.

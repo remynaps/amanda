@@ -1,0 +1,33 @@
+<h1>Planning</h1>
+
+<h2>1e week:</h2>
+Project Amanda analyseren.
+Plan van aanpak.
+Evalueren.
+
+<h2>2e week:</h2>
+Taken verdelen.
+Uurverantwoording.
+
+<h2>3e week:</h2>
+Issues op Github verdelen.
+Issues uitwerken.
+
+<h2>4e week:</h2>
+Monkey test.
+
+<h2>5e week:</h2>
+Test evalueren.
+Afspraak met opdrachtgever.
+
+<h2>6e week:</h2>
+Nog verder evalueren.
+Implementeren op het netwerk.
+Feedback van beta-gebruikers.
+
+<h2>7e week:</h2>
+Project met 1b samenvoegen.
+Presenteren.
+
+<h2>8e week:</h2>
+Opdrachtgever verwoorden.

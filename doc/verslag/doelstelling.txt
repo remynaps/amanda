@@ -1,0 +1,9 @@
+<h1>Doelstelling</h1>
+
+Het doel van dit project is om van de taal Amanda een platformonafhankelijke
+versie te maken die eventueel ook zonder aparte grafische interface werkt.
+
+Amanda is over het algemeen al zonder interface te gebruiken maar met zeer
+beperkte functionaliteit. Een aanvullend doel is dus om de functionaliteit van
+Amanda zodanig uit te breiden dat basisfuncties uitgevoerd kunnen worden zonder
+tussenkomst van een interface.
