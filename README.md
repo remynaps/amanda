@@ -14,12 +14,22 @@ Compiling under Linux is a no-brainer.
 
 Then `make` inside the `amanda` folder.
 
+After compiling, the `amanda.sh` file will dynamically import `libamanda.so` and
+run `amanda`. This is useful for testing. Installing `amanda` into
+`/usr/local/bin` and installing `libamanda.so` into `/usr/local/lib` should
+resolve the need for the hacky `amanda.sh`.
+
 <b>OS X</b>
 
 Ensure you have XCode installed, and its command-line tools. Also make
-sure that `gcc-4.9` is installed. The standard GCC compiler will be
-used, without Apple's standard LLVM back-end. Once this is set up,
-a simple `make` will do.
+sure that `gcc-4.8` is installed (`brew install gcc48`). The standard GCC
+compiler will be used, without Apple's standard LLVM back-end. Once this is set
+up, a simple `make` will do.
+
+After compiling, the `amanda.sh` file will dynamically import `libamanda.so` and
+run `amanda`. This is useful for testing. Installing `amanda` into
+`/usr/local/bin` and installing `libamanda.so` into `/usr/local/lib` should
+resolve the need for the hacky `amanda.sh`.
 
 <b>Windows</b>
 
@@ -30,10 +40,12 @@ need to alter your PATH variable. Instructions:
 * Right-click "My PC", and go to properties
 * Go to "Advanced system settings"
 * Click on "Environment variables..."
-* If PATH exists as <b>user variable</b>, edit it and add "; C:\MinGW\bin"
-* If it doesn't already exist, make a new one and add "C:\MinGW\bin"
+* If PATH exists as <b>user variable</b>, edit it and add `; C:\MinGW\bin`
+* If it doesn't already exist, make a new one and add `C:\MinGW\bin`
 
 `mingw32-make` in the `amanda` folder will now do your servings.
+
+`amanda.exe` will locally import `libamanda.dll` and run just fine on its own.
 
 <b>Cross-compile from Linux to Windows</b>
 
