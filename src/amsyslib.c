@@ -179,6 +179,10 @@ bool Load(char *filename)
     checkdefinitions();
     modify_definitions();
     lockmem();
+    if (gettemplate("main")->tag == FUNC)
+    { 
+      Interpret("main");
+    }
     return True;
   }
   else
