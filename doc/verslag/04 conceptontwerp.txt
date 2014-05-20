@@ -1,0 +1,69 @@
+<h1>Conceptontwerp</h1>
+
+<h2>Cross-platform</h2>
+
+C code is zo cross-platform als het geschreven wordt, wat afhankelijk is van
+twee variabelen: Het gebruik van externe libraries, en het gebruik van
+systeem-afhankelijke implementaties. Een programma kan niet cross-platform zijn
+als de benodigde library dat niet is. Een programma kan ook niet cross-platform
+zijn als het afhankelijk is van platformspecifieke specificaties, zoals
+referenties naar een C:\-schijf of de aanname dat /dev/null bestaat.
+
+Gelukkig bevat de Amanda-code geen externe libraries, en zijn er geen
+systeem-afhankelijke implementaties. Dit maakt het veel makkelijker om de code
+voor meerdere platformen te compileren. Amanda heeft echter nog nooit één versie
+gehad die naar verschillende platformen compileert. Unix-versies gebruikten de
+GCC-methode van compilatie, en Windows-versies gebruikten Visual Studio.
+
+Aangezien Visual Studio niet bestaat onder Unix, en GCC wél in Windows bestaat
+in MinGW, is het het makkelijkst om een GCC-methode te vinden die op alle
+doelplatformen compileert. Het make-programma zou dit mogelijk moeten maken.
+
+Er is een Makefile nodig die afhankelijk op het platform de compiler
+definieert, en zo nodig platformspecifieke functies uitvoert.
+
+<h2>Executeerbare scriptfile</h2>
+
+Bij het inlezen van scriptfiles worden in Amanda functies gedefinieerd.
+Scriptfiles zijn echter gelimiteerd tot het definiëren van functies, en kunnen
+geen instructies geven die gebruik maakt van de gedefinieerde functies. In
+andere woorden; er is geen top-level code, en er is geen main functie.
+
+Omdat top-level code vrijwel onmogelijk is door de afwezigheid van scopes, is
+de makkelijkste implementatie het toestaan van een main-methode. De gekozen
+implementatie is het verifiëren dat een main-functie bestaat, en deze uitvoeren
+bij het opstarten van Amanda.
+
+<h2>Functies definiëren in interactieve interpreter</h2>
+
+Dit probleem is het tegenovergestelde van het vorige probleem: Er kunnen wél
+functies geëxecuteerd worden in de interactieve interpreter, maar er kunnen
+geen nieuwe functies gedefinieerd worden. Dit probleem is echter moeilijker op
+te lossen, omdat Amanda's syntax ambigieus is met betrekking tot
+functiedefenitie en booleaanse vergelijkingen. Dit betekent dat a = b + c twéé
+dingen kan betekenen: vergelijk waarde a met waarde (b + c); of definieer a als
+zijnde waarde (b + c).
+
+Omdat de syntax van Amanda moeilijk veranderd kan worden zonder alle oude code
+obscuur te maken, is er besloten om extra syntax toe te voegen die alleen
+geldig is binnen de interactieve interpreter. De exacte implementatie is nog in
+discussie afhankelijk van de technische mogelijkheden. Waarschijnlijk wordt het
+keyword "def" toegevoegd die als prefix dient voor alle aangemaakte functies
+binnen de interactieve interpreter.
+
+<h2>Packaging</h2>
+
+Om Amanda installeerbaar te maken, moet Amanda gepackaget worden. Amanda is tot
+zover bekend nog nooit installeerbaar op een systeem geweest. De intentie
+is om Amanda zo puur mogelijk per platform te packagen. Dit houdt in: .msi voor
+Windows; .deb én .tar.gz voor Linux; .dmg voor OS X. De exacte
+packagespecificaties hebben nog nader onderzoek nodig.
+
+<h2>Backporting</h2>
+
+Amanda heeft voorgaande en simultaan bestaande versies. Er is een Python script
+geschreven die gebruik maakt van de diff-tool in Unix-systemen. Gebruik makende
+van dit script is het makkelijk te achterhalen wat de verschillen zijn tussen
+twee versies van Amanda. Als er een waardevolle toevoeging is in een andere
+versie, dan wordt op case-by-base basis beslist of deze gebackport wordt.
+Conceptueel is hier weinig over te zeggen.
