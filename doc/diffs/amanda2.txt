@@ -1,0 +1,175 @@
+41,42c41,55
+<   fputs(string, stdout);
+<   fflush(stdout);
+---
+> 	/* P4P Callback */
+> 	if(writeStringCallback != NULL)
+> 	{
+> 		writeStringCallback(string);
+> 	}
+> 	//fputs(string, stdout);
+> 	//fflush(stdout);
+> }
+> 
+> void SetInterrupt(bool b) {
+> 	if(b == True) {
+> 		interrupted = True;
+> 	} else {
+> 		interrupted = False;
+> 	}
+168a182
+> 
+191c205
+< }
+---
+> }
+\ No newline at end of file
+23a24
+> void SetInterrupt(bool b);
+35a37,74
+> 
+> /* P4P Callback Test */
+> typedef void (*WriteStringCallback)(char output[]);
+> WriteStringCallback writeStringCallback;
+> 
+> char* stdoutMessages[10000];
+> int messageStoreIndex = 0;
+> 
+> void storeMessage(char out[])
+> {
+> 	
+> 	if(messageStoreIndex < 10000 & out != NULL)
+> 	{
+> 		//strcpy(stdoutMessages[messageStoreIndex], out);
+> 		stdoutMessages[messageStoreIndex] = strdup(out);
+> 		messageStoreIndex++;
+> 		
+> 	}
+> }
+> 
+> char** getMessages()
+> {
+> 	if(messageStoreIndex > 0)
+> 	{
+> 		stdoutMessages[messageStoreIndex] = "\n\n\n";
+> 		messageStoreIndex = 0;
+> 
+> 		return stdoutMessages;
+> 	}
+> 	return 0;
+> }
+> 
+> bool SetOutputCallback(long pointerToWriteStringCallbackMethod)
+> {
+> 	writeStringCallback = (WriteStringCallback)pointerToWriteStringCallbackMethod;
+> 
+> 	return 1;
+> }
+151a152,171
+> char** gethashtable(char* search)
+> {
+>   static char* strings[hashtablesize];
+>   int k, index[hashtablesize], indexsize = 0;
+> 
+>   for(k=0; k<hashtablesize; k++)
+>   {
+>     FuncDef *fun = &(hashtable[k]);
+>     if(fun->name != NULL
+>     && fun->name[0] != anonymousprefix
+>     && (fun->typeexpr || fun->abstype)
+> 	&& strstr(fun->name, search) != NULL) index[indexsize++] = k;
+>   }
+> 
+>   qsort(index, indexsize, sizeof(int), comparefuncdef);
+>   for(k=0; k<indexsize; k++)  strings[k] = hashtable[index[k]].name;
+>   strings[k] = "\n\n\n";
+>   return strings;
+> }
+> 
+29c29,30
+< void printhashtable(void);
+---
+> void   printhashtable(void);
+> char** gethashtable(char* search);//p4p edit
+182,185d181
+<     if (gettemplate("main")->tag == FUNC)
+<     { 
+<       Interpret("main");
+<     }
+ama_dir: amanda/src
+res_dir: amanda-resources/amanda2/AmandaCore/Amalib
+$ diff amanda/src/amerror.h amanda-resources/amanda2/AmandaCore/Amalib/amerror.h
+$ diff amanda/src/amcon.c amanda-resources/amanda2/AmandaCore/Amalib/amcon.c
+$ diff amanda/src/amtypes.h amanda-resources/amanda2/AmandaCore/Amalib/amtypes.h
+$ diff amanda/src/amcon.h amanda-resources/amanda2/AmandaCore/Amalib/amcon.h
+$ diff amanda/src/ampatter.c amanda-resources/amanda2/AmandaCore/Amalib/ampatter.c
+$ diff amanda/src/amstack.h amanda-resources/amanda2/AmandaCore/Amalib/amstack.h
+$ diff amanda/src/amprint.c amanda-resources/amanda2/AmandaCore/Amalib/amprint.c
+$ diff amanda/src/amlib.h amanda-resources/amanda2/AmandaCore/Amalib/amlib.h
+$ diff amanda/src/ammodify.c amanda-resources/amanda2/AmandaCore/Amalib/ammodify.c
+$ diff amanda/src/ampatter.h amanda-resources/amanda2/AmandaCore/Amalib/ampatter.h
+$ diff amanda/src/amtable.c amanda-resources/amanda2/AmandaCore/Amalib/amtable.c
+$ diff amanda/src/amprint.h amanda-resources/amanda2/AmandaCore/Amalib/amprint.h
+$ diff amanda/src/ammem.h amanda-resources/amanda2/AmandaCore/Amalib/ammem.h
+$ diff amanda/src/amio.c amanda-resources/amanda2/AmandaCore/Amalib/amio.c
+$ diff amanda/src/ameval.h amanda-resources/amanda2/AmandaCore/Amalib/ameval.h
+$ diff amanda/src/ameval.c amanda-resources/amanda2/AmandaCore/Amalib/ameval.c
+$ diff amanda/src/ammem.c amanda-resources/amanda2/AmandaCore/Amalib/ammem.c
+$ diff amanda/src/amparse.c amanda-resources/amanda2/AmandaCore/Amalib/amparse.c
+$ diff amanda/src/amlex.h amanda-resources/amanda2/AmandaCore/Amalib/amlex.h
+$ diff amanda/src/amcheck.c amanda-resources/amanda2/AmandaCore/Amalib/amcheck.c
+$ diff amanda/src/amsyslib.h amanda-resources/amanda2/AmandaCore/Amalib/amsyslib.h
+$ diff amanda/src/amtable.h amanda-resources/amanda2/AmandaCore/Amalib/amtable.h
+$ diff amanda/src/amsyslib.c amanda-resources/amanda2/AmandaCore/Amalib/amsyslib.c
+$ diff amanda/src/amstack.c amanda-resources/amanda2/AmandaCore/Amalib/amstack.c
+$ diff amanda/src/amparse.h amanda-resources/amanda2/AmandaCore/Amalib/amparse.h
+$ diff amanda/src/amlex.c amanda-resources/amanda2/AmandaCore/Amalib/amlex.c
+$ diff amanda/src/amio.h amanda-resources/amanda2/AmandaCore/Amalib/amio.h
+$ diff amanda/src/bool.h amanda-resources/amanda2/AmandaCore/Amalib/bool.h
+$ diff amanda/src/ammodify.h amanda-resources/amanda2/AmandaCore/Amalib/ammodify.h
+$ diff amanda/src/amerror.c amanda-resources/amanda2/AmandaCore/Amalib/amerror.c
+$ diff amanda/src/amlib.c amanda-resources/amanda2/AmandaCore/Amalib/amlib.c
+$ diff amanda/src/amcheck.h amanda-resources/amanda2/AmandaCore/Amalib/amcheck.h
+
+The following files from amanda-resources/amanda2/AmandaCore/Amalib do not exist in amanda/src:
+ama.so
+ama.exe
+ama
+__SEMANTIC_CLANG_TEMPFILE.h
+Project.ede
+Makefile
+source.def
+testdll.def
+amanda.ini
+ammem.P
+amlex.P
+amcon.P
+amprint.P
+amparse.P
+amsyslib.P
+ammodify.P
+amcheck.P
+amtable.P
+amstack.P
+ameval.P
+amlib.P
+amerror.P
+amio.P
+ampatter.P
+
+The following files from amanda/src do not exist in amanda-resources/amanda2/AmandaCore/Amalib:
+amcon.o
+ameval.o
+amparse.o
+amerror.o
+amstack.o
+amcheck.o
+ammodify.o
+amprint.o
+amsyslib.o
+amlib.o
+ammem.o
+amlex.o
+ampatter.o
+amtable.o
+amio.o

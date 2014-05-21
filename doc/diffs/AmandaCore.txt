@@ -1,0 +1,550 @@
+10c10
+<   
+---
+> 
+15c15
+<   
+---
+> 
+27a28
+> #include "amsyslib.h"
+28a30,38
+> #ifndef __GNUC__
+> typedef _Null_terminated_ char *NPSTR, *LPSTR, *PSTR; // Jordi Epema 22-4-2013 -> Added types to use with the callback to C# code.
+> #else // AJS 5/17/13: Types from winnt.h
+> typedef char		*NPSTR;
+> typedef char		*LPSTR;
+> typedef char		*PSTR;
+> #endif
+> 
+> // AJS 4/23/13: Only linux systems should compile *with* AMA_READLINE flag.
+38a49,50
+> OutputCallback outputCallback = NULL; // Jordi Epema 22-4-2013 -> Holds the pointer to the callback method.
+> // Jordi Epema 22-4-2013 -> WriteString now calls our callback method to update our main form.
+41,42c53,61
+<   fputs(string, stdout);
+<   fflush(stdout);
+---
+> #ifndef CONSOLE
+> 	static wchar_t n[1000];
+> 	mbstowcs(n, string, 1000);
+> 	if(outputCallback)
+> 		outputCallback(n);
+> #else
+> 	fputs(string, stdout);
+> 	fflush(stdout);
+> #endif
+123c142
+<   
+---
+> 
+168a188
+> #ifdef CONSOLE
+172c192
+<   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
+---
+>   if(argc > 1 && strcmp(argv[1], "-proc") == 0)
+177c197
+<   if(argc > 2 && strcmp(argv[1], "-obj") == 0) 
+---
+>   if(argc > 2 && strcmp(argv[1], "-obj") == 0)
+191a212,260
+> #endif
+> 
+> 
+> // AJS 5/20/13: No need for declspec on Linux.
+> #ifdef __GNUC__
+> #define DECLSPEC
+> #define STDCALL __attribute__((__stdcall__))
+> #else
+> #define DECLSPEC __declspec(dllexport)
+> #define STDCALL __stdcall
+> #endif
+> 
+> // Jordi Epema 22-4-2013
+> // Exported method which should be called from a GUI.
+> // Paramaters:
+> // long -> pointer to the callback method in the GUI
+> // LPSTR -> String which contains the 'to-be-executed-in-amanda' command.
+> // should call the callback to return status updates.
+> // AJS 4/23/13: Call with stdcall to reflect proper stack balance.
+> DECLSPEC void STDCALL ExecuteCommand(long outputCallbackAddress, LPSTR amandaCommand)
+> {
+>     // get access to ProgressCallback function pointer
+>     outputCallback = (OutputCallback)outputCallbackAddress;
+> 
+> 	Interpret(amandaCommand);
+> }
+> 
+> // Jordi Epema 13-6-2013 -> Fix the infinite loop/ infinite recursions crash by interrupting the interpreter instead of killing the thread which resulted in a crash
+> DECLSPEC void STDCALL StopAmandaExecution()
+> {
+> 	interrupted = True;
+> }
+> 
+> // Jordi Epema 23-4-2013
+> // Setup amanda interpreter, should be called once to prevent excessive memory usage.
+> DECLSPEC void STDCALL SetupAmanda()
+> {
+> 	initgetstring();
+> 	InitOptions(False, AMAINI); // ini path?
+> 	CreateInterpreter();
+> }
+> 
+> // Jordi Epema 24-4-2013
+> // Load a script file
+> DECLSPEC bool STDCALL LoadScript(LPSTR fileName, long outputCallbackAddress)
+> {
+> 	outputCallback = (OutputCallback)outputCallbackAddress;
+> 	return Load(fileName);
+> }
+1,37c1,56
+< /**********************************************************************
+<   Author : Dick Bruin
+<   Date   : 16/10/98
+<   Version: 2.01
+<   File   : amcon.h
+< 
+<   Description:
+<   interface functions
+< *************************************************************************/
+< 
+< #ifndef AMCON_H
+< #define AMCON_H
+< 
+< #include "bool.h"
+< 
+< void InitOptions(bool console, char *path);
+< char *GetOption(char option[]);
+< 
+< void CreateInterpreter(void);
+< void Interpret(char expr[]);
+< bool Load(char filename[]);
+< 
+< extern bool interrupted;
+< 
+< bool InitRemote(void);
+< int CreateRemote(char s[]);
+< void DropRemote(int handle);
+< void PutRemote(int handle, char s[]);
+< bool CallRemote(int handle, char s[]);
+< bool GetRemote(int handle, char s[], int size);
+< 
+< /* to be defined: */
+< void WriteString(char string[]);
+< void CheckIO(void);
+< void GraphDisplay(char string[]);
+< 
+< #endif
+---
+> /**********************************************************************
+>   Author : Dick Bruin
+>   Date   : 16/10/98
+>   Version: 2.01
+>   File   : amcon.h
+> 
+>   Description:
+>   interface functions
+> *************************************************************************/
+> 
+> #ifndef AMCON_H
+> #define AMCON_H
+> 
+> #include "bool.h"
+> 
+> void InitOptions(bool console, char *path);
+> char *GetOption(char option[]);
+> 
+> void CreateInterpreter(void);
+> void Interpret(char expr[]);
+> bool Load(char filename[]);
+> 
+> extern bool interrupted;
+> 
+> bool InitRemote(void);
+> int CreateRemote(char s[]);
+> void DropRemote(int handle);
+> void PutRemote(int handle, char s[]);
+> bool CallRemote(int handle, char s[]);
+> bool GetRemote(int handle, char s[], int size);
+> 
+> /* to be defined: */
+> void WriteString(char string[]);
+> void CheckIO(void);
+> void GraphDisplay(char string[]);
+> 
+> #ifndef __GNUC__
+> typedef void (__stdcall * OutputCallback)(wchar_t *);
+> #else
+> typedef void (__attribute__((__stdcall__)) *OutputCallback)(wchar_t *);
+> #endif
+> 
+> // AJS 4/23/13: Call with stdcall to reflect proper stack balance.
+> #ifndef __GNUC__
+> __declspec(dllexport) void __stdcall ExecuteCommand(long outputCallbackAddress, LPSTR amandaCommand);
+> __declspec(dllexport) void __stdcall StopAmandaExecution();
+> // Jordi Epema 23-4-13 -> Create a seperate function to setup amanda, this to prevent excessive use of memory
+> __declspec(dllexport) void __stdcall SetupAmanda();
+> // Jordi 24-4-13 -> Add a function to load scripts
+> __declspec(dllexport) bool __stdcall LoadScript(LPSTR fileName);
+> #else // AJS 5/17/13: On Linux/OSX we don't use dllexport.
+> void (__attribute__((__stdcall__)) ExecuteCommand(long outputCallbackAddress, LPSTR amandaCommand));
+> void (__attribute__((__stdcall__)) SetupAmanda());
+> bool (__attribute__((__stdcall__)) LoadScript(LPSTR fileName));
+> #endif
+> #endif
+9a10
+> 
+11d10
+< 
+26,27c25,36
+< #define anonymousprefix            '_'
+< 
+---
+> #define anonymousprefix            '_'
+> #ifndef __GNUC__
+> typedef _Null_terminated_ char *NPSTR, *LPSTR, *PSTR; // Jordi Epema 22-4-2013 -> Added types to use with the callback to C# code.
+> typedef void (__stdcall * FunctionListCallback)(wchar_t *, wchar_t *);
+> #else
+> typedef char		*NPSTR;
+> typedef char		*LPSTR;
+> typedef char		*PSTR;
+> 
+> typedef void (__attribute__((__stdcall__)) * FunctionListCallback)(wchar_t *, wchar_t *);
+> #endif
+> FunctionListCallback functionListCallback = NULL;
+52a62,212
+> static int comparefuncdef(const void *x, const void *y)
+> {
+>   return strcmp(hashtable[*(int *)x].name, hashtable[*(int *)y].name);
+> }
+> 
+> // AJS 5/20/13: No need for declspec on Linux.
+> #ifdef __GNUC__
+> #define DECLSPEC
+> #define STDCALL __attribute__((__stdcall__))
+> #else
+> #define DECLSPEC __declspec(dllexport)
+> #define STDCALL __stdcall
+> #endif
+> 
+> // Jordi Epema - 5-6-2013 -> Print the required parameters
+> char *GetType(Cell *c, bool parentheses)
+> {
+> 	char temp[128] = "";
+>   int k;
+>   	int iTemp;
+>   if(c == NULL) return "";
+>   switch(c->tag)
+>   {
+>     case INT: case REAL:
+> 	iTemp = sprintf(temp, "num");
+> 	temp[iTemp] = '\0';
+>       break;
+>     case CHAR:
+> 	iTemp = sprintf(temp, "char");
+> 	temp[iTemp] = '\0';
+>       break;
+>     case BOOLEAN:
+>        iTemp = sprintf(temp, "bool");
+> 	  temp[iTemp] = '\0';
+>       break;
+>     case NULLTUPLE:
+>        iTemp = sprintf(temp, "()");
+> 	  temp[iTemp] = '\0';
+>       break;
+>     case LIST:
+>       //WriteString("[");
+>       //GetType(c->left);
+> 	  iTemp = sprintf(temp, "[%s]", GetType(c->left, False));
+> 	  temp[iTemp] = '\0';
+>       break;
+>     case PAIR:
+> 	  iTemp = sprintf(temp, "(%s", GetType(c->left, False));
+> 	  temp[iTemp] = '\0';
+>       while(c->right->tag == PAIR)
+>       {
+>         c = c->right;
+> 		iTemp = sprintf(temp, "%s, %s", temp, GetType(c->left, False));
+> 		temp[iTemp] = '\0';
+>         //WriteT(c->left, False);
+>       }
+> 	  iTemp = sprintf(temp, "%s)", temp);
+> 	  temp[iTemp] = '\0';
+>       break;
+>     case RECORD:
+>       strcpy(temp, "test");
+>       break;
+>     case APPLY:
+> 		memset(temp, 0, sizeof(temp));
+> 		if(parentheses)
+> 			strcpy(temp, "(");
+>       while(c->tag == APPLY)
+>       {
+>         iTemp = sprintf(temp, "%s%s ", temp, GetType(c->left, True));
+> 		temp[iTemp] = '\0';
+>         c = c->right;
+>       }
+> 	  if(parentheses)
+> 		  iTemp = sprintf(temp, "%s%s)", temp, GetType(c, False));
+> 	  else
+> 		iTemp = sprintf(temp, "%s%s", temp, GetType(c, False));
+> 	  temp[iTemp] = '\0';
+> 	  break;
+>     //case TYPEVAR:
+>     //  for(k=1; k<=c->value; k++) WriteString("*");
+>     //  break;
+>     case TYPESYNONYM:
+> 		iTemp = sprintf(temp, "%s == %s", GetType(c->left, False), GetType(c->right, False));
+> 		temp[iTemp] = '\0';
+>       //WriteT(c->left, False);
+>       //WriteString(" == ");
+>       //WriteT(c->right, False);
+>       break;
+>     case TYPEDEF:
+> 		iTemp = sprintf(temp, "%s ::= %s", GetType(c->left, False), GetType(c->right, False));
+> 		temp[iTemp] = '\0';
+>       //WriteT(c->left, False);
+>       //WriteString(" ::= ");
+>       //WriteT(c->right, False);
+>       break;
+>     case STRUCT:
+> 		if(parentheses)
+> 			iTemp = sprintf(temp, "(%s", getfunction(c->left->value)->name);
+> 		else
+> 			iTemp = sprintf(temp, "%s", getfunction(c->left->value)->name);
+> 	 temp[iTemp] = '\0';
+>       //WriteString(getfunction(c->left->value)->name);
+>       while(c->right->tag == STRUCT)
+>       {
+>         //WriteString(" ");
+>         c = c->right;
+> 		iTemp = sprintf(temp, "%s %s", temp, GetType(c->left, True));
+> 		temp[iTemp] = '\0';
+>         //WriteT(c->left, True);
+>       }
+> 	  if(parentheses){
+> 		  temp[iTemp] = ')';
+> 		  temp[iTemp+1] = '\0';
+> 	  }
+>       break;
+>     default:
+>      return "";
+>   }
+>   return temp;
+> }
+> 
+> // Jordi Epema 26-4-2013
+> // Get all functions from amanda's hashtable
+> DECLSPEC void STDCALL GetFunctionList(long functionListAddress)
+> {
+> 	int k, index[hashtablesize], indexsize = 0;
+> 	static wchar_t n[100];
+> 	static wchar_t param[100];
+> 	char typeBuffer[64];
+> 	int count = 0;
+> 	functionListCallback = (FunctionListCallback)functionListAddress;
+> 	for(k=0; k<hashtablesize; k++)
+> 	{
+> 		FuncDef *fun = &(hashtable[k]);
+> 		if(fun->name != NULL
+> 		&& fun->name[0] != anonymousprefix
+> 		&& (fun->typeexpr || fun->abstype)) index[indexsize++] = k;
+> 	}
+> 
+> 	qsort(index, indexsize, sizeof(int), comparefuncdef);
+> 
+> 	for(k=0; k<indexsize; k++){
+> 			mbstowcs(n, hashtable[index[k]].name, 100);
+> 			count = sprintf(typeBuffer, "%s", GetType(hashtable[index[k]].typeexpr, False));
+> 			typeBuffer[count] = '\0';
+> 			mbstowcs(param, typeBuffer, 100);
+> 			functionListCallback(n, param);
+> 	}
+> 	//printhashtable();
+> 	//printusertypes();
+> }
+> 
+89d248
+< 
+129,133d287
+< static int comparefuncdef(const void *x, const void *y)
+< {
+<   return strcmp(hashtable[*(int *)x].name, hashtable[*(int *)y].name);
+< }
+< 
+153a308,309
+> 	char typeBuffer[64];
+> 	int n = 0;
+155d310
+< 
+180a336,339
+> 		Write("\n");
+> 		n = sprintf(typeBuffer, "%s", GetType(fun->typeexpr, False));
+> 		typeBuffer[n] = '\0';
+> 		Write("%s -> %s\n", fun->name, typeBuffer);
+227c386
+<       if(fun->def->tag < nonevaltag) 
+---
+>       if(fun->def->tag < nonevaltag)
+15a16,19
+> // AJS 4/23/13: Define the Amanda versioning and global file here, so we can also use it in other files.
+> #define BANNER "Amanda V2.05\n\n"
+> #define AMAINI "amanda.ini"
+> 
+35d34
+< 
+69,71d67
+< #define BANNER "Amanda V2.05\n\n"
+< #define AMAINI "amanda.ini"
+< 
+140c136
+<     Write(BANNER);
+---
+>     //Write(BANNER);
+182,185d177
+<     if (gettemplate("main")->tag == FUNC)
+<     { 
+<       Interpret("main");
+<     }
+218a211
+> 	printusertypes();
+178c178
+<     Write("\nWARNING: file %s not found\n", current->name);
+---
+>     Write("WARNING: file %s not found\r\n", current->name);
+ama_dir: amanda/src
+res_dir: amanda-resources/AmandaCore
+$ diff amanda/src/amerror.h amanda-resources/AmandaCore/amerror.h
+$ diff amanda/src/amcon.c amanda-resources/AmandaCore/amcon.c
+$ diff amanda/src/amtypes.h amanda-resources/AmandaCore/amtypes.h
+$ diff amanda/src/amcon.h amanda-resources/AmandaCore/amcon.h
+$ diff amanda/src/ampatter.c amanda-resources/AmandaCore/ampatter.c
+$ diff amanda/src/amstack.h amanda-resources/AmandaCore/amstack.h
+$ diff amanda/src/amprint.c amanda-resources/AmandaCore/amprint.c
+$ diff amanda/src/amlib.h amanda-resources/AmandaCore/amlib.h
+$ diff amanda/src/ammodify.c amanda-resources/AmandaCore/ammodify.c
+$ diff amanda/src/ampatter.h amanda-resources/AmandaCore/ampatter.h
+$ diff amanda/src/amtable.c amanda-resources/AmandaCore/amtable.c
+$ diff amanda/src/amprint.h amanda-resources/AmandaCore/amprint.h
+$ diff amanda/src/ammem.h amanda-resources/AmandaCore/ammem.h
+$ diff amanda/src/amio.c amanda-resources/AmandaCore/amio.c
+$ diff amanda/src/ameval.h amanda-resources/AmandaCore/ameval.h
+$ diff amanda/src/ameval.c amanda-resources/AmandaCore/ameval.c
+$ diff amanda/src/ammem.c amanda-resources/AmandaCore/ammem.c
+$ diff amanda/src/amparse.c amanda-resources/AmandaCore/amparse.c
+$ diff amanda/src/amlex.h amanda-resources/AmandaCore/amlex.h
+$ diff amanda/src/amcheck.c amanda-resources/AmandaCore/amcheck.c
+$ diff amanda/src/amsyslib.h amanda-resources/AmandaCore/amsyslib.h
+$ diff amanda/src/amtable.h amanda-resources/AmandaCore/amtable.h
+$ diff amanda/src/amsyslib.c amanda-resources/AmandaCore/amsyslib.c
+$ diff amanda/src/amstack.c amanda-resources/AmandaCore/amstack.c
+$ diff amanda/src/amparse.h amanda-resources/AmandaCore/amparse.h
+$ diff amanda/src/amlex.c amanda-resources/AmandaCore/amlex.c
+$ diff amanda/src/amio.h amanda-resources/AmandaCore/amio.h
+$ diff amanda/src/bool.h amanda-resources/AmandaCore/bool.h
+$ diff amanda/src/ammodify.h amanda-resources/AmandaCore/ammodify.h
+$ diff amanda/src/amerror.c amanda-resources/AmandaCore/amerror.c
+$ diff amanda/src/amlib.c amanda-resources/AmandaCore/amlib.c
+$ diff amanda/src/amcheck.h amanda-resources/AmandaCore/amcheck.h
+
+The following files from amanda-resources/AmandaCore do not exist in amanda/src:
+AmandaCore_LINUX.sh
+Amanda.vcxproj
+Amanda.vcxproj.user
+Amanda.vcxproj.filters
+cl.command.1.tlog
+amio.obj
+CL.13288.write.1.tlog
+amlib.obj
+CL.12400.read.1.tlog
+ammem.obj
+link.read.5.tlog
+CL.13032.read.1.tlog
+amcheck.obj
+amtable.obj
+CL.12064.write.1.tlog
+amstack.obj
+CL.12072.read.1.tlog
+link-rc.read.1.tlog
+AmandaCore.write.1.tlog
+ampatter.obj
+cl.write.1.tlog
+vc110.pdb
+link-rc.write.1.tlog
+CL.12860.read.1.tlog
+amparse.obj
+CL.9792.read.1.tlog
+CL.9792.write.1.tlog
+CL.12072.write.1.tlog
+amerror.obj
+Amanda.Build.CppClean.log
+CL.12064.read.1.tlog
+CL.12400.write.1.tlog
+ammodify.obj
+amlex.obj
+CL.read.1.tlog
+AmandaCore.lastbuildstate
+CL.2316.write.1.tlog
+amprint.obj
+ameval.obj
+link.read.1.tlog
+link-cvtres.read.1.tlog
+CL.2316.read.1.tlog
+link.write.1.tlog
+amsyslib.obj
+CL.12860.write.1.tlog
+amcon.obj
+link-cvtres.write.1.tlog
+link.command.1.tlog
+Amanda.log
+CL.13032.write.1.tlog
+CL.13288.read.1.tlog
+cl.command.1.tlog
+amio.obj
+amlib.obj
+ammem.obj
+amcheck.obj
+amtable.obj
+amstack.obj
+link-rc.read.1.tlog
+AmandaCore.write.1.tlog
+ampatter.obj
+vc110.pdb
+link-rc.write.1.tlog
+amparse.obj
+amerror.obj
+Amanda.Build.CppClean.log
+CL.write.1.tlog
+ammodify.obj
+amlex.obj
+CL.read.1.tlog
+AmandaCore.lastbuildstate
+amprint.obj
+ameval.obj
+vc110.idb
+link.read.1.tlog
+link-cvtres.read.1.tlog
+link.write.1.tlog
+amsyslib.obj
+amcon.obj
+link-cvtres.write.1.tlog
+link.command.1.tlog
+Amanda.log
+
+The following files from amanda/src do not exist in amanda-resources/AmandaCore:
+amcon.o
+ameval.o
+amparse.o
+amerror.o
+amstack.o
+amcheck.o
+ammodify.o
+amprint.o
+amsyslib.o
+amlib.o
+ammem.o
+amlex.o
+ampatter.o
+amtable.o
+amio.o

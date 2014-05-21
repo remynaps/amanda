@@ -1,0 +1,212 @@
+Binary files amanda/src/amcon.o and amanda-resources/graph/Amalib/amcon.o differ
+Binary files amanda/src/ameval.o and amanda-resources/graph/Amalib/ameval.o differ
+126c126
+<   if(!Load(filename) || !InitRemote()) return;
+---
+>   if(!Load("", filename) || !InitRemote()) return;
+184c184
+<   if(argc > 1 && !Load(argv[1])) WriteString("\n");
+---
+>   if(argc > 1 && !Load("", argv[1])) WriteString("\n");
+21c21
+< bool Load(char filename[]);
+---
+> bool Load(char filename[], char importfilename[]);
+Binary files amanda/src/amparse.o and amanda-resources/graph/Amalib/amparse.o differ
+Binary files amanda/src/amerror.o and amanda-resources/graph/Amalib/amerror.o differ
+Binary files amanda/src/amstack.o and amanda-resources/graph/Amalib/amstack.o differ
+Binary files amanda/src/amcheck.o and amanda-resources/graph/Amalib/amcheck.o differ
+Binary files amanda/src/ammodify.o and amanda-resources/graph/Amalib/ammodify.o differ
+Binary files amanda/src/amprint.o and amanda-resources/graph/Amalib/amprint.o differ
+Binary files amanda/src/amsyslib.o and amanda-resources/graph/Amalib/amsyslib.o differ
+Binary files amanda/src/amlib.o and amanda-resources/graph/Amalib/amlib.o differ
+978a979,1003
+> void parsefileexpression(char filename[])
+> {
+>   setchecktypevariables(NOCHECK);
+>   openfileinput(filename);
+>   checkmemlarge();
+>   storefunctionname("");
+>   tokenoffside = 0;
+>   gettoken();
+>   if(tokentype == empty)
+>   {
+>     push(template_nil);
+>     return;
+>   }
+>   parseexpression(MAXPRIO);
+>   if(tokentype == WHERE)
+>   {
+>     tokenoffside = tokenindent + 1;
+>     gettoken();
+>     parsewhereclause();
+>   }
+>   closeinput();
+>   initrename("");
+>   settop(renamerec(EXP, top()));
+> }
+> 
+Binary files amanda/src/ammem.o and amanda-resources/graph/Amalib/ammem.o differ
+Binary files amanda/src/amlex.o and amanda-resources/graph/Amalib/amlex.o differ
+Binary files amanda/src/ampatter.o and amanda-resources/graph/Amalib/ampatter.o differ
+102c102,104
+<     Write("\nfile     : %s", posCodeFileName(positionCode)); 
+---
+>     char *fileName = posCodeFileName(positionCode);
+>     if(fileName[strlen(fileName) - 1] != '_')
+>       Write("\nfile     : %s", fileName); 
+24c24
+< bool Load(char filename[]);
+---
+> bool Load(char filename[], char importfilename[]);
+160a161,216
+> bool Load(char *filename, char *importfilename)
+> {
+>   static char fileName[stringsize] = "";
+>   interrupted = False;
+>   SetIntSignal(True);
+>   if(seterror()==0)
+>   {
+>     initstack();
+>     unlockmem();
+>     inithashtable();
+>     lockmem();
+>     initlex();
+>     initlib();
+>     initsyslib();
+>     initmodify();
+>     parsefile(inipath);
+>     if(importfilename) strncat(strcpy(fileName, ""), importfilename, stringsize-1);
+>     if(strlen(fileName) > 0) parsefile(fileName);
+>     checkdefinitions();
+>     modify_definitions();
+>     lockmem();
+>     if(strlen(filename) > 0)
+>     { 
+>       parsefileexpression(filename);
+>       checkexpression(top(), False);
+>       settop(modify_expression(top()));
+>       starttiming();
+>       toplevel();
+>       stoptiming();
+>     }
+>   }
+>   else
+>   {
+>     initstack();
+>     unlockmem();
+>     inithashtable();
+>     lockmem();
+>     initlex();
+>     initlib();
+>     initsyslib();
+>     initmodify();
+>     parsefile(inipath);
+>     checkdefinitions();
+>     modify_definitions();
+>     lockmem();
+>   }
+>   SetIntSignal(False);
+>   initstack();
+>   restoretemplates();
+>   CloseAllIOFiles();
+>   interrupted = False;
+>   Write("\n");
+>   return True;
+> }
+> 
+> /*
+182,185d237
+<     if (gettemplate("main")->tag == FUNC)
+<     { 
+<       Interpret("main");
+<     }
+204a257
+> */
+229c282
+<     Write(Load(NULL) ? "True" : "");
+---
+>     Write(Load("", NULL) ? "True" : "");
+234c287
+<     Write(Load(words[1]) ? "True" : "");
+---
+>     Write(Load("", words[1]) ? "True" : "");
+106a107,110
+> /********************************************************************
+>   like parseinput but source is a file
+> *********************************************************************/
+> void parsefileexpression(char filename[]);
+120c120,121
+<     Write("file  : %s\n", current->name);
+---
+>     if(current->name[strlen(current->name) - 1] != '_')
+>       Write("file  : %s\n", current->name);
+Binary files amanda/src/amtable.o and amanda-resources/graph/Amalib/amtable.o differ
+Binary files amanda/src/amio.o and amanda-resources/graph/Amalib/amio.o differ
+ama_dir: amanda/src
+res_dir: amanda-resources/graph/Amalib
+$ diff amanda/src/amcon.o amanda-resources/graph/Amalib/amcon.o
+$ diff amanda/src/ameval.o amanda-resources/graph/Amalib/ameval.o
+$ diff amanda/src/amerror.h amanda-resources/graph/Amalib/amerror.h
+$ diff amanda/src/amcon.c amanda-resources/graph/Amalib/amcon.c
+$ diff amanda/src/amtypes.h amanda-resources/graph/Amalib/amtypes.h
+$ diff amanda/src/amcon.h amanda-resources/graph/Amalib/amcon.h
+$ diff amanda/src/ampatter.c amanda-resources/graph/Amalib/ampatter.c
+$ diff amanda/src/amstack.h amanda-resources/graph/Amalib/amstack.h
+$ diff amanda/src/amprint.c amanda-resources/graph/Amalib/amprint.c
+$ diff amanda/src/amlib.h amanda-resources/graph/Amalib/amlib.h
+$ diff amanda/src/amparse.o amanda-resources/graph/Amalib/amparse.o
+$ diff amanda/src/ammodify.c amanda-resources/graph/Amalib/ammodify.c
+$ diff amanda/src/ampatter.h amanda-resources/graph/Amalib/ampatter.h
+$ diff amanda/src/amerror.o amanda-resources/graph/Amalib/amerror.o
+$ diff amanda/src/amtable.c amanda-resources/graph/Amalib/amtable.c
+$ diff amanda/src/amstack.o amanda-resources/graph/Amalib/amstack.o
+$ diff amanda/src/amprint.h amanda-resources/graph/Amalib/amprint.h
+$ diff amanda/src/ammem.h amanda-resources/graph/Amalib/ammem.h
+$ diff amanda/src/amcheck.o amanda-resources/graph/Amalib/amcheck.o
+$ diff amanda/src/ammodify.o amanda-resources/graph/Amalib/ammodify.o
+$ diff amanda/src/amio.c amanda-resources/graph/Amalib/amio.c
+$ diff amanda/src/ameval.h amanda-resources/graph/Amalib/ameval.h
+$ diff amanda/src/ameval.c amanda-resources/graph/Amalib/ameval.c
+$ diff amanda/src/amprint.o amanda-resources/graph/Amalib/amprint.o
+$ diff amanda/src/amsyslib.o amanda-resources/graph/Amalib/amsyslib.o
+$ diff amanda/src/amlib.o amanda-resources/graph/Amalib/amlib.o
+$ diff amanda/src/ammem.c amanda-resources/graph/Amalib/ammem.c
+$ diff amanda/src/amparse.c amanda-resources/graph/Amalib/amparse.c
+$ diff amanda/src/ammem.o amanda-resources/graph/Amalib/ammem.o
+$ diff amanda/src/amlex.o amanda-resources/graph/Amalib/amlex.o
+$ diff amanda/src/amlex.h amanda-resources/graph/Amalib/amlex.h
+$ diff amanda/src/ampatter.o amanda-resources/graph/Amalib/ampatter.o
+$ diff amanda/src/amcheck.c amanda-resources/graph/Amalib/amcheck.c
+$ diff amanda/src/amsyslib.h amanda-resources/graph/Amalib/amsyslib.h
+$ diff amanda/src/amtable.h amanda-resources/graph/Amalib/amtable.h
+$ diff amanda/src/amsyslib.c amanda-resources/graph/Amalib/amsyslib.c
+$ diff amanda/src/amstack.c amanda-resources/graph/Amalib/amstack.c
+$ diff amanda/src/amparse.h amanda-resources/graph/Amalib/amparse.h
+$ diff amanda/src/amlex.c amanda-resources/graph/Amalib/amlex.c
+$ diff amanda/src/amtable.o amanda-resources/graph/Amalib/amtable.o
+$ diff amanda/src/amio.h amanda-resources/graph/Amalib/amio.h
+$ diff amanda/src/bool.h amanda-resources/graph/Amalib/bool.h
+$ diff amanda/src/ammodify.h amanda-resources/graph/Amalib/ammodify.h
+$ diff amanda/src/amerror.c amanda-resources/graph/Amalib/amerror.c
+$ diff amanda/src/amlib.c amanda-resources/graph/Amalib/amlib.c
+$ diff amanda/src/amcheck.h amanda-resources/graph/Amalib/amcheck.h
+$ diff amanda/src/amio.o amanda-resources/graph/Amalib/amio.o
+
+The following files from amanda-resources/graph/Amalib do not exist in amanda/src:
+graph_Amalib.c
+amsyslib.c~
+makefile
+graph_Amalib.h
+ama
+amcheck.c~
+_amanda_
+library.txt
+libama.so
+amcon.c~
+amtable.c~
+graph_Amalib.o
+amanda.ini
+AmaUbuntu.txt~
+
+The following files from amanda/src do not exist in amanda-resources/graph/Amalib:

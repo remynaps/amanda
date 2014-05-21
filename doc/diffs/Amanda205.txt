@@ -1,0 +1,159 @@
+3,4c3,4
+<   Date   : 25/09/2000
+<   Version: 2.03
+---
+>   Date   : 25/09/2000, 21/03/2012
+>   Version: 2.03, 2.05
+39,44d38
+< void WriteString(char string[])
+< {
+<   fputs(string, stdout);
+<   fflush(stdout);
+< }
+< 
+64a59,64
+> void WriteString(char string[])
+> {
+>   fputs(string, stdout);
+>   fflush(stdout);
+> }
+> 
+104,117d103
+< static void amaproc(char path[])
+< {
+<   InitOptions(False, path);
+<   CreateInterpreter();
+<   for(;;)
+<   {
+<     char expr[stringsize] = "";
+<     getstring(">> ", expr);
+<     WriteString("\n<\n");
+<     Interpret(expr);
+<     WriteString("\n>\n");
+<   }
+< }
+< 
+172,176d157
+<   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
+<   {
+<     amaproc(argv[0]);
+<     return;
+<   }
+482c482
+< 
+---
+> 
+\ No newline at end of file
+775c775
+< 
+---
+> 
+\ No newline at end of file
+28d27
+< /*
+30d28
+< */
+525c525
+< 
+---
+> 
+\ No newline at end of file
+989c989
+< 
+---
+> 
+\ No newline at end of file
+3,4c3,4
+<   Date   : 04/05/2000
+<   Version: 2.03
+---
+>   Date   : 04/05/2000, 21/03/2012
+>   Version: 2.03, 2.05
+182,185d181
+<     if (gettemplate("main")->tag == FUNC)
+<     { 
+<       Interpret("main");
+<     }
+862c858
+< 
+---
+> 
+\ No newline at end of file
+ama_dir: amanda/src
+res_dir: amanda-resources/Amanda205/Amalib
+$ diff amanda/src/amerror.h amanda-resources/Amanda205/Amalib/Amerror.h
+$ diff amanda/src/amcon.c amanda-resources/Amanda205/Amalib/Amcon.c
+$ diff amanda/src/amtypes.h amanda-resources/Amanda205/Amalib/Amtypes.h
+$ diff amanda/src/amcon.h amanda-resources/Amanda205/Amalib/Amcon.h
+$ diff amanda/src/ampatter.c amanda-resources/Amanda205/Amalib/Ampatter.c
+$ diff amanda/src/amstack.h amanda-resources/Amanda205/Amalib/Amstack.h
+$ diff amanda/src/amprint.c amanda-resources/Amanda205/Amalib/Amprint.c
+$ diff amanda/src/amlib.h amanda-resources/Amanda205/Amalib/Amlib.h
+$ diff amanda/src/ammodify.c amanda-resources/Amanda205/Amalib/Ammodify.c
+$ diff amanda/src/ampatter.h amanda-resources/Amanda205/Amalib/Ampatter.h
+$ diff amanda/src/amtable.c amanda-resources/Amanda205/Amalib/Amtable.c
+$ diff amanda/src/amprint.h amanda-resources/Amanda205/Amalib/Amprint.h
+$ diff amanda/src/ammem.h amanda-resources/Amanda205/Amalib/Ammem.h
+$ diff amanda/src/amio.c amanda-resources/Amanda205/Amalib/Amio.c
+$ diff amanda/src/ameval.h amanda-resources/Amanda205/Amalib/Ameval.h
+$ diff amanda/src/ameval.c amanda-resources/Amanda205/Amalib/Ameval.c
+$ diff amanda/src/ammem.c amanda-resources/Amanda205/Amalib/Ammem.c
+$ diff amanda/src/amparse.c amanda-resources/Amanda205/Amalib/Amparse.c
+$ diff amanda/src/amlex.h amanda-resources/Amanda205/Amalib/Amlex.h
+$ diff amanda/src/amcheck.c amanda-resources/Amanda205/Amalib/Amcheck.c
+$ diff amanda/src/amsyslib.h amanda-resources/Amanda205/Amalib/Amsyslib.h
+$ diff amanda/src/amtable.h amanda-resources/Amanda205/Amalib/Amtable.h
+$ diff amanda/src/amsyslib.c amanda-resources/Amanda205/Amalib/Amsyslib.c
+$ diff amanda/src/amstack.c amanda-resources/Amanda205/Amalib/Amstack.c
+$ diff amanda/src/amparse.h amanda-resources/Amanda205/Amalib/Amparse.h
+$ diff amanda/src/amlex.c amanda-resources/Amanda205/Amalib/Amlex.c
+$ diff amanda/src/amio.h amanda-resources/Amanda205/Amalib/Amio.h
+$ diff amanda/src/bool.h amanda-resources/Amanda205/Amalib/Bool.h
+$ diff amanda/src/ammodify.h amanda-resources/Amanda205/Amalib/Ammodify.h
+$ diff amanda/src/amerror.c amanda-resources/Amanda205/Amalib/Amerror.c
+$ diff amanda/src/amlib.c amanda-resources/Amanda205/Amalib/Amlib.c
+$ diff amanda/src/amcheck.h amanda-resources/Amanda205/Amalib/Amcheck.h
+
+The following files from amanda-resources/Amanda205/Amalib do not exist in amanda/src:
+ampatter.obj
+amadll.dll
+amlib.obj
+ama.exe
+makefile
+amparse.obj
+amdll.c
+amio.obj
+amerror.obj
+amadll.tds
+amcon.obj
+ammodify.obj
+ammem.obj
+ameval.obj
+amlinux.mak
+amcheck.obj
+amprint.obj
+amtable.obj
+amdll.h
+amstack.obj
+amsyslib.obj
+ama.tds
+amdll.obj
+amanda.ini
+amlex.obj
+
+The following files from amanda/src do not exist in amanda-resources/Amanda205/Amalib:
+Amcon.o
+Ameval.o
+Amparse.o
+Amerror.o
+Amstack.o
+Amcheck.o
+Ammodify.o
+Amprint.o
+Amsyslib.o
+Amlib.o
+Ammem.o
+Amlex.o
+Ampatter.o
+Amtable.o
+Amio.o

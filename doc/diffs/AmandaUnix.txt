@@ -1,0 +1,60 @@
+182,185d181
+<     if (gettemplate("main")->tag == FUNC)
+<     { 
+<       Interpret("main");
+<     }
+ama_dir: amanda/src
+res_dir: amanda-resources/AmandaUnix/Data/Amanda/Amalib
+$ diff amanda/src/amerror.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amerror.h
+$ diff amanda/src/amcon.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amcon.c
+$ diff amanda/src/amtypes.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amtypes.h
+$ diff amanda/src/amcon.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amcon.h
+$ diff amanda/src/ampatter.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/ampatter.c
+$ diff amanda/src/amstack.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amstack.h
+$ diff amanda/src/amprint.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amprint.c
+$ diff amanda/src/amlib.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amlib.h
+$ diff amanda/src/ammodify.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/ammodify.c
+$ diff amanda/src/ampatter.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/ampatter.h
+$ diff amanda/src/amtable.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amtable.c
+$ diff amanda/src/amprint.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amprint.h
+$ diff amanda/src/ammem.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/ammem.h
+$ diff amanda/src/amio.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amio.c
+$ diff amanda/src/ameval.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/ameval.h
+$ diff amanda/src/ameval.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/ameval.c
+$ diff amanda/src/ammem.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/ammem.c
+$ diff amanda/src/amparse.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amparse.c
+$ diff amanda/src/amlex.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amlex.h
+$ diff amanda/src/amcheck.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amcheck.c
+$ diff amanda/src/amsyslib.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amsyslib.h
+$ diff amanda/src/amtable.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amtable.h
+$ diff amanda/src/amsyslib.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amsyslib.c
+$ diff amanda/src/amstack.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amstack.c
+$ diff amanda/src/amparse.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amparse.h
+$ diff amanda/src/amlex.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amlex.c
+$ diff amanda/src/amio.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amio.h
+$ diff amanda/src/bool.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/bool.h
+$ diff amanda/src/ammodify.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/ammodify.h
+$ diff amanda/src/amerror.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amerror.c
+$ diff amanda/src/amlib.c amanda-resources/AmandaUnix/Data/Amanda/Amalib/amlib.c
+$ diff amanda/src/amcheck.h amanda-resources/AmandaUnix/Data/Amanda/Amalib/amcheck.h
+
+The following files from amanda-resources/AmandaUnix/Data/Amanda/Amalib do not exist in amanda/src:
+makefile
+amanda.ini
+
+The following files from amanda/src do not exist in amanda-resources/AmandaUnix/Data/Amanda/Amalib:
+amcon.o
+ameval.o
+amparse.o
+amerror.o
+amstack.o
+amcheck.o
+ammodify.o
+amprint.o
+amsyslib.o
+amlib.o
+ammem.o
+amlex.o
+ampatter.o
+amtable.o
+amio.o
