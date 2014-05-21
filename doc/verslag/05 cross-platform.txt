@@ -1,0 +1,42 @@
+<h1>Cross-platform</h2>
+
+De realisatie van cross-compilatie was al vroeg in het project een
+werkelijkheid. Compilatie op Linux was vanaf het begin mogelijk. Kort daarna
+was het mogelijk om op OS X te compileren door middel van een gcc-4.9/gcc-4.8
+compiler. Wat blijkt: De standaard-GCC van OS X gebruikt de GCC parser, en de
+LLVM back-end. De LLVM back-end heeft problemen met de Amanda codebase, terwijl
+GCC gewoon compileert. Voor OS X compilatie is dus een pure GCC-versie nodig.
+
+Windowscompilatie is een geval apart. De Windowsmethode is om C code in Visual
+Studio in te laden, en te compileren als zijnde C++ code. Dit maakt het
+programma IDE-afhankelijk, iets wat in strijd is met de cross-platform
+requirement. De Unixmethode is enigszins geport naar Windows in de vorm van
+Cygwin en MinGW. Cygwincompilatie is niet ideaal, omdat het gecompileerde
+programma gelinkt is aan een Cygwin DLL. MinGW-compilatie bleek vrijwel de
+enige verstandige optie.
+
+Omdat de documentatie van MinGW niet optimaal was, was compilatie onder Windows
+zelf niet meteen mogelijk. Daarom was het makkelijker om de MinGW-compiler
+onder Ubuntu aan het werk te zetten, en een Windows-executable te
+cross-compileren.
+
+Nadat het gebruik van MinGW duidelijker was, was Windowscompilatie snel klaar.
+Dit betekende dat alle platformen in enige vorm konden compileren:
+
+- Ubuntu: gcc
+- OS X: gcc-4.8
+- Windows: MinGW (gcc)
+
+De randtaken om compilatie heen waren echter nog niet gereed. Dit waren strikte
+make-taken zoals het aanmaken en opschonen van folders en bestanden. Omdat
+Linux en OS X dezelfde Unix-commando's hebben, hoeft de Makefile alleen écht
+rekening te houden met Unix-commando's en Windowscommando's voor het maken en
+opschonen van folders en bestanden.
+
+Om ervoor te zorgen dat Amanda ook uit andere applicaties uitgevoerd kan
+worden, moest er een Amanda shared library gecompileerd worden. Dit betekent
+dat er twee files gecompileerd moeten worden: De shared library, en een
+executable die de interactive interpreter opstart. Dit levert echter problemen
+op in Unix-omgevingen, omdat libraries alleen uit /usr/lib en /usr/local/lib
+worden ingeladen. Dit is redelijk makkelijk opgelost met een shell-script die
+de library exporteert voordat de executable wordt aangeroepen.
