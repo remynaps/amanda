@@ -10,7 +10,7 @@
   
   Usage:
     ama
-    ama filename
+    ama filenamebin
     ama -obj filename
   
   amaobj commands:
@@ -33,6 +33,7 @@
 
 #include "amcon.h"
 #include "amerror.h"
+#include "amio.h"
 
 #define stringsize 256
 
@@ -168,6 +169,9 @@ static void amaobj(char path[], char filename[])
 
 void main(int argc, char *argv[])
 {
+  int lineNr = 0;
+  bool multiLine;
+  char buffer[1000][256];
   initgetstring();
   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
   {
@@ -186,6 +190,40 @@ void main(int argc, char *argv[])
   {
     char expr[stringsize] = "";
     getstring(GetOption("ConPrompt"), expr);
-    Interpret(expr);
+    if(!multiLine)
+    {
+      if(strcmp(expr, ">") == 0)
+      {
+        WriteString("Engaging multiline mode...\n");
+        multiLine = True;
+      }
+      else
+      {
+        Interpret(expr);
+      } 
+    }
+    else if(multiLine)
+      {
+        if(strcmp(expr,"<") == 0)
+        {
+          FILE * tempFile;
+          tempFile = fopen("temp.ama", "w");
+          if (tempFile!=NULL)
+          {
+            int n;
+            for(n=0; n< lineNr; n++) {
+              fputs (buffer[n], tempFile);
+            }
+            fclose (tempFile);
+          }
+          Load("temp.ama");        
+          WriteString("Returning to singleline mode...\n");
+          multiLine = False;
+        }
+        else{
+          strcat(expr, "\n");
+          strcpy(buffer[lineNr++], expr);
+        }
+      } 
   }
 }
