@@ -1,4 +1,4 @@
-CFLAGS=-g -O6 -Wall -Wextra -Isrc -fPIC -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -Wall -Wextra -Isrc -fPIC -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 
 ifeq ($(OS),Windows_NT)
@@ -23,14 +23,7 @@ else
 		AMALIB=bin/libamanda.so
 		CFLAGS+=-DAMA_READLINE
 		LIBS+=-ldl -lm -lreadline
-
-		ifeq ($(UNAME),Linux)
-			CC=gcc
-		endif
-
-		ifeq ($(UNAME),Darwin)
-			CC=gcc-4.8
-		endif
+		CC=gcc
 	endif
 endif
 
@@ -68,4 +61,4 @@ copyfiles: build
 endif
 
 clean:
-	$(RM) build $(OBJECTS)
+	$(RM) build $(OBJECTS) $(EXE) $(AMALIB)
