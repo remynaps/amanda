@@ -34,6 +34,7 @@
 #include "amcon.h"
 #include "amerror.h"
 #include "amio.h"
+#include "amnode.h"
 
 #define stringsize 256
 
@@ -171,7 +172,7 @@ void main(int argc, char *argv[])
 {
   int lineNr = 0;
   bool multiLine;
-  char buffer[1000][256];
+  Node *node = createNode("", "");
   initgetstring();
   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
   {
@@ -210,9 +211,10 @@ void main(int argc, char *argv[])
           tempFile = fopen("temp.ama", "w");
           if (tempFile!=NULL)
           {
-            int n;
-            for(n=0; n< lineNr; n++) {
-              fputs (buffer[n], tempFile);
+            Node *tmpNode = node;
+            while (tmpNode != NULL) {
+              fputs (tmpNode->function, tempFile);
+              tmpNode = tmpNode->next;
             }
             fclose (tempFile);
           }
@@ -222,7 +224,7 @@ void main(int argc, char *argv[])
         }
         else{
           strcat(expr, "\n");
-          strcpy(buffer[lineNr++], expr);
+          appendNode(node, "naam", expr);
         }
       } 
   }
