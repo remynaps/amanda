@@ -38,8 +38,10 @@ void delNode(Node *node, char *name) {
                         Node *temp_node = node->next;
                         node->next = node->next->next;
                         freeNode(temp_node);
+                        delNode(node, name);
+                }else{
+                        delNode(node->next, name);
                 }
-                delNode(node->next, name);
         }
 }
  
