@@ -61,6 +61,7 @@ static void getstring(char prompt[], char string[])
   #else
     WriteString(prompt);
     if(fgets(string, stringsize, stdin) == NULL) exit(0);
+    string[strlen(string) - 1] = '\0';
   #endif
 }
 
@@ -196,7 +197,7 @@ static void writeToFile(Node *node)
 
 void main(int argc, char *argv[])
 {
-  bool multiLine;
+  bool multiLine = False;
   Node *node = createNode("", "");
   initgetstring();
   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
