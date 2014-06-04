@@ -7,22 +7,23 @@
         struct NODE *next;
         char *name, *function;
 } Node;*/
+void delEmptyNames(Node *node);
  
 Node *createNode(char *name, char *function) {
         Node *node = malloc(sizeof(Node));
         node->next = NULL;
-        node->name = (char *)malloc(sizeof(char) * strlen(name));
+        node->name = (char *)malloc(sizeof(char) * strlen(name) + 1);
         strcpy(node->name, name);
-        node->function = (char *)malloc(sizeof(char) * strlen(function));
+        node->function = (char *)malloc(sizeof(char) * strlen(function) + 1);
         strcpy(node->function, function);
         return node;
 }
  
-void appendNode(Node *node, char *name, char *function) {
-        if (node->next == NULL) {
-                node->next = createNode(name, function);
+void appendNode(Node **node, char *name, char *function) {
+        if (*node == NULL) {
+                *node = createNode(name, function);
         }else{
-                appendNode(node->next, name, function);
+                appendNode(&(*node)->next, name, function);
         }
 }
  
@@ -33,14 +34,26 @@ void freeNode(Node *node) {
 }
  
 void delNode(Node *node, char *name) {
-        if (node->next != NULL) {
-                if (strcmp(node->next->name, name) == 0) {
-                        Node *temp_node = node->next;
-                        node->next = node->next->next;
+        if (node != NULL) {
+                if (strcmp(node->name, name) == 0) {
+                        Node *temp_node = node;
+                        node = node->next;
                         freeNode(temp_node);
+                        delEmptyNames(node);
                         delNode(node, name);
                 }else{
                         delNode(node->next, name);
+                }
+        }
+}
+
+void delEmptyNames (Node *node) {
+        if (node != NULL) {
+                if (strcmp(node->name, "") == 0) {
+                        Node *temp_node = node;
+                        node = node->next;
+                        freeNode(temp_node);
+                        delEmptyNames(node);
                 }
         }
 }

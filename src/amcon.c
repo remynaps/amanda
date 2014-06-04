@@ -196,8 +196,8 @@ static void writeToFile(Node *node)
 
 void main(int argc, char *argv[])
 {
-  bool multiLine;
-  Node *node = createNode("", "");
+  bool multiLine = False;
+  Node *node = NULL;
   initgetstring();
   if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
   {
@@ -218,7 +218,9 @@ void main(int argc, char *argv[])
     getstring(GetOption("ConPrompt"), expr);
     if(expr == strstr(expr, "del "))
       {
-        delNode(node, getName(4 + expr));
+        char *name = getName(4 + expr);
+        delNode(node, name);
+        free(name);
         writeToFile(node);
       }
     else if(!multiLine)
@@ -243,7 +245,9 @@ void main(int argc, char *argv[])
         }
         else{
           strcat(expr, "\n");
-          appendNode(node, getName(expr), expr);
+          char *name = getName(expr);
+          appendNode(&node, name, expr);
+          free(name);
         }
       } 
   }
