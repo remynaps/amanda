@@ -230,7 +230,7 @@ void main(int argc, char *argv[])
         WriteString("Engaging multiline mode...\n");
         multiLine = True;
       }
-      else if (strcmp(expr, "print"))
+      else if (strcmp(expr, "print") == 0)
       {
         void printNodes(node);
       }
