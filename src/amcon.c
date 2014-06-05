@@ -400,12 +400,12 @@ int main(int argc, char *argv[])
   if(argc > 1 && strcmp(argv[1], "-proc") == 0)
   {
     amaproc(argv[0]);
-    return;
+    return 0;
   }
   if(argc > 2 && strcmp(argv[1], "-obj") == 0)
   {
     amaobj(argv[0], argv[2]);
-    return;
+    return 0;
   }
   InitOptions(True, argv[0]);
   CreateInterpreter();
