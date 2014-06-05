@@ -181,7 +181,12 @@ static char *getName(char *line)
 static void writeToFile(Node *node)
 {
   FILE * tempFile;
-  tempFile = fopen("temp.ama", "w");
+  #ifdef _WIN32
+    char *filePath = strcat(getenv("TEMP"), "\\temp.ama");
+  #else
+    char *filePath = "/tmp/temp.ama";
+  #endif
+  tempFile = fopen(filePath, "w");
   if (tempFile!=NULL)
   {
     Node *tmpNode = node;
@@ -191,7 +196,7 @@ static void writeToFile(Node *node)
       tmpNode = tmpNode->next;
     }
     fclose (tempFile);
-    Load("temp.ama");
+    Load(filePath);
   }
 }
 
