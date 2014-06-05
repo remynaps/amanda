@@ -33,25 +33,25 @@ void freeNode(Node *node) {
         free(node);
 }
  
-void delNode(Node *node, char *name) {
-        if (node != NULL) {
-                if (strcmp(node->name, name) == 0) {
-                        Node *temp_node = node;
-                        node = node->next;
+void delNode(Node **node, char *name) {
+        if (*node != NULL) {
+                if (strcmp((*node)->name, name) == 0) {
+                        Node *temp_node = *node;
+                        *node = (*node)->next;
                         freeNode(temp_node);
                         delEmptyNames(node);
                         delNode(node, name);
                 }else{
-                        delNode(node->next, name);
+                        delNode(&(*node)->next, name);
                 }
         }
 }
 
-void delEmptyNames (Node *node) {
-        if (node != NULL) {
-                if (strcmp(node->name, "") == 0) {
-                        Node *temp_node = node;
-                        node = node->next;
+void delEmptyNames (Node **node) {
+        if (*node != NULL) {
+                if (strcmp((*node)->name, "") == 0) {
+                        Node *temp_node = *node;
+                        node = (*node)->next;
                         freeNode(temp_node);
                         delEmptyNames(node);
                 }

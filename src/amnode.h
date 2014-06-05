@@ -8,6 +8,6 @@ typedef struct NODE {
 
 void appendNode(Node **node, char *name, char *function);
 
-void delNode(Node *node, char *name);
+void delNode(Node **node, char *name);
 
 #endif

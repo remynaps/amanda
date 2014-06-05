@@ -219,7 +219,7 @@ void main(int argc, char *argv[])
     if(expr == strstr(expr, "del "))
       {
         char *name = getName(4 + expr);
-        delNode(node, name);
+        delNode(&node, name);
         free(name);
         writeToFile(node);
       }
