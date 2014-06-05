@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "amnode.h"
- 
-/*typedef struct NODE {
-        struct NODE *next;
-        char *name, *function;
-} Node;*/
+
+//private methods
 void delEmptyNames(Node **node);
+void freeNode(Node *node);
+void printNodes(Node *node);
  
 Node *createNode(char *name, char *function) {
         Node *node = malloc(sizeof(Node));
@@ -64,13 +63,3 @@ void printNodes(Node *node) {
                 node = node->next;
         }
 }
- 
-/*int main () {
-        Node *node = createNode("asd", "dsa");
-        appendNode(node, "ds1", "fg");
-        appendNode(node, "ds2", "fg");
-        appendNode(node, "ds3", "fg");
-        delNode(node, "ds2");
-        printNodes(node);
-        return 0;
-}*/
