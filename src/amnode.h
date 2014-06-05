@@ -7,7 +7,7 @@ typedef struct NODE {
 } Node;
 
 //public methods
-void printNodes(const Node *node);
+void printNodes(Node *node);
 void appendNode(Node **node, const char *name, const char *function);
 void delNode(Node **node, const char *name);
 

@@ -17,7 +17,7 @@ Node *createNode(const char *name, const char *function) {
         return node;
 }
 
-void printNodes(const Node *node) {
+void printNodes(Node *node) {
         while (node != NULL) {
                 printf("Name: %s, Function %s\n", node->name, node->function);
                 node = node->next;
