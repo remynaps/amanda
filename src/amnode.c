@@ -7,7 +7,7 @@
 static void delEmptyNames(Node **node);
 static void freeNode(Node *node);
  
-Node *createNode(char *name, char *function) {
+Node *createNode(const char *name, const char *function) {
         Node *node = malloc(sizeof(Node));
         node->next = NULL;
         node->name = (char *)malloc(sizeof(char) * strlen(name) + 1);
@@ -17,14 +17,14 @@ Node *createNode(char *name, char *function) {
         return node;
 }
 
-void printNodes(Node *node) {
+void printNodes(const Node *node) {
         while (node != NULL) {
                 printf("Name: %s, Function %s\n", node->name, node->function);
                 node = node->next;
         }
 }
  
-void appendNode(Node **node, char *name, char *function) {
+void appendNode(Node **node, const char *name, const char *function) {
         if (*node == NULL) {
                 *node = createNode(name, function);
         }else{
@@ -32,7 +32,7 @@ void appendNode(Node **node, char *name, char *function) {
         }
 }
  
-void delNode(Node **node, char *name) {
+void delNode(Node **node, const char *name) {
         if (*node != NULL) {
                 if (strcmp((*node)->name, name) == 0) {
                         Node *temp_node = *node;
@@ -57,8 +57,8 @@ static void delEmptyNames (Node **node) {
         }
 }
 
-static void freeNode(Node *node) {
-        free(node->name);
-        free(node->function);
-        free(node);
+static void freeNode(Node **node) {
+        free((*node)->name);
+        free((*node)->function);
+        free((*node));
 }
