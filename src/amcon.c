@@ -7,12 +7,12 @@
   Description:
 
   Amanda interpreter (default version)
-  
+
   Usage:
     ama
     ama filenamebin
     ama -obj filename
-  
+
   amaobj commands:
     object objectname
     call functionname {parameter}
@@ -122,7 +122,7 @@ static void amaobj(char path[], char filename[])
   char command[stringsize], s[stringsize], *words[stringsize];
   int k, handle = -1, count;
   bool echo = False;
-  
+
   InitOptions(False, path);
   CreateInterpreter();
   if(!Load(filename) || !InitRemote()) return;
@@ -199,12 +199,12 @@ void main(int argc, char *argv[])
   bool multiLine;
   Node *node = createNode("", "");
   initgetstring();
-  if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
+  if(argc > 1 && strcmp(argv[1], "-proc") == 0)
   {
     amaproc(argv[0]);
     return;
   }
-  if(argc > 2 && strcmp(argv[1], "-obj") == 0) 
+  if(argc > 2 && strcmp(argv[1], "-obj") == 0)
   {
     amaobj(argv[0], argv[2]);
     return;
@@ -233,23 +233,23 @@ void main(int argc, char *argv[])
       else
       {
         Interpret(expr);
-      } 
+      }
     }
     else if(multiLine)
+    {
+      if(strcmp(expr,"<") == 0)
       {
-        if(strcmp(expr, "<") == 0)
-        {
-          writeToFile(node);       
-          WriteString("Returning to singleline mode...\n");
-          multiLine = False;
-        }
-        else
-        {
-          strcat(expr, "\n");
-          char *name = getName(expr);
-          appendNode(&node, name, expr);
-          free(name);
-        }
-      } 
+        writeToFile(node);       
+        WriteString("Returning to singleline mode...\n");
+        multiLine = False;
+      }
+      else
+      {
+        strcat(expr, "\n");
+        char *name = getName(expr);
+        appendNode(&node, name, expr);
+        free(name);
+      }
+    }
   }
 }
