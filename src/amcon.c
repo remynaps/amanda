@@ -27,8 +27,8 @@
 #include <ctype.h>
 
 #ifdef AMA_READLINE
-  #include <readline/readline.h>
-  #include <readline/history.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #endif
 
 #include "amcon.h"
@@ -168,9 +168,34 @@ static void amaobj(char path[], char filename[])
   }
 }
 
+static char *getName(char *line)
+{
+  int i = strcspn(line, "= ");
+  char *name = (char *)malloc(sizeof(char) * (i+1));
+  strncpy(name, line, i);
+  *(name + i) = '\0';
+  return name;
+}
+
+static void writeToFile(Node *node)
+{
+  FILE * tempFile;
+  tempFile = fopen("temp.ama", "w");
+  if (tempFile!=NULL)
+  {
+    Node *tmpNode = node;
+    while (tmpNode != NULL)
+    {
+      fputs (tmpNode->function, tempFile);
+      tmpNode = tmpNode->next;
+    }
+    fclose (tempFile);
+    Load("temp.ama");
+  }
+}
+
 void main(int argc, char *argv[])
 {
-  int lineNr = 0;
   bool multiLine;
   Node *node = createNode("", "");
   initgetstring();
@@ -191,7 +216,14 @@ void main(int argc, char *argv[])
   {
     char expr[stringsize] = "";
     getstring(GetOption("ConPrompt"), expr);
-    if(!multiLine)
+    if(expr == strstr(expr, "del "))
+      {
+        char *name = getName(4 + expr);
+        delNode(node, name);
+        free(name);
+        writeToFile(node);
+      }
+    else if(!multiLine)
     {
       if(strcmp(expr, ">") == 0)
       {
@@ -207,26 +239,16 @@ void main(int argc, char *argv[])
     {
       if(strcmp(expr,"<") == 0)
       {
-        FILE * tempFile;
-        tempFile = fopen("temp.ama", "w");
-        if (tempFile!=NULL)
-        {
-          Node *tmpNode = node;
-          while (tmpNode != NULL)
-          {
-            fputs (tmpNode->function, tempFile);
-            tmpNode = tmpNode->next;
-          }
-          fclose (tempFile);
-        }
-        Load("temp.ama");
+        writeToFile(node);       
         WriteString("Returning to singleline mode...\n");
         multiLine = False;
       }
       else
       {
         strcat(expr, "\n");
-        appendNode(node, "naam", expr);
+        char *name = getName(expr);
+        appendNode(&node, name, expr);
+        free(name);
       }
     }
   }
