@@ -38,14 +38,30 @@ void freeNode(Node *node)
   free(node);
 }
 
+void delEmptyNames (Node *node)
+{
+ if (node->next != NULL)
+  {
+    if (strcmp(node->next->name, "") == 0
+    //|| strcmp(node->next->name, "=") == 0)
+    || strcmp(node->next->name, "where") == 0)
+    {
+      Node *temp_node = node->next;
+      node->next = node->next->next;
+      freeNode(temp_node);
+      delEmptyNames(node);
+    }
+  }
+}
+
 void delNode(Node *node, char *name)
 {
-  if (node != NULL)
+  if (node->next != NULL)
   {
-    if (strcmp(node->name, name) == 0)
+    if (strcmp(node->next->name, name) == 0)
     {
-      Node *temp_node = node;
-      node = node->next;
+      Node *temp_node = node->next;
+      node->next = node->next->next;
       freeNode(temp_node);
       delEmptyNames(node);
       delNode(node, name);
@@ -53,20 +69,6 @@ void delNode(Node *node, char *name)
     else
     {
       delNode(node->next, name);
-    }
-  }
-}
-
-void delEmptyNames (Node *node)
-{
-  if (node != NULL)
-  {
-    if (strcmp(node->name, "") == 0)
-    {
-      Node *temp_node = node;
-      node = node->next;
-      freeNode(temp_node);
-      delEmptyNames(node);
     }
   }
 }

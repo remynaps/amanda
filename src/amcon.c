@@ -27,8 +27,8 @@
 #include <ctype.h>
 
 #ifdef AMA_READLINE
-  #include <readline/readline.h>
-  #include <readline/history.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #endif
 
 #include "amcon.h"
@@ -171,7 +171,7 @@ static void amaobj(char path[], char filename[])
 static char *getName(char *line)
 {
   int i = strcspn(line, "= ");
-  char *name = (char *)malloc(sizeof(char) * i);
+  char *name = (char *)malloc(sizeof(char) * (i+1));
   strncpy(name, line, i);
   *(name + i) = '\0';
   return name;
@@ -218,7 +218,9 @@ void main(int argc, char *argv[])
     getstring(GetOption("ConPrompt"), expr);
     if(expr == strstr(expr, "del "))
       {
-        delNode(node, getName(4 + expr));
+        char *name = getName(4 + expr);
+        delNode(node, name);
+        free(name);
         writeToFile(node);
       }
     else if(!multiLine)
@@ -241,11 +243,13 @@ void main(int argc, char *argv[])
           WriteString("Returning to singleline mode...\n");
           multiLine = False;
         }
-        else{
+        else
+        {
           strcat(expr, "\n");
-          appendNode(node, getName(expr), expr);
+          char *name = getName(expr);
+          appendNode(&node, name, expr);
+          free(name);
         }
       } 
   }
 }
-
