@@ -1,0 +1,37 @@
+1-5,7-9,12,13,15-20	Code is position independent.
+					-fPIC tag not needed for PIC.
+					-fPIC staat voor force Position independent code.
+					Probleem: -fPIC werd vroeger gebruikt om libery code objects te maken, dit is tegenwoordig niet meer nodig.
+					Oplossing: verwijder de -fPIC flag uit de makefile. [solved]
+	
+6	File: amparse.c
+	Function: renamerec
+	warning: enumeration value 'PAT' not handled in switch [-W switch]
+	In: switch(exprtype)
+	Probleem: Functie switch mist een PAT waarde.
+	Oplossing: Voeg een PAT case toe. [solved]
+	
+10	File: amcon.c
+	Function: GraphDisplay
+	Warning: unused parameter 'string' [-Wunused-parameter]
+	In: void GraphDisplay(char string[])
+	Probleem: Er staat een string die niet gebruikt wordt.
+	Oplossing: Verwijder de string. [solved]
+	
+11	File: amcon.c
+	Warning: return type of 'main' is not 'int' [-Wmain]
+	Probleem: Oudere versies van C hadden geen int type main, maar een void.
+	Oplossing: Spreekt voor zichzelf (maak de main een Int). [solved]
+	
+14	File: amio.c
+	Function: TrapIntSignal
+	Warning: unused parameter 'sig' [-Wunused-parameter]
+	In: static void TrapIntSignal(int sig)
+	Probleem: Er staat een parameter die niet gebruikt wordt.
+	Oplossing: Verwijder de parameter. [solved]
+	
+	Changed Content:	amio.c
+						amparse.c
+						amcon.c
+						amcon.h
+						Makefile
