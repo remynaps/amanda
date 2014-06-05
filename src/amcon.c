@@ -4,8 +4,8 @@
 #include <ctype.h>
 
 #ifdef AMA_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
+  #include <readline/readline.h>
+  #include <readline/history.h>
 #endif
 
 #include "amcon.h"
