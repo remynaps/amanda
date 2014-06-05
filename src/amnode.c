@@ -49,7 +49,7 @@ void delNode(Node **node, char *name) {
 
 void delEmptyNames (Node **node) {
         if (*node != NULL) {
-                if (strcmp((*node)->name, "") == 0) {
+                if (strcmp((*node)->name, "") == 0 || strcmp((*node)->name, "where") == 0) {
                         Node *temp_node = *node;
                         node = (*node)->next;
                         freeNode(temp_node);
