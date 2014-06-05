@@ -841,6 +841,8 @@ static Cell *renamerec(ExpressionType exprtype, Cell *c)
         c->right = renamerec(EXP, c->right);
       }
       break;
+	case PAT:
+	  break;
   }
   return c;
 }

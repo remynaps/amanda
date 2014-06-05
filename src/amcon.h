@@ -32,6 +32,6 @@ bool GetRemote(int handle, char s[], int size);
 /* to be defined: */
 void WriteString(char string[]);
 void CheckIO(void);
-void GraphDisplay(char string[]);
+void GraphDisplay();
 
 #endif

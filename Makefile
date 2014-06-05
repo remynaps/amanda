@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -Wextra -Isrc -fPIC -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -Wall -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 
 ifeq ($(OS),Windows_NT)
