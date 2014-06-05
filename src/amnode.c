@@ -4,9 +4,8 @@
 #include "amnode.h"
 
 //private methods
-void delEmptyNames(Node **node);
-void freeNode(Node *node);
-void printNodes(Node *node);
+static void delEmptyNames(Node **node);
+static void freeNode(Node *node);
  
 Node *createNode(char *name, char *function) {
         Node *node = malloc(sizeof(Node));
@@ -17,6 +16,13 @@ Node *createNode(char *name, char *function) {
         strcpy(node->function, function);
         return node;
 }
+
+void printNodes(Node *node) {
+        while (node != NULL) {
+                printf("Name: %s, Function %s\n", node->name, node->function);
+                node = node->next;
+        }
+}
  
 void appendNode(Node **node, char *name, char *function) {
         if (*node == NULL) {
@@ -24,12 +30,6 @@ void appendNode(Node **node, char *name, char *function) {
         }else{
                 appendNode(&(*node)->next, name, function);
         }
-}
- 
-void freeNode(Node *node) {
-        free(node->name);
-        free(node->function);
-        free(node);
 }
  
 void delNode(Node **node, char *name) {
@@ -46,7 +46,7 @@ void delNode(Node **node, char *name) {
         }
 }
 
-void delEmptyNames (Node **node) {
+static void delEmptyNames (Node **node) {
         if (*node != NULL) {
                 if (strcmp((*node)->name, "") == 0 || strcmp((*node)->name, "where") == 0) {
                         Node *temp_node = *node;
@@ -56,10 +56,9 @@ void delEmptyNames (Node **node) {
                 }
         }
 }
- 
-void printNodes(Node *node) {
-        while (node != NULL) {
-                printf("Name: %s, Function %s\n", node->name, node->function);
-                node = node->next;
-        }
+
+static void freeNode(Node *node) {
+        free(node->name);
+        free(node->function);
+        free(node);
 }
