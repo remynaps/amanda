@@ -7,7 +7,7 @@
         struct NODE *next;
         char *name, *function;
 } Node;*/
-void delEmptyNames(Node *node);
+void delEmptyNames(Node **node);
  
 Node *createNode(char *name, char *function) {
         Node *node = malloc(sizeof(Node));
