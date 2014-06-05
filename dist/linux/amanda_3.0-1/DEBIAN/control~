@@ -1,9 +1,0 @@
-Package: amanda
-Version: 3.0-1
-Section: base
-Priority: optional
-Architecture: amd64
-Depends: readline-common (>= 6.2)
-Installed-Size: 566784
-Maintainer: Your Name <you@email.com>
-Description: Amanda version 3.0
