@@ -180,7 +180,7 @@ static void writeToFile(Node *node)
 int main(int argc, char *argv[])
 {
   bool multiLine = False;
-  Node *node = createNode("", "");
+  Node *node = NULL;
   initgetstring();
   if(argc > 1 && strcmp(argv[1], "-proc") == 0)
   {
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
     if(expr == strstr(expr, "del "))
     {
       char *name = getName(4 + expr);
-      delNode(node, name);
+      delNode(&node, name);
       free(name);
       writeToFile(node);
     }
@@ -212,6 +212,10 @@ int main(int argc, char *argv[])
       {
         WriteString("Engaging multiline mode...\n");
         multiLine = True;
+      }
+      else if (strcmp(expr, "print") == 0)
+      {
+        printNodes(node);
       }
       else
       {

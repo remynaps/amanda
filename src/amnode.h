@@ -6,10 +6,9 @@ typedef struct NODE {
     char *name, *function;
 } Node;
 
-Node *createNode(char *name, char *function);
-
-void appendNode(Node *node, char *name, char *function);
-
-void delNode(Node *node, char *name);
+//public methods
+void printNodes(Node *node);
+void appendNode(Node **node, const char *name, const char *function);
+void delNode(Node **node, const char *name);
 
 #endif
