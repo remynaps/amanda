@@ -232,7 +232,7 @@ void main(int argc, char *argv[])
       }
       else if (strcmp(expr, "print") == 0)
       {
-        void printNodes(node);
+        printNodes(node);
       }
       else
       {
