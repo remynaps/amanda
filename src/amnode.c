@@ -5,7 +5,7 @@
 
 //private methods
 static void delEmptyNames(Node **node);
-static void freeNode(Node *node);
+static void freeNode(Node **node);
  
 Node *createNode(const char *name, const char *function) {
         Node *node = malloc(sizeof(Node));
@@ -19,7 +19,7 @@ Node *createNode(const char *name, const char *function) {
 
 void printNodes(Node *node) {
         while (node != NULL) {
-                printf("Name: %s, Function %s\n", node->name, node->function);
+                printf("Name: %s, Function %s", node->name, node->function);
                 node = node->next;
         }
 }
@@ -37,7 +37,7 @@ void delNode(Node **node, const char *name) {
                 if (strcmp((*node)->name, name) == 0) {
                         Node *temp_node = *node;
                         *node = (*node)->next;
-                        freeNode(temp_node);
+                        freeNode(&temp_node);
                         delEmptyNames(node);
                         delNode(node, name);
                 }else{
@@ -51,7 +51,7 @@ static void delEmptyNames (Node **node) {
                 if (strcmp((*node)->name, "") == 0 || strcmp((*node)->name, "where") == 0) {
                         Node *temp_node = *node;
                         *node = (*node)->next;
-                        freeNode(temp_node);
+                        freeNode(&temp_node);
                         delEmptyNames(node);
                 }
         }
