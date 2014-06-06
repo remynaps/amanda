@@ -230,14 +230,12 @@ int main(int argc, char *argv[])
         WriteString("Returning to singleline mode...\n");
         multiLine = False;
       }
-      else
+      else if (strcmp(expr, "") != 0)
       {
-        if (strcmp(expr, "") != 0) {
-          strcat(expr, "\n");
-          char *name = getName(expr);
-          appendNode(&node, name, expr);
-          free(name);
-        }
+        strcat(expr, "\n");
+        char *name = getName(expr);
+        appendNode(&node, name, expr);
+        free(name);
       }
     }
   }
