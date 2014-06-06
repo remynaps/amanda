@@ -192,6 +192,13 @@ int main(int argc, char *argv[])
     amaobj(argv[0], argv[2]);
     return 0;
   }
+  if(argc > 2 && strcmp(argv[1], "-load") == 0)
+  {
+    InitOptions(True, argv[0]);
+    CreateInterpreter();
+    Load(argv[2]);
+    return 0;
+  }
   InitOptions(True, argv[0]);
   CreateInterpreter();
   if(argc > 1 && !Load(argv[1])) WriteString("\n");
