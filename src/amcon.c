@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         WriteString("Engaging multiline mode...\n");
         multiLine = True;
       }
-      else if (strcmp(expr, "print") == 0)
+      else if (strcmp(expr, "ls") == 0)
       {
         printNodes(node);
       }
@@ -232,10 +232,12 @@ int main(int argc, char *argv[])
       }
       else
       {
-        strcat(expr, "\n");
-        char *name = getName(expr);
-        appendNode(&node, name, expr);
-        free(name);
+        if (strcmp(expr, "") != 0) {
+          strcat(expr, "\n");
+          char *name = getName(expr);
+          appendNode(&node, name, expr);
+          free(name);
+        }
       }
     }
   }

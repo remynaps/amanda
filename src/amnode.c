@@ -23,7 +23,7 @@ void printNodes(Node *node)
 {
   while (node != NULL)
   {
-    printf("Name: %s, Function %s", node->name, node->function);
+    printf("%s", node->function);
     node = node->next;
   }
 }
