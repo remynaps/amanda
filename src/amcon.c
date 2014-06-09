@@ -217,18 +217,22 @@ void main(int argc, char *argv[])
     char expr[stringsize] = "";
     getstring(GetOption("ConPrompt"), expr);
     if(expr == strstr(expr, "del "))
-      {
-        char *name = getName(4 + expr);
-        delNode(node, name);
-        free(name);
-        writeToFile(node);
-      }
+    {
+      char *name = getName(4 + expr);
+      delNode(&node, name);
+      free(name);
+      writeToFile(node);
+    }
     else if(!multiLine)
     {
       if(strcmp(expr, ">") == 0)
       {
         WriteString("Engaging multiline mode...\n");
         multiLine = True;
+      }
+      else if (strcmp(expr, "print") == 0)
+      {
+        printNodes(node);
       }
       else
       {
