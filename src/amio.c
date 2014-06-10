@@ -21,7 +21,7 @@
 
 /********************* signals *******************************/
 
-static void TrapIntSignal(int sig)
+static void TrapIntSignal()
 {
   interrupted = True;
   signal(SIGINT, TrapIntSignal);

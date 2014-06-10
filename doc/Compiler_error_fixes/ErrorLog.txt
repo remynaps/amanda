@@ -1,0 +1,111 @@
+C:\Users\markz_000\Documents\GitHub\amanda>mingw32-make
+copy misc\amanda.ini bin
+        1 file(s) copied.
+copy misc\test.ama bin
+        1 file(s) copied.
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\ammodify.o src\ammodify.c
+
+src\ammodify.c:1:0: warning: -fPIC ignored for target (all code is position inde	1
+pendent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\ampatter.o src\ampatter.c
+
+src\ampatter.c:1:0: warning: -fPIC ignored for target (all code is position inde	2
+pendent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amerror.o src\amerror.c
+src\amerror.c:1:0: warning: -fPIC ignored for target (all code is position indep	3
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amtable.o src\amtable.c
+src\amtable.c:1:0: warning: -fPIC ignored for target (all code is position indep	4
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amparse.o src\amparse.c
+src\amparse.c:1:0: warning: -fPIC ignored for target (all code is position indep	5
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+src\amparse.c: In function 'renamerec':
+src\amparse.c:761:3: warning: enumeration value 'PAT' not handled in switch [-Ws	6
+witch]
+   switch(exprtype)
+   ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\ameval.o src\ameval.c
+src\ameval.c:1:0: warning: -fPIC ignored for target (all code is position indepe	7 -
+ndent) [enabled by default]
+ /***************************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amsyslib.o src\amsyslib.c
+
+src\amsyslib.c:1:0: warning: -fPIC ignored for target (all code is position inde	8 -
+pendent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amcon.o src\amcon.c
+src\amcon.c:1:0: warning: -fPIC ignored for target (all code is position indepen	9 -
+dent) [enabled by default]
+ /**********************************************************************
+ ^
+src\amcon.c: In function 'GraphDisplay':
+src\amcon.c:72:24: warning: unused parameter 'string' [-Wunused-parameter]			10
+ void GraphDisplay(char string[])
+                        ^
+src\amcon.c: At top level:
+src\amcon.c:198:6: warning: return type of 'main' is not 'int' [-Wmain]				11
+ void main(int argc, char *argv[])
+      ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amnode.o src\amnode.c
+src\amnode.c:1:0: warning: -fPIC ignored for target (all code is position indepe	12 -
+ndent) [enabled by default]
+ #include <stdio.h>
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amio.o src\amio.c
+src\amio.c:1:0: warning: -fPIC ignored for target (all code is position independ	13 -
+ent) [enabled by default]
+ /**********************************************************************
+ ^
+src\amio.c: In function 'TrapIntSignal':
+src\amio.c:24:31: warning: unused parameter 'sig' [-Wunused-parameter]				14
+ static void TrapIntSignal(int sig)
+                               ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amstack.o src\amstack.c
+src\amstack.c:1:0: warning: -fPIC ignored for target (all code is position indep	15 -
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amprint.o src\amprint.c
+src\amprint.c:1:0: warning: -fPIC ignored for target (all code is position indep	16 -
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amcheck.o src\amcheck.c
+src\amcheck.c:1:0: warning: -fPIC ignored for target (all code is position indep	17 -
+endent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\ammem.o src\ammem.c
+src\ammem.c:1:0: warning: -fPIC ignored for target (all code is position indepen	18 -
+dent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amlib.o src\amlib.c
+src\amlib.c:1:0: warning: -fPIC ignored for target (all code is position indepen	19 -
+dent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG    -c -o src\amlex.o src\amlex.c
+src\amlex.c:1:0: warning: -fPIC ignored for target (all code is position indepen	20 -
+dent) [enabled by default]
+ /**********************************************************************
+ ^
+gcc -shared  -g -Wall -Wextra -Isrc -fPIC -DNDEBUG  src\ammodify.o src\ampatter.	
+o src\amerror.o src\amtable.o src\amparse.o src\ameval.o src\amsyslib.o src\amco
+n.o src\amnode.o src\amio.o src\amstack.o src\amprint.o src\amcheck.o src\ammem.
+o src\amlib.o src\amlex.o -o bin\libamanda.dll
+gcc -g -Wall -Wextra -Isrc -fPIC -DNDEBUG  src/amcon.o -Lbin -lamanda  -o bin\am
+anda.exe

@@ -1,26 +1,3 @@
-/**********************************************************************
-  Author : Dick Bruin
-  Date   : 25/09/2000
-  Version: 2.03
-  File   : amcon.c
-
-  Description:
-
-  Amanda interpreter (default version)
-  
-  Usage:
-    ama
-    ama filenamebin
-    ama -obj filename
-  
-  amaobj commands:
-    object objectname
-    call functionname {parameter}
-    echo
-    time
-    exit
-****************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,6 +38,7 @@ static void getstring(char prompt[], char string[])
   #else
     WriteString(prompt);
     if(fgets(string, stringsize, stdin) == NULL) exit(0);
+    string[strlen(string) - 1] = '\0';
   #endif
 }
 
@@ -68,7 +46,7 @@ void CheckIO(void)
 {
 }
 
-void GraphDisplay(char string[])
+void GraphDisplay()
 {
 }
 
@@ -122,7 +100,7 @@ static void amaobj(char path[], char filename[])
   char command[stringsize], s[stringsize], *words[stringsize];
   int k, handle = -1, count;
   bool echo = False;
-  
+
   InitOptions(False, path);
   CreateInterpreter();
   if(!Load(filename) || !InitRemote()) return;
@@ -171,7 +149,7 @@ static void amaobj(char path[], char filename[])
 static char *getName(char *line)
 {
   int i = strcspn(line, "= ");
-  char *name = (char *)malloc(sizeof(char) * i);
+  char *name = (char *)malloc(sizeof(char) * (i+1));
   strncpy(name, line, i);
   *(name + i) = '\0';
   return name;
@@ -180,7 +158,12 @@ static char *getName(char *line)
 static void writeToFile(Node *node)
 {
   FILE * tempFile;
-  tempFile = fopen("temp.ama", "w");
+  #ifdef _WIN32
+    char *filePath = strcat(getenv("TEMP"), "\\temp.ama");
+  #else
+    char *filePath = "/tmp/temp.ama";
+  #endif
+  tempFile = fopen(filePath, "w");
   if (tempFile!=NULL)
   {
     Node *tmpNode = node;
@@ -190,24 +173,24 @@ static void writeToFile(Node *node)
       tmpNode = tmpNode->next;
     }
     fclose (tempFile);
-    Load("temp.ama");
+    Load(filePath);
   }
 }
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   bool multiLine = False;
   Node *node = NULL;
   initgetstring();
-  if(argc > 1 && strcmp(argv[1], "-proc") == 0) 
+  if(argc > 1 && strcmp(argv[1], "-proc") == 0)
   {
     amaproc(argv[0]);
-    return;
+    return 0;
   }
-  if(argc > 2 && strcmp(argv[1], "-obj") == 0) 
+  if(argc > 2 && strcmp(argv[1], "-obj") == 0)
   {
     amaobj(argv[0], argv[2]);
-    return;
+    return 0;
   }
   InitOptions(True, argv[0]);
   CreateInterpreter();
@@ -230,30 +213,31 @@ void main(int argc, char *argv[])
         WriteString("Engaging multiline mode...\n");
         multiLine = True;
       }
-      else if (strcmp(expr, "print") == 0)
+      else if (strcmp(expr, "ls") == 0)
       {
         printNodes(node);
       }
       else
       {
         Interpret(expr);
-      } 
+      }
     }
     else if(multiLine)
+    {
+      if(strcmp(expr,"<") == 0)
       {
-        if(strcmp(expr, "<") == 0)
-        {
-          writeToFile(node);       
-          WriteString("Returning to singleline mode...\n");
-          multiLine = False;
-        }
-        else{
-          strcat(expr, "\n");
-          char *name = getName(expr);
-          appendNode(&node, name, expr);
-          free(name);
-        }
-      } 
+        writeToFile(node);
+        WriteString("Returning to singleline mode...\n");
+        multiLine = False;
+      }
+      else if (strcmp(expr, "") != 0)
+      {
+        strcat(expr, "\n");
+        char *name = getName(expr);
+        appendNode(&node, name, expr);
+        free(name);
+      }
+    }
   }
+  return 0;
 }
-

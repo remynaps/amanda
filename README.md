@@ -21,10 +21,9 @@ resolve the need for the hacky `amanda.sh`.
 
 <b>OS X</b>
 
-Ensure you have XCode installed, and its command-line tools. Also make
-sure that `gcc-4.8` is installed (`brew install gcc48`). The standard GCC
-compiler will be used, without Apple's standard LLVM back-end. Once this is set
-up, a simple `make` will do.
+Ensure you have XCode installed, and its command-line tools. `gcc` will now use
+the GCC parser with the LLVM back-end. Once this is set up, a simple `make` will
+do.
 
 After compiling, the `amanda.sh` file will dynamically import `libamanda.so` and
 run `amanda`. This is useful for testing. Installing `amanda` into
