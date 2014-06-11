@@ -103,9 +103,11 @@ void InitOptions(bool console, char *path)
 {
   FILE *fp;
   char *tmpstr = malloc(strlen(AMAPATH) + strlen(AMAINI) + 1);
+  strcat(tmpstr, AMAPATH);
+  strcat(tmpstr, AMAINI);
   fp = fopen(tmpstr, "r");
   free(tmpstr);
-  
+
   if (fp == NULL) {
     int k = 0;
     if(path)
