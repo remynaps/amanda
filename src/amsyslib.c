@@ -102,19 +102,20 @@ static void SetOption(char option[], char value[])
 void InitOptions(bool console, char *path)
 {
   FILE *fp;
-  int k = 0;
-  if(path)
-  {
-    strcpy(inipath, path);
-    k = strlen(inipath);
-    while(k > 0 && inipath[k-1] != '\\' && inipath[k-1] != '/') k--;
-  }
-  strcpy(inipath+k, AMAINI);
-  fp = fopen(inipath, "r");
+  char *tmpstr = malloc(strlen(AMAPATH) + strlen(AMAINI) + 1);
+  fp = fopen(tmpstr, "r");
+  free(tmpstr);
+  
   if (fp == NULL) {
-    char *tmpstr = malloc(strlen(AMAPATH) + strlen(AMAINI) + 1);
-    fp = fopen(tmpstr, "r");
-    free(tmpstr);
+    int k = 0;
+    if(path)
+    {
+      strcpy(inipath, path);
+      k = strlen(inipath);
+      while(k > 0 && inipath[k-1] != '\\' && inipath[k-1] != '/') k--;
+    }
+    strcpy(inipath+k, AMAINI);
+    fp = fopen(inipath, "r");
   }
   if(fp)
   {
