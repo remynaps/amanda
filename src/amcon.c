@@ -13,6 +13,8 @@
 #include "amio.h"
 #include "amnode.h"
 
+#include "config.def.h"
+
 #define stringsize 256
 
 void WriteString(char string[])
@@ -158,12 +160,7 @@ static char *getName(char *line)
 static void writeToFile(Node *node)
 {
   FILE * tempFile;
-  #ifdef _WIN32
-    char *filePath = strcat(getenv("TEMP"), "\\temp.ama");
-  #else
-    char *filePath = "/tmp/temp.ama";
-  #endif
-  tempFile = fopen(filePath, "w");
+  tempFile = fopen(TEMPFILEPATH, "w");
   if (tempFile!=NULL)
   {
     Node *tmpNode = node;

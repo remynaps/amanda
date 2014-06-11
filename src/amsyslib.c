@@ -31,6 +31,8 @@
 #include "amlex.h"
 #include "amsyslib.h"
 
+#include "config.def.h"
+
 /****************** FindWords ********************************************/
 
 static int FindWords(char line[], char *words[], int maxwords)
@@ -65,9 +67,6 @@ static int FindWords(char line[], char *words[], int maxwords)
 }
 
 /****************** options **********************************************/
-
-#define BANNER "Amanda V3.0\n\n"
-#define AMAINI "amanda.ini"
 
 #define optionsize 40
 #define maxoption   4
@@ -112,6 +111,11 @@ void InitOptions(bool console, char *path)
   }
   strcpy(inipath+k, AMAINI);
   fp = fopen(inipath, "r");
+  if (fp == NULL) {
+    char *tmpstr = malloc(strlen(AMAPATH) + strlen(AMAINI) + 1);
+    fp = fopen(tmpstr, "r");
+    free(tmpstr);
+  }
   if(fp)
   {
     char line[stringsize], *words[4];
