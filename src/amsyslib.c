@@ -102,14 +102,14 @@ static void SetOption(char option[], char value[])
 void InitOptions(bool console, char *path)
 {
   FILE *fp;
-  char *tmpstr = malloc(strlen(AMAPATH) + strlen(AMAINI) + 1);
-  strcat(tmpstr, AMAPATH);
-  strcat(tmpstr, AMAINI);
-  fp = fopen(tmpstr, "r");
-  free(tmpstr);
+
+  strcat(inipath, AMAPATH);
+  strcat(inipath, AMAINI);
+  fp = fopen(inipath, "r");
 
   if (fp == NULL) {
     int k = 0;
+    inipath[0] = '\0';
     if(path)
     {
       strcpy(inipath, path);
