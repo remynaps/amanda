@@ -21,7 +21,7 @@
 #include "amstack.h"
 #include "amsyslib.h"
 
-void Write(char *fmt, ...)
+void Write(const char *fmt, ...)
 {
   va_list args;
   char buffer[256];

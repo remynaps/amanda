@@ -18,7 +18,7 @@ char *GetOption(char option[]);
 
 void CreateInterpreter(void);
 void Interpret(char expr[]);
-bool Load(char filename[]);
+bool Load(const char filename[]);
 
 extern bool interrupted;
 

@@ -165,7 +165,7 @@ void CreateInterpreter(void)
     exit(1);
 }
 
-bool Load(char *filename)
+bool Load(const char *filename)
 {
   static char fileName[stringsize] = "";
   if(filename) strncat(strcpy(fileName, ""), filename, stringsize-1);
