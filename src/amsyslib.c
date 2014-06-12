@@ -30,6 +30,7 @@
 #include "amlib.h"
 #include "amlex.h"
 #include "amsyslib.h"
+#include "config.def.h"
 
 /****************** FindWords ********************************************/
 
@@ -66,11 +67,8 @@ static int FindWords(char line[], char *words[], int maxwords)
 
 /****************** options **********************************************/
 
-#define BANNER "Amanda V3.0\n\n"
-#define AMAINI "amanda.ini"
-
 #define optionsize 40
-#define maxoption   4
+#define maxoption   5
 
 static char inipath[stringsize];
 
@@ -83,7 +81,8 @@ static struct
   { "MemorySize"  , "100000" },
   { "WinFontName" , "Courier New" },
   { "WinFontSize" , "10" },
-  { "ConPrompt"   , "> " }
+  { "ConPromptSingle"   , "> " },
+  { "ConPromptMulti" ,  ">>> " }
 };
 
 char *GetOption(char option[])
@@ -103,15 +102,23 @@ static void SetOption(char option[], char value[])
 void InitOptions(bool console, char *path)
 {
   FILE *fp;
-  int k = 0;
-  if(path)
-  {
-    strcpy(inipath, path);
-    k = strlen(inipath);
-    while(k > 0 && inipath[k-1] != '\\' && inipath[k-1] != '/') k--;
-  }
-  strcpy(inipath+k, AMAINI);
+  strcat(inipath, AMAPATH);
+  strcat(inipath, AMAINI);
   fp = fopen(inipath, "r");
+
+  if (fp == NULL)
+  {
+    int k = 0;
+    inipath[0] = '\0';
+    if(path)
+    {
+      strcpy(inipath, path);
+      k = strlen(inipath);
+      while(k > 0 && inipath[k-1] != '\\' && inipath[k-1] != '/') k--;
+    }
+    strcpy(inipath+k, AMAINI);
+    fp = fopen(inipath, "r");
+  }
   if(fp)
   {
     char line[stringsize], *words[4];
@@ -120,7 +127,12 @@ void InitOptions(bool console, char *path)
         SetOption(words[1], words[3]);
     fclose(fp);
   }
-  if(!console) SetOption("ConPrompt", "> ");
+
+  if(!console)
+  {
+    SetOption("ConPromptMulti", ">>> ");
+    SetOption("ConPromptSingle", "> ");
+  }
 }
 
 /****************** interpreter installation *****************************/
@@ -158,7 +170,7 @@ void CreateInterpreter(void)
     exit(1);
 }
 
-bool Load(char *filename)
+bool Load(const char *filename)
 {
   static char fileName[stringsize] = "";
   if(filename) strncat(strcpy(fileName, ""), filename, stringsize-1);
@@ -180,7 +192,7 @@ bool Load(char *filename)
     modify_definitions();
     lockmem();
     if (gettemplate("main")->tag == FUNC)
-    { 
+    {
       Interpret("main");
     }
     return True;
@@ -359,7 +371,7 @@ int CreateRemote(char s[])
       if(stack[k]->tag != LIST)
       {
         stack[k]= pop();
-        return k; 
+        return k;
       }
     return ObjectCount++;
   }
