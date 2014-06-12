@@ -127,7 +127,7 @@ void InitOptions(bool console, char *path)
         SetOption(words[1], words[3]);
     fclose(fp);
   }
-  if(!console) SetOption("ConPrompt", "> ");
+  if(!console) SetOption("ConPromptMulti", ">>> "); SetOption("ConPromptSingle", "> ");
 }
 
 /****************** interpreter installation *****************************/

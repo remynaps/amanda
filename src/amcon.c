@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
   for(;;)
   {
     char expr[stringsize] = "";
-    getstring(GetOption("ConPrompt"), expr);
+    getstring(multiLine ? GetOption("ConPromptMulti") : GetOption("ConPromptSingle"), expr);
     if(expr == strstr(expr, "del "))
     {
       char *name = getName(4 + expr);
@@ -214,7 +214,6 @@ int main(int argc, char *argv[])
     {
       if(strcmp(expr, ">") == 0)
       {
-        WriteString("Engaging multiline mode...\n");
         multiLine = True;
       }
       else if (strcmp(expr, "ls") == 0)
@@ -231,7 +230,6 @@ int main(int argc, char *argv[])
       if(strcmp(expr,"<") == 0)
       {
         writeToFile(node);
-        WriteString("Returning to singleline mode...\n");
         multiLine = False;
       }
       else if (strcmp(expr, "") != 0)
