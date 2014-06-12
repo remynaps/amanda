@@ -69,7 +69,7 @@ static int FindWords(char line[], char *words[], int maxwords)
 /****************** options **********************************************/
 
 #define optionsize 40
-#define maxoption   4
+#define maxoption   5
 
 static char inipath[stringsize];
 
@@ -82,7 +82,8 @@ static struct
   { "MemorySize"  , "100000" },
   { "WinFontName" , "Courier New" },
   { "WinFontSize" , "10" },
-  { "ConPrompt"   , "> " }
+  { "ConPromptSingle"   , "> " },
+  { "ConPromptMulti" ,  ">>> " }
 };
 
 char *GetOption(char option[])
@@ -127,7 +128,10 @@ void InitOptions(bool console, char *path)
         SetOption(words[1], words[3]);
     fclose(fp);
   }
-  if(!console) SetOption("ConPromptMulti", ">>> "); SetOption("ConPromptSingle", "> ");
+  if(!console) {
+	  SetOption("ConPromptMulti", ">>> ");
+	  SetOption("ConPromptSingle", "> ");
+  }
 }
 
 /****************** interpreter installation *****************************/
