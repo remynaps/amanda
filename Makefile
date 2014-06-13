@@ -1,4 +1,4 @@
-CFLAGS=-g -Wall -fPIC -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
+CFLAGS=-g -Wall -Wextra -Isrc -DNDEBUG $(OPTFLAGS)
 LIBS=$(OPTLIBS)
 
 ifeq ($(OS),Windows_NT)
@@ -21,7 +21,7 @@ else
 	else
 		EXE=bin/amanda
 		AMALIB=bin/libamanda.so
-		CFLAGS+=-DAMA_READLINE
+		CFLAGS+=-DAMA_READLINE -fPIC
 		LIBS+=-ldl -lm -lreadline
 		CC=gcc
 	endif
