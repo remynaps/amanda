@@ -102,7 +102,7 @@ static void SetOption(char option[], char value[])
 void InitOptions(bool console, char *path)
 {
   FILE *fp;
-  strcat(inipath, AMAPATH);
+  strcat(inipath, getAmaPath());
   strcat(inipath, AMAINI);
   fp = fopen(inipath, "r");
 
