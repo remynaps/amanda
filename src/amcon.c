@@ -13,6 +13,7 @@
 #include "amio.h"
 #include "amnode.h"
 
+#include "config.h"
 #define stringsize 256
 
 void WriteString(char string[])
@@ -158,12 +159,7 @@ static char *getName(char *line)
 static void writeToFile(Node *node)
 {
   FILE * tempFile;
-  #ifdef _WIN32
-    char *filePath = strcat(getenv("TEMP"), "\\temp.ama");
-  #else
-    char *filePath = "/tmp/temp.ama";
-  #endif
-  tempFile = fopen(filePath, "w");
+  tempFile = fopen(getTempFilePath(), "w");
   if (tempFile!=NULL)
   {
     Node *tmpNode = node;
@@ -173,7 +169,7 @@ static void writeToFile(Node *node)
       tmpNode = tmpNode->next;
     }
     fclose (tempFile);
-    Load(filePath);
+	Load(getTempFilePath());
   }
 }
 
@@ -192,13 +188,21 @@ int main(int argc, char *argv[])
     amaobj(argv[0], argv[2]);
     return 0;
   }
+  // Executes main function and exits.
+  if(argc > 2 && strcmp(argv[1], "-load") == 0)
+  {
+    InitOptions(True, argv[0]);
+    CreateInterpreter();
+    Load(argv[2]);
+    return 0;
+  }
   InitOptions(True, argv[0]);
   CreateInterpreter();
   if(argc > 1 && !Load(argv[1])) WriteString("\n");
   for(;;)
   {
     char expr[stringsize] = "";
-    getstring(GetOption("ConPrompt"), expr);
+    getstring(multiLine ? GetOption("ConPromptMulti") : GetOption("ConPromptSingle"), expr);
     if(expr == strstr(expr, "del "))
     {
       char *name = getName(4 + expr);
@@ -210,7 +214,6 @@ int main(int argc, char *argv[])
     {
       if(strcmp(expr, ">") == 0)
       {
-        WriteString("Engaging multiline mode...\n");
         multiLine = True;
       }
       else if (strcmp(expr, "ls") == 0)
@@ -227,7 +230,6 @@ int main(int argc, char *argv[])
       if(strcmp(expr,"<") == 0)
       {
         writeToFile(node);
-        WriteString("Returning to singleline mode...\n");
         multiLine = False;
       }
       else if (strcmp(expr, "") != 0)

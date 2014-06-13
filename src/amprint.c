@@ -21,7 +21,7 @@
 #include "amstack.h"
 #include "amsyslib.h"
 
-void Write(char *fmt, ...)
+void Write(const char *fmt, ...)
 {
   va_list args;
   char buffer[256];
@@ -97,8 +97,8 @@ static void WriteApply(Cell *c)
   int k;
   char *name;
   for(k=0; c->tag==APPLY; k++,c=c->left) push(c->right);
-  if(k == 2 
-  && c->tag == FUNC 
+  if(k == 2
+  && c->tag == FUNC
   && (name = getfunction(c->value)->name) != NULL
   && !(isalpha(name[0]) || name[0] == '_'))
   {
