@@ -17,7 +17,7 @@
 
 void WriteString(char string[]);
 
-void Write(char *fmt, ...);
+void Write(const char *fmt, ...);
 
 void WriteCell(Cell *c);
 
