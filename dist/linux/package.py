@@ -5,7 +5,7 @@ import shutil
 import sys
 
 
-if len(sys.argv) > 1: package_name = sys.argv
+if len(sys.argv) > 1: package_name = sys.argv[1]
 else:                 package_name = "amanda_3.0-1"
 
 def main():
