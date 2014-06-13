@@ -30,7 +30,7 @@
 #include "amlib.h"
 #include "amlex.h"
 #include "amsyslib.h"
-#include "config.def.h"
+#include "config.h"
 
 /****************** FindWords ********************************************/
 

@@ -13,7 +13,7 @@
 #include "amio.h"
 #include "amnode.h"
 
-#include "config.def.h"
+#include "config.h"
 #define stringsize 256
 
 void WriteString(char string[])
