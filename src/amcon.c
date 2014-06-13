@@ -159,8 +159,7 @@ static char *getName(char *line)
 static void writeToFile(Node *node)
 {
   FILE * tempFile;
-  char *TEMPFILEPATH = getTempFilePath();
-  tempFile = fopen(TEMPFILEPATH, "w");
+  tempFile = fopen(getTempFilePath(), "w");
   if (tempFile!=NULL)
   {
     Node *tmpNode = node;
@@ -170,8 +169,7 @@ static void writeToFile(Node *node)
       tmpNode = tmpNode->next;
     }
     fclose (tempFile);
-    Load(TEMPFILEPATH);
-    free(TEMPFILEPATH);
+	Load(getTempFilePath());
   }
 }
 
