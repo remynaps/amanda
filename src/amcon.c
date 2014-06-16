@@ -169,7 +169,7 @@ static void writeToFile(Node *node)
       tmpNode = tmpNode->next;
     }
     fclose (tempFile);
-	Load(getTempFilePath());
+    Load(getTempFilePath());
   }
 }
 
