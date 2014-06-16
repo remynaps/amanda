@@ -19,7 +19,7 @@ char *getAmaPath()
   #ifdef _WIN32
 	return getenv("APPDATA");
   #else
-	return "/usr/local/lib/";
+	return "/usr/lib/";
   #endif
 }
 

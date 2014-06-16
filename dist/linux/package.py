@@ -19,25 +19,25 @@ def main():
     except: pass
 
     # Make the package tree.
-    os.makedirs(os.path.join(PACKAGE_DIR, "usr", "local", "bin"))
-    os.makedirs(os.path.join(PACKAGE_DIR, "usr", "local", "lib"))
+    os.makedirs(os.path.join(PACKAGE_DIR, "usr", "bin"))
+    os.makedirs(os.path.join(PACKAGE_DIR, "usr", "lib"))
 
     # Copy the files to the correct locations.
     shutil.copyfile(
         os.path.join(BIN_DIR, "amanda"),
-        os.path.join(PACKAGE_DIR, "usr", "local", "bin", "amanda"))
+        os.path.join(PACKAGE_DIR, "usr", "bin", "amanda"))
     shutil.copyfile(
         os.path.join(BIN_DIR, "libamanda.so"),
-        os.path.join(PACKAGE_DIR, "usr", "local", "lib", "libamanda.so"))
+        os.path.join(PACKAGE_DIR, "usr", "lib", "libamanda.so"))
     shutil.copyfile(
         os.path.join(BIN_DIR, "amanda.ini"),
-        os.path.join(PACKAGE_DIR, "usr", "local", "lib", "amanda.ini"))
+        os.path.join(PACKAGE_DIR, "usr", "lib", "amanda.ini"))
 
     # Sort out permissions
     os.system("chown -R root:root {}".format(os.path.join(PACKAGE_DIR, "usr")))
     os.system("chmod a+x {}".format(os.path.join(
         PACKAGE_DIR,
-        "usr", "local", "bin", "amanda")))
+        "usr", "bin", "amanda")))
 
     # Build the .deb package
     os.system("dpkg -b {}".format(PACKAGE_DIR))
