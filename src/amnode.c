@@ -6,7 +6,7 @@
 
 //private methods
 static void delEmptyNames(Node **node);
-static void freeNode(Node *node);
+static void freeNode(Node **node);
 
 Node *createNode(const char *name, const char *function)
 {
@@ -48,7 +48,7 @@ void delNode(Node **node, const char *name)
     {
       Node *temp_node = *node;
       *node = (*node)->next;
-      freeNode(temp_node);
+      freeNode(&temp_node);
       delEmptyNames(node);
       delNode(node, name);
     }
@@ -60,11 +60,10 @@ void delNode(Node **node, const char *name)
 }
 
 void clearNode(Node **node) {
-	if (*node != NULL) {
-		clearNode(&(*node)->next);
-		freeNode(*node);
-		*node = NULL;
-	}
+  if (*node != NULL) {
+    clearNode(&(*node)->next);
+    freeNode(node);
+  }
 }
 
 static void delEmptyNames (Node **node)
@@ -75,15 +74,16 @@ static void delEmptyNames (Node **node)
     {
       Node *temp_node = *node;
       *node = (*node)->next;
-      freeNode(temp_node);
+      freeNode(&temp_node);
       delEmptyNames(node);
     }
   }
 }
 
-static void freeNode(Node *node)
+static void freeNode(Node **node)
 {
-  free(node->name);
-  free(node->function);
-  free(node);
+  free((*node)->name);
+  free((*node)->function);
+  free(*node);
+  *node = NULL;
 }
