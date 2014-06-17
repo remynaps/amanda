@@ -210,6 +210,10 @@ int main(int argc, char *argv[])
       free(name);
       writeToFile(node);
     }
+    else if (strcmp(expr, "clear") == 0) {
+	clearNode(&node);
+	writeToFile(node);
+    }
     else if(!multiLine)
     {
       if(strcmp(expr, ">") == 0)

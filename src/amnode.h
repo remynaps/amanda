@@ -10,5 +10,6 @@ typedef struct NODE {
 void printNodes(Node *node);
 void appendNode(Node **node, const char *name, const char *function);
 void delNode(Node **node, const char *name);
+void clearNode(Node **node);
 
 #endif
