@@ -5,8 +5,8 @@
 char *getTempFilePath()
 {
   #ifdef _WIN32
-	char env[256];
-	strcpy(env, getenv("TEMP"));
+	char env[256] = "";
+	strcat(env, getenv("TEMP"));
 	strcat(env, "\\temp.ama");
 	return env;
   #else
