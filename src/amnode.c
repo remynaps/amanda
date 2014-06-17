@@ -59,10 +59,10 @@ void delNode(Node **node, const char *name)
   }
 }
 
-void clearNode(Node **node) {
+void clearNode(Node *node) {
   if (*node != NULL) {
     clearNode(&(*node)->next);
-    freeNode(*node);
+    freeNode(node);
   }
 }
 
@@ -85,5 +85,5 @@ static void freeNode(Node *node)
   free(node->name);
   free(node->function);
   free(node);
-  node = NULL;
+  &node = NULL;
 }

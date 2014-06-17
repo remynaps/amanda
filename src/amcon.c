@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
       writeToFile(node);
     }
     else if (strcmp(expr, "clear") == 0) {
-      clearNode(&node);
+      clearNode(node);
       writeToFile(node);
     }
     else if(!multiLine)
