@@ -4,22 +4,22 @@
 
 char *getTempFilePath()
 {
+  char *env = (char *)malloc(256 * sizeof(char));
   #ifdef _WIN32
-	char *env = (char *)malloc(256 * sizeof(char));
-	strcpy(env, getenv("TEMP"));
-	strcat(env, "\\temp.ama");
-	return env;
+    strcpy(env, getenv("TEMP"));
+    strcat(env, "\\temp.ama");
   #else
-	return "/tmp/temp.ama";
+    strcpy(env, "/tmp/temp.ama");
   #endif
+  return env;
 }
 
 char *getAmaPath()
 {
   #ifdef _WIN32
-	return getenv("APPDATA");
+    return getenv("APPDATA");
   #else
-	return "/usr/lib/";
+    return "/usr/lib/";
   #endif
 }
 
